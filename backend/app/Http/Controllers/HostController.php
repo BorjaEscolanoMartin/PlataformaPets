@@ -23,14 +23,14 @@ class HostController extends Controller
         }
 
         if ($request->has('servicio')) {
-        $serviciosFiltro = (array) $request->input('servicio');
+            $serviciosFiltro = (array) $request->input('servicio');
 
-        $query->where(function($q) use ($serviciosFiltro) {
-            foreach ($serviciosFiltro as $servicio) {
-                $q->orWhereJsonContains('servicios_ofrecidos', $servicio);
-            }
-        });
-    }
+            $query->where(function ($q) use ($serviciosFiltro) {
+                foreach ($serviciosFiltro as $servicio) {
+                    $q->orWhereJsonContains('servicios_ofrecidos', $servicio);
+                }
+            });
+        }
 
         return response()->json($query->get());
     }
@@ -110,7 +110,11 @@ class HostController extends Controller
 
         $response = Http::get($url);
 
-        logger('GOOGLE MAPS API RESPONSE', ['url' => $url, 'status' => $response->status(), 'body' => $response->json()]);
+        logger('GOOGLE MAPS API RESPONSE', [
+            'url' => $url,
+            'status' => $response->status(),
+            'body' => $response->json(),
+        ]);
 
         if ($response->successful()) {
             $data = $response->json();
@@ -125,5 +129,4 @@ class HostController extends Controller
 
         return null;
     }
-
 }
