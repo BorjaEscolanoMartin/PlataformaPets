@@ -11,24 +11,30 @@ class CuidadoresController extends Controller
     {
         $query = User::where('role', 'cuidador')->with('hosts');
 
-        // Filtrar por tipo de servicio (ej: alojamiento, paseo, etc.)
-        if ($request->filled('servicio')) {
-            $query->whereHas('hosts', function ($q) use ($request) {
-                $q->where('type', $request->servicio);
+        // Filtro por servicios ofrecidos (array de checkboxes)
+        if ($request->has('servicio')) {
+            $servicios = (array) $request->input('servicio');
+
+            $query->where(function ($q) use ($servicios) {
+                foreach ($servicios as $servicio) {
+                    $q->orWhereJsonContains('servicios_ofrecidos', strtolower(trim($servicio)));
+                }
             });
         }
 
-        // Filtrar por especie (si lo tienes implementado)
+        // Filtro por especie
         if ($request->filled('especie')) {
-            $query->where('especie_preferida', 'like', "%{$request->especie}%");
+            $query->where('especie_preferida', 'like', '%' . $request->especie . '%');
         }
 
-        // Filtrar por tamaño aceptado (si aplica)
+        // Filtro por tamaño
         if ($request->filled('tamaño')) {
-            $query->where('tamanos_aceptados', 'like', "%{$request->tamaño}%");
+            $query->where('tamanos_aceptados', 'like', '%' . $request->tamaño . '%');
         }
 
         return $query->get();
     }
 }
+
+
 

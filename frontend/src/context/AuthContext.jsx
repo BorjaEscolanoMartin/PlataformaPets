@@ -5,19 +5,32 @@ const AuthContext = createContext()
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true) // true hasta comprobar sesión
 
-  // Verifica sesión al cargar la app
+  // Comprobar sesión activa al iniciar la app
   useEffect(() => {
-    api.get('/user')
-      .then(res => setUser(res.data))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false))
+    const verificarSesion = async () => {
+      try {
+        const res = await api.get('/user')
+        setUser(res.data)
+      } catch {
+        console.warn('No hay sesión activa')
+        setUser(null)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    verificarSesion()
   }, [])
 
   const logout = async () => {
-    await api.post('/logout')
-    setUser(null)
+    try {
+      await api.post('/logout')
+      setUser(null)
+    } catch (err) {
+      console.error('Error al cerrar sesión', err)
+    }
   }
 
   return (
@@ -30,3 +43,4 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext)
 }
+

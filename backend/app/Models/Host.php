@@ -15,6 +15,8 @@ class Host extends Model
         'description',
         'type',
         'location',
+        'latitude',
+        'longitude',
     ];
 
     public function user()

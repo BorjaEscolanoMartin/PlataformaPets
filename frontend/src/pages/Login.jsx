@@ -16,39 +16,34 @@ export default function Login() {
     setError(null)
 
     try {
-      await axios.get('http://localhost:8000/sanctum/csrf-cookie', { withCredentials: true })
+      // 1. Obtener cookie CSRF
+      await axios.get('http://localhost:8000/sanctum/csrf-cookie', {
+        withCredentials: true
+      })
 
+      // 2. Obtener el token desde las cookies
       const xsrf = decodeURIComponent(
-        document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1]
+        document.cookie
+          .split('; ')
+          .find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1]
       )
 
+      // 3. Enviar credenciales
       await api.post('/login', { email, password }, {
         headers: {
           'X-XSRF-TOKEN': xsrf,
         },
       })
 
+      // 4. Obtener el usuario autenticado
       const res = await api.get('/user')
       setUser(res.data)
 
+      // 5. Redirigir a destino guardado o a inicio
       const redirectTo = localStorage.getItem('redirectAfterLogin')
-
       localStorage.removeItem('redirectAfterLogin')
 
-      if (redirectTo) {
-        navigate(redirectTo)
-      } else {
-        // redirigir según rol
-        if (res.data.role === 'cliente') {
-          navigate('/')
-        } else if (res.data.role === 'cuidador') {
-          navigate('/')
-        } else if (res.data.role === 'empresa') {
-          navigate('/')
-        } else {
-          navigate('/') // fallback
-        }
-      }
+      navigate(redirectTo || '/')
 
     } catch (err) {
       console.error(err)
@@ -86,3 +81,4 @@ export default function Login() {
     </div>
   )
 }
+
