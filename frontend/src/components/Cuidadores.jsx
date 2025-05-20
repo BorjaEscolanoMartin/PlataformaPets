@@ -11,12 +11,18 @@ export default function Cuidadores() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  // Filtros desde la URL
   const especie = searchParams.get('especie') || ''
   const tamaño = searchParams.get('tamano') || ''
   const serviciosSeleccionados = searchParams.getAll('servicio')
 
-  // Cargar cuidadores con filtros
+  const servicios = [
+    { value: 'paseo', label: 'Paseo' },
+    { value: 'guarderia', label: 'Guardería' },
+    { value: 'alojamiento', label: 'Alojamiento' },
+    { value: 'cuidado_a_domicilio', label: 'Cuidado a domicilio' },
+    { value: 'visitas_a_domicilio', label: 'Visitas a domicilio' },
+  ]
+
   useEffect(() => {
     const fetchCuidadores = async () => {
       try {
@@ -36,9 +42,8 @@ export default function Cuidadores() {
     }
 
     fetchCuidadores()
-  }, [especie, tamaño, serviciosSeleccionados.join()])
+  }, [searchParams.toString()]) // para evitar warning de dependencias
 
-  // Actualizar select de especie o tamaño
   const actualizarFiltro = (clave, valor) => {
     const nuevosParams = new URLSearchParams(searchParams)
     if (valor) {
@@ -49,7 +54,6 @@ export default function Cuidadores() {
     setSearchParams(nuevosParams)
   }
 
-  // Alternar servicios (checkbox)
   const toggleServicio = (valor) => {
     const nuevos = new URLSearchParams(searchParams)
     const actuales = nuevos.getAll('servicio')
@@ -102,14 +106,15 @@ export default function Cuidadores() {
         <div className="md:col-span-2">
           <label className="block text-sm font-semibold mb-1">Servicios ofrecidos</label>
           <div className="flex flex-wrap gap-3 border rounded px-3 py-2">
-            {['paseo', 'guardería', 'alojamiento', 'cuidado a domicilio', 'visitas a domicilio'].map((serv) => (
-              <label key={serv} className="inline-flex items-center gap-2 text-sm capitalize">
+            {servicios.map(serv => (
+              <label key={serv.value} className="inline-flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
-                  checked={serviciosSeleccionados.includes(serv)}
-                  onChange={() => toggleServicio(serv)}
+                  value={serv.value}
+                  checked={serviciosSeleccionados.includes(serv.value)}
+                  onChange={() => toggleServicio(serv.value)}
                 />
-                {serv}
+                {serv.label}
               </label>
             ))}
           </div>
@@ -120,9 +125,10 @@ export default function Cuidadores() {
       {(serviciosSeleccionados.length > 0 || especie || tamaño) && (
         <div className="text-sm text-gray-500 mb-4">
           <p><strong>Filtros activos:</strong></p>
-          {serviciosSeleccionados.map((s, i) => (
-            <p key={`serv-${i}`}>- Servicio: {s}</p>
-          ))}
+          {serviciosSeleccionados.map((s, i) => {
+            const servicio = servicios.find(serv => serv.value === s)
+            return <p key={`serv-${i}`}>- Servicio: {servicio?.label || s}</p>
+          })}
           {especie && <p>- Especie: {especie}</p>}
           {tamaño && <p>- Tamaño: {tamaño}</p>}
         </div>
@@ -155,7 +161,7 @@ export default function Cuidadores() {
                 ))}
                 {cuidador.servicios_ofrecidos?.map((s, idx) => (
                   <span key={`serv-${cuidador.id}-${idx}`} className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
-                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                    {s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' ')}
                   </span>
                 ))}
               </div>
