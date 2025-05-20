@@ -25,6 +25,11 @@ class User extends Authenticatable
         'password',
         'role',
         'postal_code',
+        'latitude',
+        'longitude',
+        'especie_preferida', 
+        'tamanos_aceptados',
+        'servicios_ofrecidos',  
     ];
 
     /**
@@ -42,6 +47,7 @@ class User extends Authenticatable
         'especie_preferida' => 'array',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'servicios_ofrecidos' => 'array',
     ];
 
 

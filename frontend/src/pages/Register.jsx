@@ -2,9 +2,11 @@ import { useState } from 'react'
 import api from '../lib/axios'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext' // ✅ Importar el contexto
 
 export default function Register() {
   const navigate = useNavigate()
+  const { setUser } = useAuth() // ✅ Obtener setUser del contexto
 
   const [form, setForm] = useState({
     name: '',
@@ -44,6 +46,10 @@ export default function Register() {
           'X-XSRF-TOKEN': xsrf,
         },
       })
+
+      // ✅ 4. Obtener usuario autenticado y guardarlo en contexto
+      const userResponse = await api.get('/user')
+      setUser(userResponse.data)
 
       setSuccess(true)
       navigate('/')

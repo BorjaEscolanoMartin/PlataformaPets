@@ -13,6 +13,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\CuidadoresController;
 
+use App\Services\GeolocationService;
+
 /*
 |--------------------------------------------------------------------------
 | Rutas Públicas
@@ -47,8 +49,10 @@ Route::post('/register', function (Request $request) {
         'email' => 'required|email|unique:users',
         'password' => 'required|string|min:6',
         'role' => 'required|in:cliente,cuidador,empresa',
-        'postal_code' => 'required|string|max:5',
+        'postal_code' => 'required|string|max:10',
     ]);
+
+    $coords = GeolocationService::fromPostalCode($request->postal_code);
 
     $user = User::create([
         'name' => $request->name,
@@ -56,7 +60,17 @@ Route::post('/register', function (Request $request) {
         'password' => bcrypt($request->password),
         'role' => $request->role,
         'postal_code' => $request->postal_code,
+        'latitude' => $coords['lat'] ?? null,
+        'longitude' => $coords['lon'] ?? null,
     ]);
+
+    if ($coords) {
+        $user->latitude = $coords['lat'];
+        $user->longitude = $coords['lon'];
+        $user->save();
+
+        logger(['lat' => $coords['lat'], 'lng' => $coords['lon']]);
+    }
 
     Auth::login($user);
 
@@ -71,8 +85,6 @@ Route::post('/logout', function (Request $request) {
 
     return response()->json(['message' => 'Sesión cerrada']);
 });
-
-Route::get('/cuidadores', [CuidadoresController::class, 'index']);
 
 /*
 |--------------------------------------------------------------------------
@@ -131,3 +143,6 @@ Route::get('/check', function (Request $request) {
         'user' => $request->user(),
     ]);
 });
+
+Route::get('/cuidadores', [HostController::class, 'buscarCuidadores']);
+

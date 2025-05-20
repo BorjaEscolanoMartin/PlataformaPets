@@ -12,6 +12,10 @@ export default function Header() {
     navigate('/')
   }
 
+  const esCliente = user?.role === 'cliente'
+  const esCuidador = user?.role === 'cuidador'
+  const esEmpresa = user?.role === 'empresa'
+
   return (
     <header className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
       <Link to="/" className="text-xl font-bold text-green-600">
@@ -19,7 +23,13 @@ export default function Header() {
       </Link>
 
       <nav className="flex items-center gap-6 text-sm relative">
-        <Link to="/cuidadores" className="hover:underline">Buscar cuidadores</Link>
+        {(!user || esCliente) && (
+          <Link to="/cuidadores" className="hover:underline">Buscar cuidadores</Link>
+        )}
+
+        {esCliente && (
+          <Link to="/empresas" className="hover:underline">Ver empresas</Link>
+        )}
 
         {!user ? (
           <>
@@ -34,24 +44,21 @@ export default function Header() {
 
             {open && (
               <div className="absolute right-0 mt-2 bg-white border rounded shadow w-48 z-50">
-                {user.role === 'cliente' && (
+                {esCliente && (
                   <>
-                    <Link to="/dashboard" className="block px-4 py-2 hover:bg-gray-100">Perfil</Link>
                     <Link to="/mascotas" className="block px-4 py-2 hover:bg-gray-100">Mis mascotas</Link>
                     <Link to="/mis-reservas" className="block px-4 py-2 hover:bg-gray-100">Mis reservas</Link>
                   </>
                 )}
 
-                {user.role === 'cuidador' && (
+                {(esCuidador || esEmpresa) && (
                   <>
-                    <Link to="/mi-perfil-cuidador" className="block px-4 py-2 hover:bg-gray-100">Mi perfil</Link>
-                    <Link to="/reservas-recibidas" className="block px-4 py-2 hover:bg-gray-100">Reservas recibidas</Link>
-                  </>
-                )}
-
-                {user.role === 'empresa' && (
-                  <>
-                    <Link to="/dashboard-empresa" className="block px-4 py-2 hover:bg-gray-100">Dashboard empresa</Link>
+                    <Link to="/mi-perfil-cuidador" className="block px-4 py-2 hover:bg-gray-100">
+                      {esEmpresa ? 'Mi perfil de empresa' : 'Mi perfil de cuidador'}
+                    </Link>
+                    <Link to="/reservas-recibidas" className="block px-4 py-2 hover:bg-gray-100">
+                      Reservas recibidas
+                    </Link>
                   </>
                 )}
 

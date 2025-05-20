@@ -1,14 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Register from './pages/Register'
 import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
 import PrivateRoute from './components/PrivateRoute'
 import GuestRoute from './components/GuestRoute'
 import Pets from './pages/Pets'
 import PetsDetail from './pages/PetsDetail'
 import Cuidadores from './components/Cuidadores'
-import DashboardCuidador from './pages/DashboardCuidador'
-import DashboardEmpresa from './pages/DashboardEmpresa'
 import Empresas from './components/Empresas'
 import HostProfile from './pages/HostProfile'
 import PerfilCuidador from './pages/PerfilCuidador'
@@ -30,30 +27,6 @@ function App() {
         <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
 
         {/* Rutas protegidas con Layout */}
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Layout><Dashboard /></Layout>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/dashboard-cuidador"
-          element={
-            <PrivateRoute>
-              <Layout><DashboardCuidador /></Layout>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/dashboard-empresa"
-          element={
-            <PrivateRoute>
-              <Layout><DashboardEmpresa /></Layout>
-            </PrivateRoute>
-          }
-        />
         <Route
           path="/mascotas"
           element={

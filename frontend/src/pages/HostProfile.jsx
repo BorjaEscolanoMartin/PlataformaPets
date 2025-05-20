@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../lib/axios'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext' // ✅ importamos el contexto
 
 export default function HostProfile() {
   const [host, setHost] = useState({
@@ -12,9 +13,12 @@ export default function HostProfile() {
 
   const [tamanos, setTamanos] = useState([])
   const [especies, setEspecies] = useState([])
+  const [servicios, setServicios] = useState([])
 
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
+
+  const { user } = useAuth() // ✅ obtenemos el usuario actual
 
   // Cargar datos existentes
   useEffect(() => {
@@ -29,6 +33,7 @@ export default function HostProfile() {
       .then(res => {
         setTamanos(res.data.tamanos_aceptados || [])
         setEspecies(res.data.especie_preferida || [])
+        setServicios(res.data.servicios_ofrecidos || [])
       })
       .catch(() => setError('Error al cargar tus datos'))
   }, [])
@@ -40,17 +45,16 @@ export default function HostProfile() {
     setSuccess('')
 
     try {
-      // 1. Actualizar host
       if (host.id) {
         await api.put(`/hosts/${host.id}`, host)
       } else {
         await api.post('/hosts', host)
       }
 
-      // 2. Actualizar preferencias del user
       await api.put('/user', {
         tamanos_aceptados: tamanos,
         especie_preferida: especies,
+        servicios_ofrecidos: servicios,
       })
 
       setSuccess('Perfil actualizado correctamente ✅')
@@ -68,7 +72,9 @@ export default function HostProfile() {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Perfil de Cuidador</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        {user?.role === 'empresa' ? 'Perfil de Empresa' : 'Perfil de Cuidador'}
+      </h1>
 
       {success && <p className="text-green-600 mb-2">{success}</p>}
       {error && <p className="text-red-600 mb-2">{error}</p>}
@@ -106,7 +112,6 @@ export default function HostProfile() {
           className="w-full border rounded px-3 py-2"
         />
 
-        {/* Preferencias de especie */}
         <div>
           <h2 className="font-semibold mb-2">¿Qué tipo de mascota aceptas?</h2>
           {['perro', 'gato'].map(especie => (
@@ -123,7 +128,6 @@ export default function HostProfile() {
           ))}
         </div>
 
-        {/* Preferencias de tamaño */}
         <div>
           <h2 className="font-semibold mb-2">¿Qué tamaños aceptas?</h2>
           {['pequeño', 'mediano', 'grande', 'gigante'].map(t => (
@@ -140,6 +144,22 @@ export default function HostProfile() {
           ))}
         </div>
 
+        <div>
+          <h2 className="font-semibold mb-2">¿Qué servicios ofreces?</h2>
+          {['paseo', 'alojamiento', 'guarderia', 'cuidado a domicilio', 'visitas a domicilio'].map(servicio => (
+            <label key={servicio} className="block">
+              <input
+                type="checkbox"
+                checked={servicios.includes(servicio)}
+                onChange={() =>
+                  setServicios(prev => toggleArrayValue(prev, servicio))
+                }
+              />{' '}
+              {servicio.charAt(0).toUpperCase() + servicio.slice(1)}
+            </label>
+          ))}
+        </div>
+
         <button
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded"
@@ -148,8 +168,8 @@ export default function HostProfile() {
         </button>
       </form>
 
-      <Link to="/dashboard-cuidador" className="block mt-6 text-sm text-blue-600 hover:underline">
-        ← Volver al panel
+      <Link to="/" className="block mt-6 text-sm text-blue-600 hover:underline">
+        ← Volver a inicio
       </Link>
     </div>
   )

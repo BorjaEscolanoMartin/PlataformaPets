@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -14,12 +15,22 @@ class UserController extends Controller
 
     public function update(Request $request)
     {
+        Log::debug('🟡 Datos recibidos en PUT /user', $request->all());
+
         $user = $request->user();
 
         $validated = $request->validate([
             'tamanos_aceptados' => 'nullable|array',
             'especie_preferida' => 'nullable|array',
+            'servicios_ofrecidos' => 'nullable|array',
         ]);
+
+        // ✅ Normalizar servicios ofrecidos si vienen en la petición
+        if (isset($validated['servicios_ofrecidos'])) {
+            $validated['servicios_ofrecidos'] = collect($validated['servicios_ofrecidos'])->map(function ($s) {
+                return strtolower(str_replace(' ', '_', trim($s)));
+            })->toArray();
+        }
 
         $user->update($validated);
 
@@ -34,3 +45,4 @@ class UserController extends Controller
         return User::with('hosts')->findOrFail($id);
     }
 }
+
