@@ -144,5 +144,4 @@ Route::get('/check', function (Request $request) {
     ]);
 });
 
-Route::get('/cuidadores', [HostController::class, 'buscarCuidadores']);
-
+Route::get('/cuidadores', [CuidadoresController::class, 'index']);

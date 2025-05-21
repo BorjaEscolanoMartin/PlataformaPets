@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import api from '../lib/axios'
 import { useAuth } from '../context/AuthContext'
 
-export default function ReservaForm() {
-  const { id: hostId } = useParams()
+export default function ReservaForm({ hostId }) {
   const { user, loading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -49,7 +48,11 @@ export default function ReservaForm() {
       setSuccess(true)
     } catch (err) {
       console.error(err)
-      setError('No se pudo crear la reserva.')
+      if (err.response && err.response.data && err.response.data.errors) {
+        setError(Object.values(err.response.data.errors).flat().join(' '))
+      } else {
+        setError('No se pudo crear la reserva.')
+      }
     }
   }
 
