@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CalendarDays, PawPrint, Sun, Home, MapPin } from 'lucide-react'
+import { loadGoogleMaps } from '../utils/loadGoogleMaps'
 
 export default function FormularioBusqueda() {
   const navigate = useNavigate()
@@ -10,6 +11,8 @@ export default function FormularioBusqueda() {
   const [direccion, setDireccion] = useState('')
   const [entrada, setEntrada] = useState('')
   const [salida, setSalida] = useState('')
+  const [latLng, setLatLng] = useState(null)
+  const direccionRef = useRef(null)
 
   const servicios = [
     { value: 'alojamiento', label: 'Alojamiento de mascotas', icon: CalendarDays },
@@ -26,6 +29,28 @@ export default function FormularioBusqueda() {
     { value: 'gigante', label: 'Gigante', rango: '45+ kg' },
   ]
 
+  useEffect(() => {
+    loadGoogleMaps().then(() => {
+      if (!direccionRef.current) return
+
+      const autocomplete = new window.google.maps.places.Autocomplete(direccionRef.current, {
+        types: ['geocode'],
+        componentRestrictions: { country: 'es' },
+      })
+
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace()
+        if (!place.geometry) return
+
+        const lat = place.geometry.location.lat()
+        const lng = place.geometry.location.lng()
+
+        setDireccion(place.formatted_address)
+        setLatLng({ lat, lng })
+      })
+    }).catch(console.error)
+  }, [])
+
   const handleSubmit = e => {
     e.preventDefault()
     const params = new URLSearchParams()
@@ -35,6 +60,10 @@ export default function FormularioBusqueda() {
     if (direccion) params.set('direccion', direccion)
     if (entrada) params.set('entrada', entrada)
     if (salida) params.set('salida', salida)
+    if (latLng) {
+      params.set('lat', latLng.lat)
+      params.set('lon', latLng.lng)
+    }
     navigate(`/cuidadores?${params.toString()}`)
   }
 
@@ -80,6 +109,7 @@ export default function FormularioBusqueda() {
         <div className="md:col-span-1">
           <label className="block text-sm font-medium mb-1">Alojamiento cerca de</label>
           <input
+            ref={direccionRef}
             type="text"
             placeholder="Código postal o dirección"
             value={direccion}
@@ -89,11 +119,21 @@ export default function FormularioBusqueda() {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Entrada</label>
-          <input type="date" value={entrada} onChange={e => setEntrada(e.target.value)} className="w-full border px-3 py-2 rounded" />
+          <input
+            type="date"
+            value={entrada}
+            onChange={e => setEntrada(e.target.value)}
+            className="w-full border px-3 py-2 rounded"
+          />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Salida</label>
-          <input type="date" value={salida} onChange={e => setSalida(e.target.value)} className="w-full border px-3 py-2 rounded" />
+          <input
+            type="date"
+            value={salida}
+            onChange={e => setSalida(e.target.value)}
+            className="w-full border px-3 py-2 rounded"
+          />
         </div>
       </div>
 

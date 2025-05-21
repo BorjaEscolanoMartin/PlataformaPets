@@ -1,56 +1,78 @@
 import { useEffect, useRef } from 'react'
+import { loadGoogleMaps } from '../utils/loadGoogleMaps'
 
-export default function MapaGoogle({ cuidadores }) {
+export default function MapaGoogle({ cuidadores, searchLocation }) {
   const mapRef = useRef(null)
 
   useEffect(() => {
-    if (!window.google || !mapRef.current) return
+    loadGoogleMaps().then(() => {
+      if (!mapRef.current) return
 
-    const map = new window.google.maps.Map(mapRef.current, {
-      center: { lat: 38.4, lng: -0.8 },
-      zoom: 6, // Zoom por defecto si no hay cuidadores
-    })
+      const map = new window.google.maps.Map(mapRef.current, {
+        center: { lat: 38.4, lng: -0.8 },
+        zoom: 6,
+      })
 
-    const bounds = new window.google.maps.LatLngBounds()
+      const bounds = new window.google.maps.LatLngBounds()
 
-    cuidadores.forEach(cuidador => {
-      const host = cuidador.hosts?.[0]
-      if (host?.latitude && host?.longitude) {
-        const position = {
-          lat: parseFloat(host.latitude),
-          lng: parseFloat(host.longitude),
+      // Marcadores de cuidadores
+      cuidadores.forEach(cuidador => {
+        const host = cuidador.host
+        if (host?.latitude && host?.longitude) {
+          const position = {
+            lat: parseFloat(host.latitude),
+            lng: parseFloat(host.longitude),
+          }
+
+          const marker = new window.google.maps.Marker({
+            position,
+            map,
+            title: cuidador.name,
+          })
+
+          const infoWindow = new window.google.maps.InfoWindow({
+            content: `
+              <div>
+                <strong>${cuidador.name}</strong><br/>
+                <small>${host.location ?? 'Ubicación no especificada'}</small><br/>
+                <a href="/cuidadores/${cuidador.id}">Ver perfil</a>
+              </div>
+            `,
+          })
+
+          marker.addListener('click', () => {
+            infoWindow.open(map, marker)
+          })
+
+          bounds.extend(position)
         }
+      })
 
-        const marker = new window.google.maps.Marker({
-          position,
+      // Marcador de ubicación buscada
+      if (searchLocation) {
+        new window.google.maps.Marker({
+          position: searchLocation,
           map,
-          title: cuidador.name,
+          icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+          title: 'Ubicación buscada',
         })
 
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: `
-            <div>
-              <strong>${cuidador.name}</strong><br/>
-              <small>${host.location ?? 'Ubicación no especificada'}</small><br/>
-              <a href="/cuidadores/${cuidador.id}">Ver perfil</a>
-            </div>
-          `,
-        })
+        bounds.extend(searchLocation)
 
-        marker.addListener('click', () => {
-          infoWindow.open(map, marker)
-        })
-
-        bounds.extend(position)
+        if (cuidadores.length === 0) {
+          map.setCenter(searchLocation)
+          map.setZoom(13)
+        }
       }
+
+      // Ajustar límites
+      if (!bounds.isEmpty()) {
+        map.fitBounds(bounds)
+      }
+    }).catch((err) => {
+      console.error('Error al cargar Google Maps:', err)
     })
-
-    // Si al menos un cuidador tiene coordenadas → ajustar el mapa
-    if (!bounds.isEmpty()) {
-      map.fitBounds(bounds)
-    }
-
-  }, [cuidadores])
+  }, [cuidadores, searchLocation])
 
   return (
     <div
@@ -59,3 +81,5 @@ export default function MapaGoogle({ cuidadores }) {
     />
   )
 }
+
+

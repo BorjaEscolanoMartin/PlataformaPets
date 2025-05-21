@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import api from '../lib/axios'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext' // ✅ importamos el contexto
+import { useAuth } from '../context/AuthContext'
+import { loadGoogleMaps } from '../utils/loadGoogleMaps'
 
 export default function HostProfile() {
   const [host, setHost] = useState({
@@ -9,6 +10,8 @@ export default function HostProfile() {
     type: 'particular',
     location: '',
     description: '',
+    latitude: '',
+    longitude: '',
   })
 
   const [tamanos, setTamanos] = useState([])
@@ -18,9 +21,9 @@ export default function HostProfile() {
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
 
-  const { user } = useAuth() // ✅ obtenemos el usuario actual
+  const { user } = useAuth()
+  const locationRef = useRef(null)
 
-  // Cargar datos existentes
   useEffect(() => {
     api.get('/hosts')
       .then(res => {
@@ -38,7 +41,30 @@ export default function HostProfile() {
       .catch(() => setError('Error al cargar tus datos'))
   }, [])
 
-  // Guardar perfil completo
+  // Inicializar autocompletado
+  useEffect(() => {
+    loadGoogleMaps().then(() => {
+      if (!locationRef.current) return
+
+      const autocomplete = new window.google.maps.places.Autocomplete(locationRef.current, {
+        types: ['geocode'],
+        componentRestrictions: { country: 'es' },
+      })
+
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace()
+        if (!place.geometry) return
+
+        setHost(prev => ({
+          ...prev,
+          location: place.formatted_address,
+          latitude: place.geometry.location.lat(),
+          longitude: place.geometry.location.lng(),
+        }))
+      })
+    }).catch(console.error)
+  }, [])
+
   const handleSubmit = async e => {
     e.preventDefault()
     setError('')
@@ -64,7 +90,6 @@ export default function HostProfile() {
     }
   }
 
-  // Utilidad para checkboxes
   const toggleArrayValue = (array, value) =>
     array.includes(value)
       ? array.filter(item => item !== value)
@@ -98,6 +123,7 @@ export default function HostProfile() {
         </select>
 
         <input
+          ref={locationRef}
           type="text"
           placeholder="Ubicación"
           value={host.location}
@@ -174,3 +200,4 @@ export default function HostProfile() {
     </div>
   )
 }
+

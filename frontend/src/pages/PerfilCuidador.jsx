@@ -9,7 +9,7 @@ export default function PerfilCuidador() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.get(`/users/${id}`)
+    api.get(`/cuidadores/${id}`)
       .then(res => setCuidador(res.data))
       .catch(err => {
         console.error('Error cargando cuidador:', err)
@@ -21,7 +21,7 @@ export default function PerfilCuidador() {
   if (loading) return <p className="text-center mt-10">Cargando cuidador...</p>
   if (!cuidador) return <p className="text-center mt-10 text-red-600">Cuidador no encontrado</p>
 
-  const host = cuidador.hosts?.[0] // Solo mostramos el primer perfil host
+  const host = cuidador.host
 
   return (
     <div className="max-w-2xl mx-auto mt-10 p-6 border rounded shadow">
