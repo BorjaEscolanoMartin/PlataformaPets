@@ -6,33 +6,75 @@ use App\Models\Host;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class HostController extends Controller
 {
     // ✅ FILTRAR CUIDADORES (público)
     public function buscarCuidadores(Request $request)
     {
-        $query = User::where('role', 'cuidador')->with('hosts');
+        $cuidadores = User::where('role', 'cuidador')->with('hosts');
 
+        // Filtros normales
         if ($request->has('especie')) {
-            $query->whereJsonContains('especie_preferida', $request->especie);
+            $cuidadores->whereJsonContains('especie_preferida', $request->especie);
         }
 
         if ($request->has('tamano')) {
-            $query->whereJsonContains('tamanos_aceptados', $request->tamano);
+            $cuidadores->whereJsonContains('tamanos_aceptados', $request->tamano);
         }
 
         if ($request->has('servicio')) {
             $serviciosFiltro = (array) $request->input('servicio');
-
-            $query->where(function ($q) use ($serviciosFiltro) {
+            $cuidadores->where(function ($q) use ($serviciosFiltro) {
                 foreach ($serviciosFiltro as $servicio) {
                     $q->orWhereJsonContains('servicios_ofrecidos', $servicio);
                 }
             });
         }
 
-        return response()->json($query->get());
+        // Filtro por código postal + radio
+        if ($request->filled('postal_code')) {
+            $coords = $this->getCoordinatesFromAddress($request->postal_code);
+
+            if ($coords) {
+                $lat = (float) $coords['lat'];
+                $lon = (float) $coords['lng'];
+                $radio = (float) $request->input('distance_km', 25);
+
+                // Buscar hosts con coordenadas y calcular distancia
+                $hostsCercanos = DB::table('hosts')
+                    ->whereNotNull('latitude')
+                    ->whereNotNull('longitude')
+                    ->select(
+                        'user_id',
+                        DB::raw("6371 * acos(
+                            least(1, greatest(-1,
+                                cos(radians($lat)) * cos(radians(latitude)) *
+                                cos(radians(longitude) - radians($lon)) +
+                                sin(radians($lat)) * sin(radians(latitude))
+                            ))
+                        ) AS distance")
+                    )
+                    ->get()
+                    ->filter(fn($h) => $h->distance <= $radio);
+
+                $ids = $hostsCercanos->pluck('user_id')->unique();
+                $cuidadores->whereIn('id', $ids);
+
+                // Asocia la distancia al cuidador
+                $distanciasPorId = $hostsCercanos->keyBy('user_id');
+
+                $cuidadores = $cuidadores->get()->map(function ($cuidador) use ($distanciasPorId) {
+                    $cuidador->distance = $distanciasPorId[$cuidador->id]->distance ?? null;
+                    return $cuidador;
+                });
+
+                return response()->json($cuidadores);
+            }
+        }
+
+        return response()->json($cuidadores->get());
     }
 
     // ✅ DEVOLVER HOSTS DEL USUARIO AUTENTICADO

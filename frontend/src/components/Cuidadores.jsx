@@ -14,6 +14,7 @@ export default function Cuidadores() {
   const especie = searchParams.get('especie') || ''
   const tamaño = searchParams.get('tamano') || ''
   const serviciosSeleccionados = searchParams.getAll('servicio')
+  const codigoPostal = searchParams.get('postal_code') || ''
 
   const servicios = [
     { value: 'paseo', label: 'Paseo' },
@@ -29,6 +30,9 @@ export default function Cuidadores() {
         const query = []
         if (especie) query.push(`especie=${especie}`)
         if (tamaño) query.push(`tamano=${tamaño}`)
+        if (codigoPostal.length === 5) {
+          query.push(`postal_code=${codigoPostal}`)
+        }
         serviciosSeleccionados.forEach(s => {
           query.push(`servicio=${encodeURIComponent(s)}`)
         })
@@ -103,6 +107,17 @@ export default function Cuidadores() {
           </select>
         </div>
 
+        <div>
+          <label className="block text-sm font-semibold mb-1">Código postal</label>
+          <input
+            type="text"
+            value={codigoPostal}
+            onChange={e => actualizarFiltro('postal_code', e.target.value)}
+            className="w-full border rounded px-3 py-2"
+            placeholder="Ej. 28001"
+          />
+        </div>
+
         <div className="md:col-span-2">
           <label className="block text-sm font-semibold mb-1">Servicios ofrecidos</label>
           <div className="flex flex-wrap gap-3 border rounded px-3 py-2">
@@ -147,6 +162,12 @@ export default function Cuidadores() {
             <li key={cuidador.id} className="bg-white p-4 rounded shadow">
               <p className="text-lg font-semibold text-gray-800">{cuidador.name}</p>
               <p className="text-sm text-gray-600 mb-2">{cuidador.email}</p>
+
+              {cuidador.distance && (
+                <p className="text-sm text-gray-600 mb-2">
+                  📍 A {Number(cuidador.distance).toFixed(1)} km
+                </p>
+              )}
 
               <div className="flex flex-wrap gap-2 mb-2">
                 {cuidador.especie_preferida?.map((tipo, idx) => (
