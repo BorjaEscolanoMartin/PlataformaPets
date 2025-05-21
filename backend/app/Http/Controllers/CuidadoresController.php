@@ -11,12 +11,13 @@ class CuidadoresController extends Controller
 {
     public function index(Request $request)
     {
-        $cuidadores = User::where('role', 'cuidador')->with('hosts');
+        $query = User::where('role', 'cuidador')->with('hosts');
 
         // Filtro por servicios ofrecidos
         if ($request->has('servicio')) {
             $servicios = (array) $request->input('servicio');
-            $cuidadores->where(function ($q) use ($servicios) {
+
+            $query->where(function ($q) use ($servicios) {
                 foreach ($servicios as $servicio) {
                     $q->orWhereJsonContains('servicios_ofrecidos', strtolower(trim($servicio)));
                 }
@@ -25,38 +26,46 @@ class CuidadoresController extends Controller
 
         // Filtro por especie
         if ($request->filled('especie')) {
-            $cuidadores->where('especie_preferida', 'like', '%' . $request->especie . '%');
+            $query->whereJsonContains('especie_preferida', $request->especie);
         }
 
         // Filtro por tamaño
         if ($request->filled('tamano')) {
-            $cuidadores->where('tamanos_aceptados', 'like', '%' . $request->tamano . '%');
+            $query->whereJsonContains('tamanos_aceptados', $request->tamano);
         }
 
         // Filtro por disponibilidad en fechas
-        if ($request->filled('fecha_entrada') && $request->filled('fecha_salida')) {
+        if ($request->filled('fecha_entrada') || $request->filled('fecha_salida')) {
             $entrada = $request->input('fecha_entrada');
             $salida = $request->input('fecha_salida');
 
-            $cuidadores->whereHas('hosts', function ($hostQuery) use ($entrada, $salida) {
+            $query->whereHas('hosts', function ($hostQuery) use ($entrada, $salida) {
                 $hostQuery->whereDoesntHave('reservations', function ($resQuery) use ($entrada, $salida) {
                     $resQuery->where(function ($q) use ($entrada, $salida) {
-                        $q->whereBetween('start_date', [$entrada, $salida])
-                          ->orWhereBetween('end_date', [$entrada, $salida])
-                          ->orWhere(function ($q2) use ($entrada, $salida) {
-                              $q2->where('start_date', '<=', $entrada)
-                                  ->where('end_date', '>=', $salida);
-                          });
+                        if ($entrada && $salida) {
+                            $q->whereBetween('start_date', [$entrada, $salida])
+                            ->orWhereBetween('end_date', [$entrada, $salida])
+                            ->orWhere(function ($q2) use ($entrada, $salida) {
+                                $q2->where('start_date', '<=', $entrada)
+                                    ->where('end_date', '>=', $salida);
+                            });
+                        } elseif ($entrada) {
+                            $q->whereDate('start_date', '<=', $entrada)
+                            ->whereDate('end_date', '>=', $entrada);
+                        } elseif ($salida) {
+                            $q->whereDate('start_date', '<=', $salida)
+                            ->whereDate('end_date', '>=', $salida);
+                        }
                     });
                 });
             });
         }
 
-        // Filtro por distancia geográfica usando código postal
+        // Filtro por código postal (distancia)
         if ($request->filled('postal_code')) {
             $coords = GeolocationService::fromPostalCode($request->postal_code);
 
-            if ($coords) {
+            if ($coords && isset($coords['lat'], $coords['lon'])) {
                 $lat = (float) $coords['lat'];
                 $lon = (float) $coords['lon'];
                 $radio = (float) $request->input('distance_km', 25);
@@ -79,12 +88,10 @@ class CuidadoresController extends Controller
                     ->filter(fn($h) => $h->distance <= $radio);
 
                 $ids = $hostsCercanos->pluck('user_id')->unique();
-                $cuidadores->whereIn('id', $ids);
+                $query->whereIn('id', $ids);
 
-                // Asocia la distancia al cuidador (después del ->get())
                 $distanciasPorId = $hostsCercanos->keyBy('user_id');
-
-                $cuidadores = $cuidadores->get()->map(function ($cuidador) use ($distanciasPorId) {
+                $cuidadores = $query->get()->map(function ($cuidador) use ($distanciasPorId) {
                     $cuidador->distance = $distanciasPorId[$cuidador->id]->distance ?? null;
                     return $cuidador;
                 });
@@ -93,7 +100,6 @@ class CuidadoresController extends Controller
             }
         }
 
-        // Si no hay filtro de ubicación, devolvemos cuidadores normales
-        return $cuidadores->get();
+        return response()->json($query->get());
     }
 }
