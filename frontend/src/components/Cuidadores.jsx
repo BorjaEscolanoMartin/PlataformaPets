@@ -27,29 +27,32 @@ export default function Cuidadores() {
   ]
 
   useEffect(() => {
-    const fetchCuidadores = async () => {
-      try {
-        const query = []
-        if (especie) query.push(`especie=${especie}`)
-        if (tamaño) query.push(`tamano=${tamaño}`)
-        if (codigoPostal.length === 5) query.push(`postal_code=${codigoPostal}`)
-        if (fechaEntrada) query.push(`fecha_entrada=${fechaEntrada}`)
-        if (fechaSalida) query.push(`fecha_salida=${fechaSalida}`)
-        serviciosSeleccionados.forEach(s => {
-          query.push(`servicio=${encodeURIComponent(s)}`)
-        })
+    const timeout = setTimeout(() => {
+      const fetchCuidadores = async () => {
+        try {
+          const query = []
+          if (especie) query.push(`especie=${especie}`)
+          if (tamaño) query.push(`tamano=${tamaño}`)
+          if (codigoPostal.length === 5) query.push(`postal_code=${codigoPostal}`)
+          if (fechaEntrada) query.push(`fecha_entrada=${fechaEntrada}`)
+          if (fechaSalida) query.push(`fecha_salida=${fechaSalida}`)
+          serviciosSeleccionados.forEach(s => {
+            query.push(`servicio=${encodeURIComponent(s)}`)
+          })
 
-        const res = await api.get(`/cuidadores${query.length ? `?${query.join('&')}` : ''}`)
-        setCuidadores(res.data)
-      } catch (err) {
-        console.error(err)
-        setError('No se pudieron cargar los cuidadores.')
+          const res = await api.get(`/cuidadores${query.length ? `?${query.join('&')}` : ''}`)
+          setCuidadores(res.data)
+        } catch (err) {
+          console.error(err)
+          setError('No se pudieron cargar los cuidadores.')
+        }
       }
-    }
 
-    fetchCuidadores()
-  }, [searchParams.toString()])
+      fetchCuidadores()
+    }, 500)
 
+    return () => clearTimeout(timeout)
+  }, [especie, tamaño, codigoPostal, fechaEntrada, fechaSalida, serviciosSeleccionados.join(',')])
 
   const actualizarFiltro = (clave, valor) => {
     const nuevosParams = new URLSearchParams(searchParams)
@@ -114,7 +117,7 @@ export default function Cuidadores() {
           <label className="block text-sm font-semibold mb-1">Fecha entrada</label>
           <input
             type="date"
-            value={searchParams.get('fecha_entrada') || ''}
+            value={fechaEntrada}
             onChange={(e) => actualizarFiltro('fecha_entrada', e.target.value)}
             className="w-full border rounded px-3 py-2"
           />
@@ -124,7 +127,7 @@ export default function Cuidadores() {
           <label className="block text-sm font-semibold mb-1">Fecha salida</label>
           <input
             type="date"
-            value={searchParams.get('fecha_salida') || ''}
+            value={fechaSalida}
             onChange={(e) => actualizarFiltro('fecha_salida', e.target.value)}
             className="w-full border rounded px-3 py-2"
           />
@@ -159,23 +162,9 @@ export default function Cuidadores() {
         </div>
       </div>
 
-      {/* Filtros activos */}
-      {(serviciosSeleccionados.length > 0 || especie || tamaño) && (
-        <div className="text-sm text-gray-500 mb-4">
-          <p><strong>Filtros activos:</strong></p>
-          {serviciosSeleccionados.map((s, i) => {
-            const servicio = servicios.find(serv => serv.value === s)
-            return <p key={`serv-${i}`}>- Servicio: {servicio?.label || s}</p>
-          })}
-          {especie && <p>- Especie: {especie}</p>}
-          {tamaño && <p>- Tamaño: {tamaño}</p>}
-        </div>
-      )}
-
       {error && <p className="text-red-600">{error}</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Listado de cuidadores */}
         <ul className="space-y-3">
           {cuidadores.length === 0 && !error && (
             <p className="text-gray-600">No se encontraron cuidadores con esos filtros.</p>
@@ -226,7 +215,6 @@ export default function Cuidadores() {
           ))}
         </ul>
 
-        {/* Mapa con cuidadores */}
         <MapaGoogle cuidadores={cuidadores} />
       </div>
     </div>
