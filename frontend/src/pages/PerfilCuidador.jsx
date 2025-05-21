@@ -44,12 +44,12 @@ export default function PerfilCuidador() {
           <p className="text-sm text-gray-600 mb-2">Tipo: {host.type}</p>
           <p className="text-sm text-gray-600 mb-2">Ubicación: {host.location}</p>
           <p className="whitespace-pre-wrap mb-4">{host.description || 'Sin descripción.'}</p>
+
+          <ReservaForm hostId={host.id} />
         </>
       ) : (
         <p className="text-sm italic text-gray-500 mb-4">Este cuidador aún no ha completado su perfil.</p>
       )}
-
-      <ReservaForm />
 
       <Link
         to="/cuidadores"

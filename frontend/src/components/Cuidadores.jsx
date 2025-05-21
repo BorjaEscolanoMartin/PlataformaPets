@@ -15,6 +15,8 @@ export default function Cuidadores() {
   const tamaño = searchParams.get('tamano') || ''
   const serviciosSeleccionados = searchParams.getAll('servicio')
   const codigoPostal = searchParams.get('postal_code') || ''
+  const fechaEntrada = searchParams.get('fecha_entrada') || ''
+  const fechaSalida = searchParams.get('fecha_salida') || ''
 
   const servicios = [
     { value: 'paseo', label: 'Paseo' },
@@ -30,9 +32,9 @@ export default function Cuidadores() {
         const query = []
         if (especie) query.push(`especie=${especie}`)
         if (tamaño) query.push(`tamano=${tamaño}`)
-        if (codigoPostal.length === 5) {
-          query.push(`postal_code=${codigoPostal}`)
-        }
+        if (codigoPostal.length === 5) query.push(`postal_code=${codigoPostal}`)
+        if (fechaEntrada) query.push(`fecha_entrada=${fechaEntrada}`)
+        if (fechaSalida) query.push(`fecha_salida=${fechaSalida}`)
         serviciosSeleccionados.forEach(s => {
           query.push(`servicio=${encodeURIComponent(s)}`)
         })
@@ -46,7 +48,8 @@ export default function Cuidadores() {
     }
 
     fetchCuidadores()
-  }, [searchParams.toString()]) // para evitar warning de dependencias
+  }, [searchParams.toString()])
+
 
   const actualizarFiltro = (clave, valor) => {
     const nuevosParams = new URLSearchParams(searchParams)
@@ -105,6 +108,26 @@ export default function Cuidadores() {
             <option value="grande">Grande</option>
             <option value="gigante">Gigante</option>
           </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold mb-1">Fecha entrada</label>
+          <input
+            type="date"
+            value={searchParams.get('fecha_entrada') || ''}
+            onChange={(e) => actualizarFiltro('fecha_entrada', e.target.value)}
+            className="w-full border rounded px-3 py-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold mb-1">Fecha salida</label>
+          <input
+            type="date"
+            value={searchParams.get('fecha_salida') || ''}
+            onChange={(e) => actualizarFiltro('fecha_salida', e.target.value)}
+            className="w-full border rounded px-3 py-2"
+          />
         </div>
 
         <div>
