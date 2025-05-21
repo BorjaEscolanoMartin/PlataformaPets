@@ -40,15 +40,21 @@ export default function ReservaForm({ hostId }) {
     setSuccess(false)
     setError(null)
 
+    if (new Date(form.start_date) > new Date(form.end_date)) {
+      setError('La fecha de entrada no puede ser posterior a la de salida.')
+      return
+    }
+
     try {
       await api.post('/reservations', {
         ...form,
         host_id: hostId,
       })
       setSuccess(true)
+      setForm(prev => ({ ...prev, start_date: '', end_date: '' })) // opcional: limpia fechas
     } catch (err) {
       console.error(err)
-      if (err.response && err.response.data && err.response.data.errors) {
+      if (err.response?.data?.errors) {
         setError(Object.values(err.response.data.errors).flat().join(' '))
       } else {
         setError('No se pudo crear la reserva.')
@@ -92,8 +98,8 @@ export default function ReservaForm({ hostId }) {
 
         <select name="service_type" value={form.service_type} onChange={handleChange} className="w-full border rounded p-2">
           <option value="alojamiento">Alojamiento</option>
-          <option value="domicilio">Cuidados en domicilio</option>
-          <option value="visitas">Visitas a domicilio</option>
+          <option value="cuidado_a_domicilio">Cuidado a domicilio</option>
+          <option value="visitas_a_domicilio">Visitas a domicilio</option>
           <option value="guarderia">Guardería de día</option>
           <option value="paseo">Paseo</option>
         </select>
@@ -103,10 +109,31 @@ export default function ReservaForm({ hostId }) {
           <option value="semanal">Recurrente (semanal)</option>
         </select>
 
-        <input type="text" name="address" placeholder="Dirección" value={form.address} onChange={handleChange} className="w-full border rounded p-2" />
+        <input
+          type="text"
+          name="address"
+          placeholder="Dirección"
+          value={form.address}
+          onChange={handleChange}
+          className="w-full border rounded p-2"
+        />
 
-        <input type="date" name="start_date" value={form.start_date} onChange={handleChange} className="w-full border rounded p-2" required />
-        <input type="date" name="end_date" value={form.end_date} onChange={handleChange} className="w-full border rounded p-2" required />
+        <input
+          type="date"
+          name="start_date"
+          value={form.start_date}
+          onChange={handleChange}
+          className="w-full border rounded p-2"
+          required
+        />
+        <input
+          type="date"
+          name="end_date"
+          value={form.end_date}
+          onChange={handleChange}
+          className="w-full border rounded p-2"
+          required
+        />
 
         <select name="size" value={form.size} onChange={handleChange} className="w-full border rounded p-2">
           <option value="">Tamaño</option>
@@ -121,3 +148,4 @@ export default function ReservaForm({ hostId }) {
     </div>
   )
 }
+

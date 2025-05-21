@@ -145,3 +145,5 @@ Route::get('/check', function (Request $request) {
 });
 
 Route::get('/cuidadores', [CuidadoresController::class, 'index']);
+Route::get('/cuidadores/{id}', [CuidadoresController::class, 'show']);
+

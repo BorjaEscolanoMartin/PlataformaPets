@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import api from '../lib/axios'
 import { useAuth } from '../context/AuthContext'
 import MapaGoogle from './MapaGoogle'
+import { loadGoogleMaps } from '../utils/loadGoogleMaps'
 
 export default function Cuidadores() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -11,12 +12,15 @@ export default function Cuidadores() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
+  const autocompleteRef = useRef(null)
+
   const especie = searchParams.get('especie') || ''
   const tamaño = searchParams.get('tamano') || ''
   const serviciosSeleccionados = searchParams.getAll('servicio')
-  const codigoPostal = searchParams.get('postal_code') || ''
   const fechaEntrada = searchParams.get('fecha_entrada') || ''
   const fechaSalida = searchParams.get('fecha_salida') || ''
+  const lat = searchParams.get('lat')
+  const lon = searchParams.get('lon')
 
   const servicios = [
     { value: 'paseo', label: 'Paseo' },
@@ -33,7 +37,10 @@ export default function Cuidadores() {
           const query = []
           if (especie) query.push(`especie=${especie}`)
           if (tamaño) query.push(`tamano=${tamaño}`)
-          if (codigoPostal.length === 5) query.push(`postal_code=${codigoPostal}`)
+          if (lat && lon) {
+            query.push(`lat=${lat}`)
+            query.push(`lon=${lon}`)
+          }
           if (fechaEntrada) query.push(`fecha_entrada=${fechaEntrada}`)
           if (fechaSalida) query.push(`fecha_salida=${fechaSalida}`)
           serviciosSeleccionados.forEach(s => {
@@ -52,7 +59,7 @@ export default function Cuidadores() {
     }, 500)
 
     return () => clearTimeout(timeout)
-  }, [especie, tamaño, codigoPostal, fechaEntrada, fechaSalida, serviciosSeleccionados.join(',')])
+  }, [especie, tamaño, lat, lon, fechaEntrada, fechaSalida, serviciosSeleccionados.join(',')])
 
   const actualizarFiltro = (clave, valor) => {
     const nuevosParams = new URLSearchParams(searchParams)
@@ -78,6 +85,37 @@ export default function Cuidadores() {
 
     setSearchParams(nuevos)
   }
+
+  useEffect(() => {
+    loadGoogleMaps().then(() => {
+      if (!autocompleteRef.current) return
+
+      const autocomplete = new window.google.maps.places.Autocomplete(autocompleteRef.current, {
+        types: ['geocode'],
+        componentRestrictions: { country: 'es' },
+      })
+
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace()
+        if (place.geometry) {
+          const lat = place.geometry.location.lat().toFixed(6)
+          const lon = place.geometry.location.lng().toFixed(6)
+
+          const nuevosParams = new URLSearchParams(searchParams)
+          nuevosParams.set('lat', lat)
+          nuevosParams.set('lon', lon)
+          navigate({
+            pathname: '/cuidadores',
+            search: `?${nuevosParams.toString()}`
+          })
+        }
+      })
+    })
+  }, [])
+
+  const searchLocation = lat && lon
+    ? { lat: parseFloat(lat), lng: parseFloat(lon) }
+    : null
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -133,14 +171,13 @@ export default function Cuidadores() {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold mb-1">Código postal</label>
+        <div className="md:col-span-2">
+          <label className="block text-sm font-semibold mb-1">Dirección o código postal</label>
           <input
+            ref={autocompleteRef}
             type="text"
-            value={codigoPostal}
-            onChange={e => actualizarFiltro('postal_code', e.target.value)}
+            placeholder="Introduce dirección o código postal"
             className="w-full border rounded px-3 py-2"
-            placeholder="Ej. 28001"
           />
         </div>
 
@@ -215,7 +252,7 @@ export default function Cuidadores() {
           ))}
         </ul>
 
-        <MapaGoogle cuidadores={cuidadores} />
+        <MapaGoogle cuidadores={cuidadores} searchLocation={searchLocation} />
       </div>
     </div>
   )
