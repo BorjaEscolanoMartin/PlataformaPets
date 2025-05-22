@@ -119,10 +119,13 @@ export default function Cuidadores() {
         if (place.geometry) {
           const lat = place.geometry.location.lat().toFixed(6)
           const lon = place.geometry.location.lng().toFixed(6)
+          const location = place.formatted_address || place.name || ''
 
           const nuevosParams = new URLSearchParams(searchParams)
           nuevosParams.set('lat', lat)
           nuevosParams.set('lon', lon)
+          nuevosParams.set('location', location) // ✅ esto es lo nuevo
+
           navigate({
             pathname: '/cuidadores',
             search: `?${nuevosParams.toString()}`
@@ -204,7 +207,18 @@ export default function Cuidadores() {
             placeholder="Introduce dirección o código postal"
             className="w-full border rounded px-3 py-2"
             value={direccion}
-            onChange={(e) => setDireccion(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value
+              setDireccion(value)
+
+              if (value.trim() === '') {
+                const nuevosParams = new URLSearchParams(searchParams)
+                nuevosParams.delete('lat')
+                nuevosParams.delete('lon')
+                nuevosParams.delete('location')
+                setSearchParams(nuevosParams)
+              }
+            }}
           />
         </div>
 
