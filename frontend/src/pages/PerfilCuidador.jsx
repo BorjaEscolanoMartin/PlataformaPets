@@ -7,6 +7,7 @@ export default function PerfilCuidador() {
   const { id } = useParams()
   const [cuidador, setCuidador] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [mostrarFormulario, setMostrarFormulario] = useState(false)
 
   useEffect(() => {
     api.get(`/cuidadores/${id}`)
@@ -24,31 +25,105 @@ export default function PerfilCuidador() {
   const host = cuidador.host
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-6 border rounded shadow">
-      <h1 className="text-3xl font-bold mb-2">{cuidador.name}</h1>
-      <p className="text-sm text-gray-600 mb-2">Email: {cuidador.email}</p>
+    <div className="max-w-2xl mx-auto mt-10 p-6 border rounded shadow space-y-4">
+      <h1 className="text-3xl font-bold">{cuidador.name}</h1>
+      <p className="text-sm text-gray-600">Email: {cuidador.email}</p>
 
       {cuidador.especie_preferida?.length > 0 && (
-        <p className="mb-1 text-sm">
+        <p className="text-sm">
           <strong>Acepta:</strong> {cuidador.especie_preferida.join(', ')}
         </p>
       )}
       {cuidador.tamanos_aceptados?.length > 0 && (
-        <p className="mb-4 text-sm">
+        <p className="text-sm">
           <strong>Tamaños:</strong> {cuidador.tamanos_aceptados.join(', ')}
         </p>
       )}
 
       {host ? (
         <>
-          <p className="text-sm text-gray-600 mb-2">Tipo: {host.type}</p>
-          <p className="text-sm text-gray-600 mb-2">Ubicación: {host.location}</p>
-          <p className="whitespace-pre-wrap mb-4">{host.description || 'Sin descripción.'}</p>
+          {host.profile_photo && (
+            <img
+              src={host.profile_photo}
+              alt="Foto de perfil"
+              className="w-32 h-32 rounded-full object-cover border"
+            />
+          )}
 
-          <ReservaForm hostId={host.id} />
+          {host.title && (
+            <p className="text-xl font-semibold mt-4">{host.title}</p>
+          )}
+
+          <p className="text-sm text-gray-600">Tipo: {host.type}</p>
+          <p className="text-sm text-gray-600">Ubicación: {host.location}</p>
+          {host.phone && (
+            <p className="text-sm text-gray-600">📱 Móvil: {host.phone}</p>
+          )}
+
+          {host.experience_years && (
+            <p className="text-sm text-gray-600">
+              🐾 Años de experiencia: {host.experience_years}
+            </p>
+          )}
+
+          {host.experience_details && (
+            <p className="text-sm whitespace-pre-wrap">
+              <strong>Sobre mi experiencia:</strong><br />
+              {host.experience_details}
+            </p>
+          )}
+
+          {host.has_own_pets && (
+            <p className="text-sm whitespace-pre-wrap">
+              <strong>🐶 Tiene mascotas propias:</strong><br />
+              {host.own_pets_description || 'Sí'}
+            </p>
+          )}
+
+          {host.description && (
+            <p className="whitespace-pre-wrap text-sm">
+              <strong>Entorno:</strong><br />
+              {host.description}
+            </p>
+          )}
+
+          {Array.isArray(host.gallery) && host.gallery.length > 0 && (
+            <div className="mt-4">
+              <h2 className="font-semibold mb-2">📸 Galería</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {host.gallery.map((foto, i) => (
+                  <img
+                    key={i}
+                    src={foto}
+                    alt={`Foto ${i + 1}`}
+                    className="w-full h-32 object-cover rounded"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!mostrarFormulario ? (
+            <button
+              onClick={() => setMostrarFormulario(true)}
+              className="mt-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Solicitar reserva
+            </button>
+          ) : (
+            <div className="mt-6 space-y-2">
+              <ReservaForm hostId={host.id} />
+              <button
+                onClick={() => setMostrarFormulario(false)}
+                className="text-sm text-red-600 hover:underline"
+              >
+                Cancelar
+              </button>
+            </div>
+          )}
         </>
       ) : (
-        <p className="text-sm italic text-gray-500 mb-4">Este cuidador aún no ha completado su perfil.</p>
+        <p className="text-sm italic text-gray-500">Este cuidador aún no ha completado su perfil.</p>
       )}
 
       <Link
@@ -60,3 +135,4 @@ export default function PerfilCuidador() {
     </div>
   )
 }
+

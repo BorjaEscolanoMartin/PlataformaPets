@@ -22,9 +22,33 @@ class HostController extends Controller
             'location' => 'nullable|string|max:255',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+
+            // Nuevos campos
+            'title' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'experience_years' => 'nullable|integer|min:0',
+            'experience_details' => 'nullable|string',
+            'has_own_pets' => 'nullable|boolean',
+            'own_pets_description' => 'nullable|string',
+            'profile_photo' => 'nullable|image|max:2048',
+            'gallery.*' => 'nullable|image|max:2048',
         ]);
 
         $validated['user_id'] = Auth::id();
+
+        // Foto de perfil
+        if ($request->hasFile('profile_photo')) {
+            $validated['profile_photo'] = $request->file('profile_photo')->store('hosts/profile_photos', 'public');
+        }
+
+        // Galería
+        if ($request->hasFile('gallery')) {
+            $galleryPaths = [];
+            foreach ($request->file('gallery') as $image) {
+                $galleryPaths[] = $image->store('hosts/gallery', 'public');
+            }
+            $validated['gallery'] = json_encode($galleryPaths);
+        }
 
         $host = Host::create($validated);
 
@@ -57,7 +81,31 @@ class HostController extends Controller
             'location' => 'nullable|string|max:255',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+
+            // Nuevos campos
+            'title' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'experience_years' => 'nullable|integer|min:0',
+            'experience_details' => 'nullable|string',
+            'has_own_pets' => 'nullable|boolean',
+            'own_pets_description' => 'nullable|string',
+            'profile_photo' => 'nullable|image|max:2048',
+            'gallery.*' => 'nullable|image|max:2048',
         ]);
+
+        // Foto de perfil
+        if ($request->hasFile('profile_photo')) {
+            $validated['profile_photo'] = $request->file('profile_photo')->store('hosts/profile_photos', 'public');
+        }
+
+        // Galería
+        if ($request->hasFile('gallery')) {
+            $galleryPaths = [];
+            foreach ($request->file('gallery') as $image) {
+                $galleryPaths[] = $image->store('hosts/gallery', 'public');
+            }
+            $validated['gallery'] = json_encode($galleryPaths);
+        }
 
         $host->update($validated);
 

@@ -10,9 +10,16 @@ export default function HostProfile() {
     type: 'particular',
     location: '',
     description: '',
-    latitude: '',
-    longitude: '',
+    title: '',
+    phone: '',
+    experience_years: '',
+    experience_details: '',
+    has_own_pets: false,
+    own_pets_description: '',
   })
+
+  const [profilePhotoFile, setProfilePhotoFile] = useState(null)
+  const [galleryFiles, setGalleryFiles] = useState([])
 
   const [tamanos, setTamanos] = useState([])
   const [especies, setEspecies] = useState([])
@@ -41,7 +48,6 @@ export default function HostProfile() {
       .catch(() => setError('Error al cargar tus datos'))
   }, [])
 
-  // Inicializar autocompletado
   useEffect(() => {
     loadGoogleMaps().then(() => {
       if (!locationRef.current) return
@@ -71,11 +77,31 @@ export default function HostProfile() {
     setSuccess('')
 
     try {
-      if (host.id) {
-        await api.put(`/hosts/${host.id}`, host)
-      } else {
-        await api.post('/hosts', host)
-      }
+      const formData = new FormData()
+        Object.entries(host).forEach(([key, value]) => {
+          formData.append(key, value !== null && value !== undefined ? value : '')
+        })
+
+        formData.set('has_own_pets', host.has_own_pets ? 1 : 0)
+
+        if (profilePhotoFile) {
+          formData.append('profile_photo', profilePhotoFile)
+        }
+
+        galleryFiles.forEach((file, index) => {
+          formData.append(`gallery[${index}]`, file)
+        })
+
+        if (host.id) {
+          await api.post(`/hosts/${host.id}?_method=PUT`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
+        } else {
+          await api.post('/hosts', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          })
+        }
+
 
       await api.put('/user', {
         tamanos_aceptados: tamanos,
@@ -107,6 +133,14 @@ export default function HostProfile() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
+          placeholder="Título del perfil"
+          value={host.title}
+          onChange={e => setHost({ ...host, title: e.target.value })}
+          className="w-full border rounded px-3 py-2"
+        />
+
+        <input
+          type="text"
           placeholder="Nombre del perfil"
           value={host.name}
           onChange={e => setHost({ ...host, name: e.target.value })}
@@ -131,12 +165,73 @@ export default function HostProfile() {
           className="w-full border rounded px-3 py-2"
         />
 
+        <input
+          type="tel"
+          placeholder="Número de móvil"
+          value={host.phone}
+          onChange={e => setHost({ ...host, phone: e.target.value })}
+          className="w-full border rounded px-3 py-2"
+        />
+
+        <input
+          type="number"
+          min="0"
+          placeholder="Años de experiencia"
+          value={host.experience_years}
+          onChange={e => setHost({ ...host, experience_years: e.target.value })}
+          className="w-full border rounded px-3 py-2"
+        />
+
+        <textarea
+          placeholder="Cuéntanos tu experiencia con mascotas"
+          value={host.experience_details}
+          onChange={e => setHost({ ...host, experience_details: e.target.value })}
+          className="w-full border rounded px-3 py-2"
+        />
+
         <textarea
           placeholder="Descripción"
           value={host.description}
           onChange={e => setHost({ ...host, description: e.target.value })}
           className="w-full border rounded px-3 py-2"
         />
+
+        <div>
+          <label className="block font-semibold mb-1">Foto de perfil</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={e => setProfilePhotoFile(e.target.files[0])}
+          />
+        </div>
+
+        <div>
+          <label className="block font-semibold mb-1">Galería de fotos con mascotas</label>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={e => setGalleryFiles([...e.target.files])}
+          />
+        </div>
+
+        <label className="block mt-2 font-semibold">
+          <input
+            type="checkbox"
+            checked={host.has_own_pets}
+            onChange={e => setHost({ ...host, has_own_pets: e.target.checked })}
+          />{' '}
+          Tengo mascotas en casa
+        </label>
+
+        {host.has_own_pets && (
+          <textarea
+            placeholder="Describe a tus mascotas"
+            value={host.own_pets_description}
+            onChange={e => setHost({ ...host, own_pets_description: e.target.value })}
+            className="w-full border rounded px-3 py-2 mt-2"
+          />
+        )}
 
         <div>
           <h2 className="font-semibold mb-2">¿Qué tipo de mascota aceptas?</h2>

@@ -10,13 +10,19 @@ class Host extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'name',
-        'description',
         'type',
         'location',
         'latitude',
         'longitude',
+        'description',
+        'title',
+        'phone',
+        'experience_years',
+        'experience_details',
+        'has_own_pets',
+        'own_pets_description',
+        'profile_photo',
+        'gallery',
     ];
 
     public function user()
