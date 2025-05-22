@@ -79,18 +79,23 @@ export default function HostProfile() {
     try {
       const formData = new FormData()
         Object.entries(host).forEach(([key, value]) => {
+          if (key === 'profile_photo') return // 👈 Evita enviar una cadena en vez de archivo
           formData.append(key, value !== null && value !== undefined ? value : '')
         })
 
         formData.set('has_own_pets', host.has_own_pets ? 1 : 0)
 
-        if (profilePhotoFile) {
+        if (profilePhotoFile instanceof File) {
           formData.append('profile_photo', profilePhotoFile)
         }
 
-        galleryFiles.forEach((file, index) => {
-          formData.append(`gallery[${index}]`, file)
+        galleryFiles.forEach(file => {
+          formData.append('gallery[]', file)
         })
+
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}:`, value)
+        }
 
         if (host.id) {
           await api.post(`/hosts/${host.id}?_method=PUT`, formData, {
@@ -102,7 +107,6 @@ export default function HostProfile() {
           })
         }
 
-
       await api.put('/user', {
         tamanos_aceptados: tamanos,
         especie_preferida: especies,
@@ -111,7 +115,12 @@ export default function HostProfile() {
 
       setSuccess('Perfil actualizado correctamente ✅')
     } catch (err) {
-      console.error(err)
+      if (err.response && err.response.data && err.response.data.errors) {
+        console.error('Errores de validación:', err.response.data.errors)
+      } else {
+        console.error(err)
+      }
+
       setError('Error al guardar los datos')
     }
   }

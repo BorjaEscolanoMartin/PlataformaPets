@@ -25,6 +25,10 @@ class Host extends Model
         'gallery',
     ];
 
+    protected $casts = [
+        'gallery' => 'array', 
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
