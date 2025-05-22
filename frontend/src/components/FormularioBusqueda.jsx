@@ -57,9 +57,9 @@ export default function FormularioBusqueda() {
     if (especie) params.set('especie', especie)
     if (tamano) params.set('tamano', tamano)
     if (servicio) params.set('servicio', servicio)
-    if (direccion) params.set('direccion', direccion)
-    if (entrada) params.set('entrada', entrada)
-    if (salida) params.set('salida', salida)
+    if (direccion) params.set('location', direccion)
+    if (entrada) params.set('fecha_entrada', entrada)
+    if (salida) params.set('fecha_salida', salida)
     if (latLng) {
       params.set('lat', latLng.lat)
       params.set('lon', latLng.lng)

@@ -9,6 +9,7 @@ export default function Cuidadores() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [cuidadores, setCuidadores] = useState([])
   const [error, setError] = useState(null)
+  const [direccion, setDireccion] = useState('')
   const { user } = useAuth()
   const navigate = useNavigate()
 
@@ -87,7 +88,16 @@ export default function Cuidadores() {
   }
 
   useEffect(() => {
+    const initialLocation =
+      searchParams.get('location') ||
+      searchParams.get('postal_code') ||
+      ''
+    setDireccion(initialLocation)
+  }, [searchParams])
+
+  useEffect(() => {
     loadGoogleMaps().then(() => {
+      
       if (!autocompleteRef.current) return
 
       const autocomplete = new window.google.maps.places.Autocomplete(autocompleteRef.current, {
@@ -178,6 +188,8 @@ export default function Cuidadores() {
             type="text"
             placeholder="Introduce dirección o código postal"
             className="w-full border rounded px-3 py-2"
+            value={direccion}
+            onChange={(e) => setDireccion(e.target.value)}
           />
         </div>
 
