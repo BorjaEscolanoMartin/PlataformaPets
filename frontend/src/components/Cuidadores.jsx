@@ -12,6 +12,7 @@ export default function Cuidadores() {
   const [direccion, setDireccion] = useState('')
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [errorFecha, setErrorFecha] = useState('')
 
   const autocompleteRef = useRef(null)
 
@@ -30,6 +31,14 @@ export default function Cuidadores() {
     { value: 'cuidado_a_domicilio', label: 'Cuidado a domicilio' },
     { value: 'visitas_a_domicilio', label: 'Visitas a domicilio' },
   ]
+
+  useEffect(() => {
+    if (fechaEntrada && fechaSalida && new Date(fechaSalida) < new Date(fechaEntrada)) {
+      setErrorFecha('La fecha de salida no puede ser anterior a la de entrada.')
+    } else {
+      setErrorFecha('')
+    }
+  }, [fechaEntrada, fechaSalida])
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -180,6 +189,12 @@ export default function Cuidadores() {
             className="w-full border rounded px-3 py-2"
           />
         </div>
+
+        {errorFecha && (
+          <div className="md:col-span-2">
+            <p className="text-sm text-red-600 mt-1">{errorFecha}</p>
+          </div>
+        )}
 
         <div className="md:col-span-2">
           <label className="block text-sm font-semibold mb-1">Dirección o código postal</label>

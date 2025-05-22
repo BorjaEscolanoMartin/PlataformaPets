@@ -13,6 +13,7 @@ export default function FormularioBusqueda() {
   const [salida, setSalida] = useState('')
   const [latLng, setLatLng] = useState(null)
   const direccionRef = useRef(null)
+  const [errorFecha, setErrorFecha] = useState('')
 
   const servicios = [
     { value: 'alojamiento', label: 'Alojamiento de mascotas', icon: CalendarDays },
@@ -53,6 +54,13 @@ export default function FormularioBusqueda() {
 
   const handleSubmit = e => {
     e.preventDefault()
+    if (entrada && salida && new Date(salida) < new Date(entrada)) {
+      setErrorFecha('La fecha de salida no puede ser anterior a la de entrada.')
+      return
+    }
+
+    setErrorFecha('')
+
     const params = new URLSearchParams()
     if (especie) params.set('especie', especie)
     if (tamano) params.set('tamano', tamano)
@@ -135,6 +143,7 @@ export default function FormularioBusqueda() {
             className="w-full border px-3 py-2 rounded"
           />
         </div>
+        {errorFecha && <p className="text-sm text-red-600 mt-1">{errorFecha}</p>}
       </div>
 
       {/* Tamaños y botón de búsqueda en una fila */}
