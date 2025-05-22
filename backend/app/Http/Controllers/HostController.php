@@ -32,6 +32,7 @@ class HostController extends Controller
             'own_pets_description' => 'nullable|string',
             'profile_photo' => 'nullable|image|max:2048',
             'gallery.*' => 'nullable|image|max:2048',
+            'gallery' => 'nullable|array',
         ]);
 
         $validated['user_id'] = Auth::id();
@@ -89,8 +90,9 @@ class HostController extends Controller
             'experience_details' => 'nullable|string',
             'has_own_pets' => 'nullable|boolean',
             'own_pets_description' => 'nullable|string',
-            'profile_photo' => 'nullable|image|max:2048',
+            'profile_photo' => 'sometimes|nullable|image|max:2048',
             'gallery.*' => 'nullable|image|max:2048',
+            'gallery' => 'nullable|array',
         ]);
 
         // Foto de perfil

@@ -11,13 +11,17 @@ export default function PerfilCuidador() {
 
   useEffect(() => {
     api.get(`/cuidadores/${id}`)
-      .then(res => setCuidador(res.data))
+      .then(res => {
+        console.log('Datos del cuidador:', res.data) 
+        setCuidador(res.data)
+      })
       .catch(err => {
         console.error('Error cargando cuidador:', err)
         setCuidador(null)
       })
       .finally(() => setLoading(false))
   }, [id])
+
 
   if (loading) return <p className="text-center mt-10">Cargando cuidador...</p>
   if (!cuidador) return <p className="text-center mt-10 text-red-600">Cuidador no encontrado</p>
@@ -44,7 +48,7 @@ export default function PerfilCuidador() {
         <>
           {host.profile_photo && (
             <img
-              src={host.profile_photo}
+              src={`http://localhost:8000/storage/${host.profile_photo}`}
               alt="Foto de perfil"
               className="w-32 h-32 rounded-full object-cover border"
             />
@@ -94,7 +98,7 @@ export default function PerfilCuidador() {
                 {host.gallery.map((foto, i) => (
                   <img
                     key={i}
-                    src={foto}
+                    src={`http://localhost:8000/storage/${foto}`}
                     alt={`Foto ${i + 1}`}
                     className="w-full h-32 object-cover rounded"
                   />
