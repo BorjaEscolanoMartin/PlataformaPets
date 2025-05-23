@@ -10,6 +10,8 @@ class Host extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
+        'name',
         'type',
         'location',
         'latitude',
@@ -22,12 +24,8 @@ class Host extends Model
         'has_own_pets',
         'own_pets_description',
         'profile_photo',
-        'gallery',
     ];
 
-    protected $casts = [
-        'gallery' => 'array', 
-    ];
 
     public function user()
     {
