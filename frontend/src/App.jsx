@@ -12,6 +12,7 @@ import ReservasRecibidas from './pages/ReservasRecibidas'
 import Inicio from './pages/Inicio'
 import Layout from './layout/Layout'
 import RegisterEmpresa from './pages/RegisterEmpresa'
+import ChatPage from './pages/ChatPage';
 
 function App() {
   return (
@@ -78,6 +79,14 @@ function App() {
           element={
             <PrivateRoute>
               <Layout><ReservasRecibidas /></Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/chat/:id"
+          element={
+            <PrivateRoute>
+              <Layout><ChatPage /></Layout>
             </PrivateRoute>
           }
         />
