@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useState } from 'react'
 
-export default function Header() {
+export default function Header({ onLogin, onRegister }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
@@ -51,8 +51,8 @@ export default function Header() {
 
         {!user ? (
           <>
-            <Link to="/register" className="hover:underline">Registrarse</Link>
-            <Link to="/login" className="hover:underline">Iniciar sesión</Link>
+            <button onClick={onRegister} className="hover:underline">Registrarse</button>
+            <button onClick={onLogin} className="hover:underline">Iniciar sesión</button>
           </>
         ) : (
           <div className="relative">
