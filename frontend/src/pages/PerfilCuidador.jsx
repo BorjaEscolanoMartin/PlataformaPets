@@ -2,9 +2,14 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import api from '../lib/axios'
 import ReservaForm from '../components/ReservaForm'
+import { useAuth } from '../context/AuthContext'
+import { useModal } from '../hooks/useModal'
 
 export default function PerfilCuidador() {
   const { id } = useParams()
+  const { user } = useAuth()
+  const { openLogin } = useModal()
+
   const [cuidador, setCuidador] = useState(null)
   const [loading, setLoading] = useState(true)
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
@@ -12,7 +17,6 @@ export default function PerfilCuidador() {
   useEffect(() => {
     api.get(`/cuidadores/${id}`)
       .then(res => {
-        console.log('Datos del cuidador:', res.data) 
         setCuidador(res.data)
       })
       .catch(err => {
@@ -21,7 +25,6 @@ export default function PerfilCuidador() {
       })
       .finally(() => setLoading(false))
   }, [id])
-
 
   if (loading) return <p className="text-center mt-10">Cargando cuidador...</p>
   if (!cuidador) return <p className="text-center mt-10 text-red-600">Cuidador no encontrado</p>
@@ -93,7 +96,13 @@ export default function PerfilCuidador() {
 
           {!mostrarFormulario ? (
             <button
-              onClick={() => setMostrarFormulario(true)}
+              onClick={() => {
+                if (user) {
+                  setMostrarFormulario(true)
+                } else {
+                  openLogin()
+                }
+              }}
               className="mt-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
               Solicitar reserva
@@ -123,4 +132,3 @@ export default function PerfilCuidador() {
     </div>
   )
 }
-

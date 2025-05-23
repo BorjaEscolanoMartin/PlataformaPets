@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import api from '../lib/axios'
 import { useAuth } from '../context/AuthContext'
+import { useModal } from '../hooks/useModal'
 import MapaGoogle from './MapaGoogle'
 import { loadGoogleMaps } from '../utils/loadGoogleMaps'
 
@@ -11,6 +12,7 @@ export default function Cuidadores() {
   const [error, setError] = useState(null)
   const [direccion, setDireccion] = useState('')
   const { user } = useAuth()
+  const { openLogin } = useModal()
   const navigate = useNavigate()
   const [errorFecha, setErrorFecha] = useState('')
 
@@ -106,7 +108,6 @@ export default function Cuidadores() {
 
   useEffect(() => {
     loadGoogleMaps().then(() => {
-      
       if (!autocompleteRef.current) return
 
       const autocomplete = new window.google.maps.places.Autocomplete(autocompleteRef.current, {
@@ -124,7 +125,7 @@ export default function Cuidadores() {
           const nuevosParams = new URLSearchParams(searchParams)
           nuevosParams.set('lat', lat)
           nuevosParams.set('lon', lon)
-          nuevosParams.set('location', location) // ✅ esto es lo nuevo
+          nuevosParams.set('location', location)
 
           navigate({
             pathname: '/cuidadores',
@@ -281,8 +282,12 @@ export default function Cuidadores() {
                 <button
                   onClick={() => {
                     const ruta = `/cuidadores/${cuidador.id}`
-                    if (!user) localStorage.setItem('redirectAfterLogin', ruta)
-                    navigate(ruta)
+                    if (!user) {
+                      localStorage.setItem('redirectAfterLogin', ruta)
+                      openLogin()
+                    } else {
+                      navigate(ruta)
+                    }
                   }}
                   className="text-blue-600 hover:underline text-sm"
                 >

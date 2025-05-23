@@ -1,48 +1,37 @@
-import { useState } from 'react'
 import Header from '../components/Header'
 import LoginModal from '../components/LoginModal'
 import RegisterModal from '../components/RegisterModal'
+import { useModal } from '../hooks/useModal'
 
 export default function Layout({ children }) {
-  const [showLogin, setShowLogin] = useState(false)
-  const [showRegister, setShowRegister] = useState(false)
-
-  const handleLoginOpen = () => {
-    setShowRegister(false)
-    setShowLogin(true)
-  }
-
-  const handleRegisterOpen = () => {
-    setShowLogin(false)
-    setShowRegister(true)
-  }
-
-  const handleClose = () => {
-    setShowLogin(false)
-    setShowRegister(false)
-  }
+  const {
+    showLogin,
+    showRegister,
+    openLogin,
+    openRegister,
+    closeModal
+  } = useModal()
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Header onLogin={handleLoginOpen} onRegister={handleRegisterOpen} />
+      <Header onLogin={openLogin} onRegister={openRegister} />
       <main className="pt-6 px-4">
         {children}
       </main>
 
       {showLogin && (
         <LoginModal
-          onClose={handleClose}
-          onSwitchToRegister={handleRegisterOpen}
+          onClose={closeModal}
+          onSwitchToRegister={openRegister}
         />
       )}
 
       {showRegister && (
         <RegisterModal
-          onClose={handleClose}
-          onSwitchToLogin={handleLoginOpen}
+          onClose={closeModal}
+          onSwitchToLogin={openLogin}
         />
       )}
     </div>
   )
 }
-
