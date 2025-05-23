@@ -12,8 +12,10 @@ use App\Http\Controllers\HostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\CuidadoresController;
+use App\Http\Controllers\MessageController;
 
 use App\Services\GeolocationService;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -125,6 +127,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reservations/host', [ReservationController::class, 'forHost']);
     Route::post('/reservations', [ReservationController::class, 'store']);
     Route::put('/reservations/{id}', [ReservationController::class, 'update']);
+    Route::post('/messages', [MessageController::class, 'store']);
+    Route::get('/messages/{user}', [MessageController::class, 'index']);
 });
 
 });
