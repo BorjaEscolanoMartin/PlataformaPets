@@ -31,6 +31,24 @@ export default function Header() {
           <Link to="/empresas" className="hover:underline">Ver empresas</Link>
         )}
 
+        {esCliente && (
+          <Link
+            to="/mi-perfil-cuidador"
+            className="bg-green-100 text-green-800 font-semibold px-3 py-1 rounded hover:bg-green-200 transition"
+          >
+            Quiero ser cuidador
+          </Link>
+        )}
+
+        {esCliente && (
+          <Link
+            to="/registro-empresa"
+            className="bg-blue-100 text-blue-800 font-semibold px-3 py-1 rounded hover:bg-blue-200 transition"
+          >
+            Soy una empresa
+          </Link>
+        )}
+
         {!user ? (
           <>
             <Link to="/register" className="hover:underline">Registrarse</Link>

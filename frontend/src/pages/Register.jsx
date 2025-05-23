@@ -2,11 +2,11 @@ import { useState } from 'react'
 import api from '../lib/axios'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext' // ✅ Importar el contexto
+import { useAuth } from '../context/AuthContext'
 
 export default function Register() {
   const navigate = useNavigate()
-  const { setUser } = useAuth() // ✅ Obtener setUser del contexto
+  const { setUser } = useAuth()
 
   const [form, setForm] = useState({
     name: '',
@@ -45,14 +45,19 @@ export default function Register() {
         headers: {
           'X-XSRF-TOKEN': xsrf,
         },
+        withCredentials: true,
       })
 
-      // ✅ 4. Obtener usuario autenticado y guardarlo en contexto
-      const userResponse = await api.get('/user')
-      setUser(userResponse.data)
+      // 4. Obtener usuario autenticado y verificar sesión
+      const userResponse = await api.get('/user', { withCredentials: true })
 
-      setSuccess(true)
-      navigate('/')
+      if (userResponse.data && userResponse.data.id) {
+        setUser(userResponse.data)
+        setSuccess(true)
+        navigate('/')
+      } else {
+        setError('No se pudo recuperar la sesión después del registro')
+      }
 
     } catch (err) {
       console.error(err)
@@ -91,17 +96,6 @@ export default function Register() {
           value={form.password}
           onChange={handleChange}
         />
-
-        <select
-          name="role"
-          className="w-full border px-3 py-2 rounded"
-          value={form.role}
-          onChange={handleChange}
-        >
-          <option value="cliente">Cliente</option>
-          <option value="cuidador">Cuidador</option>
-          <option value="empresa">Empresa</option>
-        </select>
 
         <input
           type="text"

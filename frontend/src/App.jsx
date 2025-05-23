@@ -13,6 +13,7 @@ import MisReservas from './pages/MisReservas'
 import ReservasRecibidas from './pages/ReservasRecibidas'
 import Inicio from './pages/Inicio'
 import Layout from './layout/Layout'
+import RegisterEmpresa from './pages/RegisterEmpresa'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         {/* Rutas de invitado (sin layout) */}
         <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
         <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
+        <Route path="/registro-empresa" element={<RegisterEmpresa />} />
 
         {/* Rutas protegidas con Layout */}
         <Route

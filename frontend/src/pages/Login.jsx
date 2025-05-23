@@ -16,30 +16,32 @@ export default function Login() {
     setError(null)
 
     try {
-      // 1. Obtener cookie CSRF
       await axios.get('http://localhost:8000/sanctum/csrf-cookie', {
         withCredentials: true
       })
 
-      // 2. Obtener el token desde las cookies
       const xsrf = decodeURIComponent(
         document.cookie
           .split('; ')
           .find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1]
       )
 
-      // 3. Enviar credenciales
       await api.post('/login', { email, password }, {
         headers: {
           'X-XSRF-TOKEN': xsrf,
         },
+        withCredentials: true,
       })
 
-      // 4. Obtener el usuario autenticado
-      const res = await api.get('/user')
-      setUser(res.data)
+      const res = await api.get('/user', { withCredentials: true })
 
-      // 5. Redirigir a destino guardado o a inicio
+      if (res.data && res.data.id) {
+        setUser(res.data)
+      } else {
+        setError('No se pudo establecer la sesión tras iniciar sesión')
+        return
+      }
+
       const redirectTo = localStorage.getItem('redirectAfterLogin')
       localStorage.removeItem('redirectAfterLogin')
 
@@ -81,4 +83,3 @@ export default function Login() {
     </div>
   )
 }
-

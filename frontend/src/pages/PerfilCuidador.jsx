@@ -91,22 +91,6 @@ export default function PerfilCuidador() {
             </p>
           )}
 
-          {Array.isArray(host.gallery) && host.gallery.length > 0 && (
-            <div className="mt-4">
-              <h2 className="font-semibold mb-2">📸 Galería</h2>
-              <div className="grid grid-cols-2 gap-3">
-                {host.gallery.map((foto, i) => (
-                  <img
-                    key={i}
-                    src={`http://localhost:8000/storage/${foto}`}
-                    alt={`Foto ${i + 1}`}
-                    className="w-full h-32 object-cover rounded"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
           {!mostrarFormulario ? (
             <button
               onClick={() => setMostrarFormulario(true)}

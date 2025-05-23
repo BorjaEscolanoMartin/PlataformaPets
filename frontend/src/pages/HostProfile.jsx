@@ -19,8 +19,6 @@ export default function HostProfile() {
   })
 
   const [profilePhotoFile, setProfilePhotoFile] = useState(null)
-  const [galleryFiles, setGalleryFiles] = useState([])
-
   const [tamanos, setTamanos] = useState([])
   const [especies, setEspecies] = useState([])
   const [servicios, setServicios] = useState([])
@@ -28,13 +26,13 @@ export default function HostProfile() {
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
 
-  const { user } = useAuth()
+  const { user, setUser } = useAuth()
   const locationRef = useRef(null)
 
   useEffect(() => {
     api.get('/hosts')
       .then(res => {
-        if (res.data.length > 0) {
+        if (Array.isArray(res.data) && res.data.length > 0 && res.data[0]?.id) {
           setHost(res.data[0])
         }
       })
@@ -78,40 +76,39 @@ export default function HostProfile() {
 
     try {
       const formData = new FormData()
-        Object.entries(host).forEach(([key, value]) => {
-          if (key === 'profile_photo') return // 👈 Evita enviar una cadena en vez de archivo
-          formData.append(key, value !== null && value !== undefined ? value : '')
+      Object.entries(host).forEach(([key, value]) => {
+        if (key === 'profile_photo') return
+        formData.append(key, value !== null && value !== undefined ? value : '')
+      })
+
+      formData.set('has_own_pets', host.has_own_pets ? 1 : 0)
+
+      if (profilePhotoFile instanceof File) {
+        formData.append('profile_photo', profilePhotoFile)
+      }
+
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value)
+      }
+
+      if (host?.id) {
+        await api.post(`/hosts/${host.id}?_method=PUT`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
         })
-
-        formData.set('has_own_pets', host.has_own_pets ? 1 : 0)
-
-        if (profilePhotoFile instanceof File) {
-          formData.append('profile_photo', profilePhotoFile)
-        }
-
-        galleryFiles.forEach(file => {
-          formData.append('gallery[]', file)
+      } else {
+        await api.post('/hosts', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
         })
-
-        for (let [key, value] of formData.entries()) {
-          console.log(`${key}:`, value)
-        }
-
-        if (host.id) {
-          await api.post(`/hosts/${host.id}?_method=PUT`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          })
-        } else {
-          await api.post('/hosts', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          })
-        }
+      }
 
       await api.put('/user', {
         tamanos_aceptados: tamanos,
         especie_preferida: especies,
         servicios_ofrecidos: servicios,
       })
+
+      const userResponse = await api.get('/user')
+      setUser(userResponse.data)
 
       setSuccess('Perfil actualizado correctamente ✅')
     } catch (err) {
@@ -156,14 +153,20 @@ export default function HostProfile() {
           className="w-full border rounded px-3 py-2"
         />
 
-        <select
-          value={host.type}
-          onChange={e => setHost({ ...host, type: e.target.value })}
-          className="w-full border rounded px-3 py-2"
-        >
-          <option value="particular">Particular</option>
-          <option value="empresa">Empresa</option>
-        </select>
+        {user?.role === 'empresa' ? (
+          <div>
+            <label className="block font-semibold mb-1">Tipo</label>
+            <select
+              value={host.type}
+              onChange={e => setHost({ ...host, type: e.target.value })}
+              className="w-full border rounded px-3 py-2"
+            >
+              <option value="empresa">Empresa</option>
+            </select>
+          </div>
+        ) : (
+          <input type="hidden" name="type" value="particular" />
+        )}
 
         <input
           ref={locationRef}
@@ -211,16 +214,6 @@ export default function HostProfile() {
             type="file"
             accept="image/*"
             onChange={e => setProfilePhotoFile(e.target.files[0])}
-          />
-        </div>
-
-        <div>
-          <label className="block font-semibold mb-1">Galería de fotos con mascotas</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={e => setGalleryFiles([...e.target.files])}
           />
         </div>
 
@@ -294,7 +287,7 @@ export default function HostProfile() {
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded"
         >
-          Actualizar perfil
+          {host?.id ? 'Actualizar perfil' : 'Crear perfil'}
         </button>
       </form>
 
@@ -304,4 +297,3 @@ export default function HostProfile() {
     </div>
   )
 }
-

@@ -48,7 +48,6 @@ Route::post('/register', function (Request $request) {
         'name' => 'required|string|max:255',
         'email' => 'required|email|unique:users',
         'password' => 'required|string|min:6',
-        'role' => 'required|in:cliente,cuidador,empresa',
         'postal_code' => 'required|string|max:10',
     ]);
 
@@ -58,7 +57,7 @@ Route::post('/register', function (Request $request) {
         'name' => $request->name,
         'email' => $request->email,
         'password' => bcrypt($request->password),
-        'role' => $request->role,
+        'role' => 'cliente',
         'postal_code' => $request->postal_code,
         'latitude' => $coords['lat'] ?? null,
         'longitude' => $coords['lon'] ?? null,
