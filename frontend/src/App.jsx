@@ -1,6 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Register from './pages/Register'
-import Login from './pages/Login'
 import PrivateRoute from './components/PrivateRoute'
 import GuestRoute from './components/GuestRoute'
 import Pets from './pages/Pets'
@@ -24,8 +22,6 @@ function App() {
         <Route path="/cuidadores" element={<Layout><Cuidadores /></Layout>} />
 
         {/* Rutas de invitado (sin layout) */}
-        <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
-        <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
         <Route path="/registro-empresa" element={<RegisterEmpresa />} />
 
         {/* Rutas protegidas con Layout */}
