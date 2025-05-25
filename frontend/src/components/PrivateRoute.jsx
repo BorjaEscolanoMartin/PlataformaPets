@@ -9,6 +9,14 @@ export default function PrivateRoute({ children }) {
   const [checkingHost, setCheckingHost] = useState(false)
   const [shouldRedirect, setShouldRedirect] = useState(false)
 
+  console.log('🧪 PrivateRoute:', {
+    user,
+    pathname: location.pathname,
+    loading,
+    checkingHost,
+    shouldRedirect
+  })
+
   useEffect(() => {
     const checkHost = async () => {
       if (user?.role === 'cliente') {
@@ -17,12 +25,10 @@ export default function PrivateRoute({ children }) {
           const res = await api.get('/hosts')
           const hasHost = res.data.length > 0
 
-          // Solo redirigir si se intenta acceder a páginas que requieren perfil
           const rutasProtegidasPorPerfil = [
-            '/mis-reservas',
             '/reservas-recibidas',
             '/mi-perfil-cuidador',
-            // otras rutas si aplica
+            // añade más si hace falta
           ]
 
           const necesitaPerfil = rutasProtegidasPorPerfil.some(ruta =>
@@ -33,7 +39,7 @@ export default function PrivateRoute({ children }) {
             setShouldRedirect(true)
           }
         } catch (e) {
-          console.error('Error al comprobar si el usuario tiene perfil de cuidador:', e)
+          console.error('Error al comprobar perfil de cuidador:', e)
         } finally {
           setCheckingHost(false)
         }
@@ -45,11 +51,14 @@ export default function PrivateRoute({ children }) {
     }
   }, [user, location.pathname])
 
-  if (loading || checkingHost) return <p>Cargando autenticación...</p>
+  if (loading) return <p>Cargando autenticación...</p>
 
   if (!user) return <Navigate to="/login" />
+
+  if (checkingHost) return <p>Comprobando perfil de cuidador...</p>
 
   if (shouldRedirect) return <Navigate to="/mi-perfil-cuidador" />
 
   return children
 }
+

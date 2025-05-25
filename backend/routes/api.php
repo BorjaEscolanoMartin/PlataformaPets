@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Broadcast;
 
 use App\Models\User;
 use App\Http\Controllers\PetController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\CuidadoresController;
 use App\Http\Controllers\MessageController;
 
 use App\Services\GeolocationService;
+use App\Http\Controllers\NotificationController;
 
 
 /*
@@ -129,7 +131,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/reservations/{id}', [ReservationController::class, 'update']);
     Route::post('/messages', [MessageController::class, 'store']);
     Route::get('/messages/{user}', [MessageController::class, 'index']);
-});
+    });
+
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
 });
 

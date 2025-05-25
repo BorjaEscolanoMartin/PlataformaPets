@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Reservation;
 use Illuminate\Http\Request;
+use App\Notifications\ReservaSolicitada;
+use Illuminate\Support\Facades\Log;
+use App\Notifications\ReservaActualizada;
 
 class ReservationController extends Controller
 {
-    // Cliente: crear reserva
-    public function store(Request $request)
+
+public function store(Request $request)
     {
         $validated = $request->validate([
             'pet_id' => 'required|exists:pets,id',
@@ -23,8 +26,27 @@ class ReservationController extends Controller
 
         $reservation = $request->user()->reservations()->create($validated);
 
+        Log::info('Reserva creada con ID: ' . $reservation->id);
+
+        $host = $reservation->host;
+        if (!$host) {
+            Log::warning('Reserva sin host asociado');
+            return response()->json(['error' => 'Reserva creada pero sin host'], 500);
+        }
+
+        $cuidador = $host->user;
+        if (!$cuidador) {
+            Log::warning('Host sin user asociado');
+            return response()->json(['error' => 'Reserva creada pero host sin user'], 500);
+        }
+
+        Log::info('Enviando notificación al cuidador ID: ' . $cuidador->id);
+        $cuidador->notifyNow(new ReservaSolicitada($reservation));
+
         return response()->json($reservation, 201);
     }
+
+
 
     // Cliente: ver sus reservas
     public function index(Request $request)
@@ -35,7 +57,13 @@ class ReservationController extends Controller
     // Cuidador: ver reservas que recibió
     public function forHost(Request $request)
     {
-        return Reservation::where('host_id', $request->user()->hosts()->first()->id)
+        $host = $request->user()->host;
+
+        if (!$host) {
+            return response()->json(['error' => 'Este usuario no tiene perfil de cuidador'], 404);
+        }
+
+        return Reservation::where('host_id', $host->id)
             ->with('pet', 'user')
             ->get();
     }
@@ -55,6 +83,13 @@ class ReservationController extends Controller
         }
 
         $reservation->update($validated);
+
+        // Cargar relaciones para la notificación
+        $reservation->load('host', 'user');
+
+        // Notificar al cliente
+        $reservation->user->notifyNow(new ReservaActualizada($reservation));
+
         return response()->json($reservation);
     }
 }
