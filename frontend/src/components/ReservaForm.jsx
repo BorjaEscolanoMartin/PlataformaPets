@@ -62,90 +62,209 @@ export default function ReservaForm({ hostId }) {
     }
   }
 
-  if (loading) return <p className="text-center mt-6">Cargando...</p>
-
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <div className="w-16 h-16 mx-auto bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mb-4">
+          <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <p className="text-gray-600 font-medium">Cargando información...</p>
+      </div>
+    )
+  }
   if (!user) {
     return (
-      <div className="mt-6 text-center">
-        <p className="text-gray-700">Para contactar con este cuidador debes iniciar sesión.</p>
+      <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-8 text-center">
+        <div className="w-16 h-16 mx-auto bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mb-4">
+          <span className="text-white text-2xl">👤</span>
+        </div>
+        <h3 className="text-xl font-bold text-gray-800 mb-3">Inicia sesión para continuar</h3>
+        <p className="text-gray-600 mb-6">Para contactar con este cuidador necesitas tener una cuenta en nuestra plataforma.</p>
         <button
           onClick={() => {
             localStorage.setItem('redirectAfterLogin', location.pathname)
             navigate('/login')
           }}
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-2 mx-auto"
         >
+          <span className="text-lg">🔐</span>
           Iniciar sesión
         </button>
       </div>
     )
   }
-
   return (
-    <div className="mt-6 max-w-xl mx-auto">
-      <h2 className="text-xl font-semibold mb-4">Solicitar reserva</h2>
+    <div className="bg-white rounded-2xl shadow-xl border border-blue-100 p-6">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <div className="w-12 h-12 mx-auto bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mb-3">
+          <span className="text-white text-xl">📋</span>
+        </div>
+        <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Solicitar reserva
+        </h2>
+        <p className="text-gray-600 text-sm mt-2">Completa los datos para tu solicitud de cuidado</p>
+      </div>
 
-      {success && <p className="text-green-600 mb-4">Reserva enviada correctamente ✅</p>}
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+      {/* Mensajes de estado */}
+      {success && (
+        <div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
+          <span className="text-2xl">✅</span>
+          <div>
+            <p className="text-green-800 font-semibold">¡Solicitud enviada!</p>
+            <p className="text-green-700 text-sm">El cuidador recibirá tu solicitud y te contactará pronto</p>
+          </div>
+        </div>
+      )}
+      
+      {error && (
+        <div className="mb-6 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+          <span className="text-2xl">⚠️</span>
+          <div>
+            <p className="text-red-800 font-semibold">Error en la solicitud</p>
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        </div>
+      )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <select name="pet_id" value={form.pet_id} onChange={handleChange} className="w-full border rounded p-2" required>
-          <option value="">Selecciona tu mascota</option>
-          {mascotas.map(m => (
-            <option key={m.id} value={m.id}>{m.name}</option>
-          ))}
-        </select>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Selección de mascota */}
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+            <span className="text-purple-600">🐾</span>
+            Selecciona tu mascota
+          </label>
+          <select 
+            name="pet_id" 
+            value={form.pet_id} 
+            onChange={handleChange} 
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 outline-none text-sm font-medium bg-white"
+            required
+          >
+            <option value="">¿Cuál de tus mascotas necesita cuidado?</option>
+            {mascotas.map(m => (
+              <option key={m.id} value={m.id}>{m.name}</option>
+            ))}
+          </select>
+        </div>
 
-        <select name="service_type" value={form.service_type} onChange={handleChange} className="w-full border rounded p-2">
-          <option value="alojamiento">Alojamiento</option>
-          <option value="cuidado_a_domicilio">Cuidado a domicilio</option>
-          <option value="visitas_a_domicilio">Visitas a domicilio</option>
-          <option value="guarderia">Guardería de día</option>
-          <option value="paseo">Paseo</option>
-        </select>
+        {/* Tipo de servicio */}
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+            <span className="text-blue-600">🏥</span>
+            Tipo de servicio
+          </label>
+          <select 
+            name="service_type" 
+            value={form.service_type} 
+            onChange={handleChange} 
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 outline-none text-sm font-medium bg-white"
+          >
+            <option value="alojamiento">🏠 Alojamiento en casa del cuidador</option>
+            <option value="cuidado_a_domicilio">🏡 Cuidado en tu domicilio</option>
+            <option value="visitas_a_domicilio">🚪 Visitas a domicilio</option>
+            <option value="guarderia">🌅 Guardería de día</option>
+            <option value="paseo">🚶 Paseo de perros</option>
+          </select>
+        </div>
 
-        <select name="frequency" value={form.frequency} onChange={handleChange} className="w-full border rounded p-2">
-          <option value="una_vez">Una vez</option>
-          <option value="semanal">Recurrente (semanal)</option>
-        </select>
+        {/* Frecuencia */}
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+            <span className="text-green-600">🔄</span>
+            Frecuencia del servicio
+          </label>
+          <select 
+            name="frequency" 
+            value={form.frequency} 
+            onChange={handleChange} 
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all duration-200 outline-none text-sm font-medium bg-white"
+          >
+            <option value="una_vez">Una sola vez</option>
+            <option value="semanal">Recurrente (semanal)</option>
+          </select>
+        </div>
 
-        <input
-          type="text"
-          name="address"
-          placeholder="Dirección"
-          value={form.address}
-          onChange={handleChange}
-          className="w-full border rounded p-2"
-        />
+        {/* Dirección */}
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+            <span className="text-orange-600">📍</span>
+            Dirección del servicio
+          </label>
+          <input
+            type="text"
+            name="address"
+            placeholder="Introduce la dirección donde se realizará el servicio"
+            value={form.address}
+            onChange={handleChange}
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all duration-200 outline-none text-sm font-medium"
+          />
+        </div>
 
-        <input
-          type="date"
-          name="start_date"
-          value={form.start_date}
-          onChange={handleChange}
-          className="w-full border rounded p-2"
-          required
-        />
-        <input
-          type="date"
-          name="end_date"
-          value={form.end_date}
-          onChange={handleChange}
-          className="w-full border rounded p-2"
-          required
-        />
+        {/* Fechas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+              <span className="text-blue-600">📅</span>
+              Fecha inicio
+            </label>
+            <input
+              type="date"
+              name="start_date"
+              value={form.start_date}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 outline-none text-sm font-medium"
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+              <span className="text-purple-600">📅</span>
+              Fecha fin
+            </label>
+            <input
+              type="date"
+              name="end_date"
+              value={form.end_date}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 outline-none text-sm font-medium"
+              required
+            />
+          </div>
+        </div>
 
-        <select name="size" value={form.size} onChange={handleChange} className="w-full border rounded p-2">
-          <option value="">Tamaño</option>
-          <option value="pequeño">Pequeño</option>
-          <option value="mediano">Mediano</option>
-          <option value="grande">Grande</option>
-          <option value="gigante">Gigante</option>
-        </select>
+        {/* Tamaño de mascota */}
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+            <span className="text-indigo-600">📏</span>
+            Tamaño de tu mascota
+          </label>
+          <select 
+            name="size" 
+            value={form.size} 
+            onChange={handleChange} 
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all duration-200 outline-none text-sm font-medium bg-white"
+          >
+            <option value="">Selecciona el tamaño</option>
+            <option value="pequeño">🐕‍🦺 Pequeño (0-7 kg)</option>
+            <option value="mediano">🐕 Mediano (7-18 kg)</option>
+            <option value="grande">🐕‍🦮 Grande (18-45 kg)</option>
+            <option value="gigante">🦮 Gigante (45+ kg)</option>
+          </select>
+        </div>
 
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Enviar solicitud</button>
+        {/* Botón de envío */}
+        <div className="pt-4 border-t border-gray-200">
+          <button 
+            type="submit" 
+            className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-3 text-lg"
+          >
+            <span className="text-2xl">📨</span>
+            Enviar solicitud
+          </button>
+        </div>
       </form>
     </div>
   )
 }
-

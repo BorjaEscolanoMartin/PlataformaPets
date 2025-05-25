@@ -126,174 +126,317 @@ export default function HostProfile() {
     array.includes(value)
       ? array.filter(item => item !== value)
       : [...array, value]
-
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">
-        {user?.role === 'empresa' ? 'Perfil de Empresa' : 'Perfil de Cuidador'}
-      </h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 py-8">      <div className="max-w-4xl mx-auto p-6">
+        {/* Header principal */}
+        <div className="bg-white rounded-2xl shadow-xl border border-blue-100 p-8 mb-8 text-center">
+          <h1 className="text-4xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+            {user?.role === 'empresa' ? 'Perfil de Empresa' : 'Perfil de Cuidador'}
+          </h1>
+          <p className="text-lg text-gray-700 font-medium">
+            Completa tu perfil para empezar a recibir solicitudes
+          </p>
+        </div>
 
-      {success && <p className="text-green-600 mb-2">{success}</p>}
-      {error && <p className="text-red-600 mb-2">{error}</p>}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Título del perfil"
-          value={host.title}
-          onChange={e => setHost({ ...host, title: e.target.value })}
-          className="w-full border rounded px-3 py-2"
-        />
-
-        <input
-          type="text"
-          placeholder="Nombre del perfil"
-          value={host.name}
-          onChange={e => setHost({ ...host, name: e.target.value })}
-          className="w-full border rounded px-3 py-2"
-        />
-
-        {user?.role === 'empresa' ? (
-          <div>
-            <label className="block font-semibold mb-1">Tipo</label>
-            <select
-              value={host.type}
-              onChange={e => setHost({ ...host, type: e.target.value })}
-              className="w-full border rounded px-3 py-2"
-            >
-              <option value="empresa">Empresa</option>
-            </select>
+        {/* Mensajes de estado */}
+        {success && (
+          <div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
+            <span className="text-2xl">✅</span>
+            <p className="text-green-700 font-semibold">{success}</p>
           </div>
-        ) : (
-          <input type="hidden" name="type" value="particular" />
+        )}
+        {error && (
+          <div className="mb-6 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+            <span className="text-2xl">⚠️</span>
+            <p className="text-red-700 font-semibold">{error}</p>
+          </div>
         )}
 
-        <input
-          ref={locationRef}
-          type="text"
-          placeholder="Ubicación"
-          value={host.location}
-          onChange={e => setHost({ ...host, location: e.target.value })}
-          className="w-full border rounded px-3 py-2"
-        />
+        {/* Formulario principal */}
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl border border-blue-100 p-8 space-y-6">          {/* Información básica */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                <span className="text-blue-600">✨</span>
+                Título del perfil
+              </label>
+              <input
+                type="text"
+                placeholder="Ej: Cuidador profesional con 5 años de experiencia"
+                value={host.title}
+                onChange={e => setHost({ ...host, title: e.target.value })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 outline-none text-sm font-medium"
+              />
+            </div>
 
-        <input
-          type="tel"
-          placeholder="Número de móvil"
-          value={host.phone}
-          onChange={e => setHost({ ...host, phone: e.target.value })}
-          className="w-full border rounded px-3 py-2"
-        />
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                <span className="text-purple-600">👤</span>
+                Nombre del perfil
+              </label>
+              <input
+                type="text"
+                placeholder="Tu nombre o nombre de la empresa"
+                value={host.name}
+                onChange={e => setHost({ ...host, name: e.target.value })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 outline-none text-sm font-medium"
+              />
+            </div>
+          </div>          {/* Tipo de perfil */}
+          {user?.role === 'empresa' ? (
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                <span className="text-green-600">🏢</span>
+                Tipo de empresa
+              </label>
+              <select
+                value={host.type}
+                onChange={e => setHost({ ...host, type: e.target.value })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all duration-200 outline-none text-sm font-medium bg-white"
+              >
+                <option value="empresa">Empresa</option>
+              </select>
+            </div>
+          ) : (
+            <input type="hidden" name="type" value="particular" />
+          )}
 
-        <input
-          type="number"
-          min="0"
-          placeholder="Años de experiencia"
-          value={host.experience_years}
-          onChange={e => setHost({ ...host, experience_years: e.target.value })}
-          className="w-full border rounded px-3 py-2"
-        />
+          {/* Ubicación y contacto */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                <span className="text-green-600">📍</span>
+                Ubicación
+              </label>
+              <input
+                ref={locationRef}
+                type="text"
+                placeholder="Introduce tu ubicación"
+                value={host.location}
+                onChange={e => setHost({ ...host, location: e.target.value })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all duration-200 outline-none text-sm font-medium"
+              />
+            </div>
 
-        <textarea
-          placeholder="Cuéntanos tu experiencia con mascotas"
-          value={host.experience_details}
-          onChange={e => setHost({ ...host, experience_details: e.target.value })}
-          className="w-full border rounded px-3 py-2"
-        />
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                <span className="text-blue-600">📱</span>
+                Número de móvil
+              </label>
+              <input
+                type="tel"
+                placeholder="Ej: +34 123 456 789"
+                value={host.phone}
+                onChange={e => setHost({ ...host, phone: e.target.value })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 outline-none text-sm font-medium"
+              />
+            </div>
+          </div>          {/* Experiencia */}
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+              <span className="text-orange-600">⭐</span>
+              Años de experiencia
+            </label>
+            <input
+              type="number"
+              min="0"
+              placeholder="Número de años"
+              value={host.experience_years}
+              onChange={e => setHost({ ...host, experience_years: e.target.value })}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all duration-200 outline-none text-sm font-medium"
+            />
+          </div>
 
-        <textarea
-          placeholder="Descripción"
-          value={host.description}
-          onChange={e => setHost({ ...host, description: e.target.value })}
-          className="w-full border rounded px-3 py-2"
-        />
+          {/* Descripción de experiencia */}
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+              <span className="text-purple-600">📝</span>
+              Cuéntanos tu experiencia con mascotas
+            </label>
+            <textarea
+              placeholder="Describe tu experiencia cuidando mascotas, certificaciones, cursos realizados..."
+              value={host.experience_details}
+              onChange={e => setHost({ ...host, experience_details: e.target.value })}
+              rows="4"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 outline-none text-sm font-medium resize-none"
+            />
+          </div>
 
-        <div>
-          <label className="block font-semibold mb-1">Foto de perfil</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={e => setProfilePhotoFile(e.target.files[0])}
-          />
-        </div>
+          {/* Descripción general */}
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+              <span className="text-indigo-600">💬</span>
+              Descripción de tu servicio
+            </label>
+            <textarea
+              placeholder="Presenta tu servicio, horarios, metodología, qué hace especial tu cuidado..."
+              value={host.description}
+              onChange={e => setHost({ ...host, description: e.target.value })}
+              rows="4"
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all duration-200 outline-none text-sm font-medium resize-none"
+            />
+          </div>          {/* Foto de perfil */}
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+              <span className="text-pink-600">📸</span>
+              Foto de perfil
+            </label>
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-pink-400 transition-colors duration-300">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={e => setProfilePhotoFile(e.target.files[0])}
+                className="w-full"
+              />
+              <p className="text-sm text-gray-500 mt-2">Sube una foto que transmita confianza</p>
+            </div>
+          </div>
 
-        <label className="block mt-2 font-semibold">
-          <input
-            type="checkbox"
-            checked={host.has_own_pets}
-            onChange={e => setHost({ ...host, has_own_pets: e.target.checked })}
-          />{' '}
-          Tengo mascotas en casa
-        </label>
-
-        {host.has_own_pets && (
-          <textarea
-            placeholder="Describe a tus mascotas"
-            value={host.own_pets_description}
-            onChange={e => setHost({ ...host, own_pets_description: e.target.value })}
-            className="w-full border rounded px-3 py-2 mt-2"
-          />
-        )}
-
-        <div>
-          <h2 className="font-semibold mb-2">¿Qué tipo de mascota aceptas?</h2>
-          {['perro', 'gato'].map(especie => (
-            <label key={especie} className="block">
+          {/* Mascotas propias */}
+          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6">
+            <label className="flex items-center gap-3 text-sm font-bold text-gray-700 cursor-pointer">
               <input
                 type="checkbox"
-                checked={especies.includes(especie)}
-                onChange={() =>
-                  setEspecies(prev => toggleArrayValue(prev, especie))
-                }
-              />{' '}
-              {especie.charAt(0).toUpperCase() + especie.slice(1)}
+                checked={host.has_own_pets}
+                onChange={e => setHost({ ...host, has_own_pets: e.target.checked })}
+                className="w-5 h-5 text-yellow-600 border-2 border-yellow-300 rounded focus:ring-yellow-500 focus:ring-2"
+              />
+              <span className="text-yellow-600">🐕</span>
+              Tengo mascotas en casa
             </label>
-          ))}
+
+            {host.has_own_pets && (
+              <div className="mt-4 space-y-2">
+                <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                  <span className="text-yellow-600">🏠</span>
+                  Describe a tus mascotas
+                </label>
+                <textarea
+                  placeholder="Cuéntanos sobre tus mascotas: raza, tamaño, temperamento, cómo se llevan con otros animales..."
+                  value={host.own_pets_description}
+                  onChange={e => setHost({ ...host, own_pets_description: e.target.value })}
+                  rows="3"
+                  className="w-full px-4 py-3 border-2 border-yellow-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-100 transition-all duration-200 outline-none text-sm font-medium resize-none"
+                />
+              </div>
+            )}
+          </div>        <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-100 shadow-sm">
+          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              🐾
+            </div>
+            ¿Qué tipo de mascota aceptas?
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {['perro', 'gato'].map(especie => (
+              <label key={especie} className="group cursor-pointer">
+                <div className={`flex items-center p-3 rounded-lg border-2 transition-all duration-200 ${
+                  especies.includes(especie)
+                    ? 'border-purple-500 bg-gradient-to-r from-purple-100 to-pink-100 shadow-md'
+                    : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-sm'
+                }`}>
+                  <input
+                    type="checkbox"
+                    checked={especies.includes(especie)}
+                    onChange={() =>
+                      setEspecies(prev => toggleArrayValue(prev, especie))
+                    }
+                    className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                  />
+                  <span className={`ml-3 font-medium ${
+                    especies.includes(especie) ? 'text-purple-700' : 'text-gray-700'
+                  }`}>
+                    {especie.charAt(0).toUpperCase() + especie.slice(1)}
+                  </span>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-xl border border-blue-100 shadow-sm">
+          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+              📏
+            </div>
+            ¿Qué tamaños aceptas?
+          </h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {['pequeño', 'mediano', 'grande', 'gigante'].map(t => (
+              <label key={t} className="group cursor-pointer">
+                <div className={`flex items-center p-3 rounded-lg border-2 transition-all duration-200 ${
+                  tamanos.includes(t)
+                    ? 'border-blue-500 bg-gradient-to-r from-blue-100 to-cyan-100 shadow-md'
+                    : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
+                }`}>
+                  <input
+                    type="checkbox"
+                    checked={tamanos.includes(t)}
+                    onChange={() =>
+                      setTamanos(prev => toggleArrayValue(prev, t))
+                    }
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  />
+                  <span className={`ml-3 font-medium ${
+                    tamanos.includes(t) ? 'text-blue-700' : 'text-gray-700'
+                  }`}>
+                    {t.charAt(0).toUpperCase() + t.slice(1)}
+                  </span>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>        <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100 shadow-sm">
+          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+              🏥
+            </div>
+            ¿Qué servicios ofreces?
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {['paseo', 'alojamiento', 'guarderia', 'cuidado a domicilio', 'visitas a domicilio'].map(servicio => (
+              <label key={servicio} className="group cursor-pointer">
+                <div className={`flex items-center p-3 rounded-lg border-2 transition-all duration-200 ${
+                  servicios.includes(servicio)
+                    ? 'border-green-500 bg-gradient-to-r from-green-100 to-emerald-100 shadow-md'
+                    : 'border-gray-200 bg-white hover:border-green-300 hover:shadow-sm'
+                }`}>
+                  <input
+                    type="checkbox"
+                    checked={servicios.includes(servicio)}
+                    onChange={() =>
+                      setServicios(prev => toggleArrayValue(prev, servicio))
+                    }
+                    className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
+                  />
+                  <span className={`ml-3 font-medium ${
+                    servicios.includes(servicio) ? 'text-green-700' : 'text-gray-700'
+                  }`}>
+                    {servicio.charAt(0).toUpperCase() + servicio.slice(1)}
+                  </span>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>          {/* Botón de envío */}
+          <div className="pt-6 border-t border-gray-200">
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-3 text-lg"
+            >
+              <span className="text-2xl">✨</span>
+              {host?.id ? 'Actualizar perfil' : 'Crear perfil'}
+            </button>
+          </div>
+        </form>        {/* Enlace de navegación */}
+          <div className="text-center pt-8">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 bg-white text-gray-700 font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl border border-gray-200 hover:bg-gray-50 transition-all duration-300 transform hover:-translate-y-0.5"
+          >
+            <span className="text-lg">🏠</span>
+            Volver al Inicio
+          </Link>
         </div>
-
-        <div>
-          <h2 className="font-semibold mb-2">¿Qué tamaños aceptas?</h2>
-          {['pequeño', 'mediano', 'grande', 'gigante'].map(t => (
-            <label key={t} className="block">
-              <input
-                type="checkbox"
-                checked={tamanos.includes(t)}
-                onChange={() =>
-                  setTamanos(prev => toggleArrayValue(prev, t))
-                }
-              />{' '}
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </label>
-          ))}
-        </div>
-
-        <div>
-          <h2 className="font-semibold mb-2">¿Qué servicios ofreces?</h2>
-          {['paseo', 'alojamiento', 'guarderia', 'cuidado a domicilio', 'visitas a domicilio'].map(servicio => (
-            <label key={servicio} className="block">
-              <input
-                type="checkbox"
-                checked={servicios.includes(servicio)}
-                onChange={() =>
-                  setServicios(prev => toggleArrayValue(prev, servicio))
-                }
-              />{' '}
-              {servicio.charAt(0).toUpperCase() + servicio.slice(1)}
-            </label>
-          ))}
-        </div>
-
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          {host?.id ? 'Actualizar perfil' : 'Crear perfil'}
-        </button>
-      </form>
-
-      <Link to="/" className="block mt-6 text-sm text-blue-600 hover:underline">
-        ← Volver a inicio
-      </Link>
+      </div>
     </div>
   )
 }
