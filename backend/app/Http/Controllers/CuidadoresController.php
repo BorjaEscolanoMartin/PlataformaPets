@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Services\GeolocationService;
+use Carbon\Carbon;
 
 class CuidadoresController extends Controller
 {
@@ -30,32 +32,36 @@ class CuidadoresController extends Controller
             $query->whereJsonContains('tamanos_aceptados', $request->tamano);
         }
 
+        // Filtro por disponibilidad (reservas aceptadas)
         if ($request->filled('fecha_entrada') || $request->filled('fecha_salida')) {
             $entrada = $request->input('fecha_entrada');
             $salida = $request->input('fecha_salida');
 
-            $query->whereHas('host', function ($hostQuery) use ($entrada, $salida) {
-                $hostQuery->whereDoesntHave('reservations', function ($resQuery) use ($entrada, $salida) {
-                    $resQuery->where(function ($q) use ($entrada, $salida) {
-                        if ($entrada && $salida) {
-                            $q->whereBetween('start_date', [$entrada, $salida])
-                              ->orWhereBetween('end_date', [$entrada, $salida])
-                              ->orWhere(function ($q2) use ($entrada, $salida) {
-                                  $q2->where('start_date', '<=', $entrada)
-                                     ->where('end_date', '>=', $salida);
-                              });
-                        } elseif ($entrada) {
-                            $q->whereDate('start_date', '<=', $entrada)
-                              ->whereDate('end_date', '>=', $entrada);
-                        } elseif ($salida) {
-                            $q->whereDate('start_date', '<=', $salida)
-                              ->whereDate('end_date', '>=', $salida);
-                        }
-                    });
+            $entrada = $entrada ? Carbon::parse($entrada)->toDateString() : null;
+            $salida = $salida ? Carbon::parse($salida)->toDateString() : null;
+
+            $hostsOcupados = \App\Models\Host::whereHas('reservations', function ($q) use ($entrada, $salida) {
+                $q->where('status', 'aceptada')
+                ->where(function ($query) use ($entrada, $salida) {
+                    if ($entrada && $salida) {
+                        $query->whereDate('start_date', '<=', $salida)
+                                ->whereDate('end_date', '>=', $entrada);
+                    } elseif ($entrada) {
+                        $query->whereDate('start_date', '<=', $entrada)
+                                ->whereDate('end_date', '>=', $entrada);
+                    } elseif ($salida) {
+                        $query->whereDate('start_date', '<=', $salida)
+                                ->whereDate('end_date', '>=', $salida);
+                    }
                 });
-            });
+            })->pluck('user_id');
+
+            $query->whereNotIn('id', $hostsOcupados);
         }
 
+
+
+        // Geolocalización por coordenadas
         $radio = (float) $request->input('distance_km', 25);
         $distanciasPorId = null;
 
@@ -84,9 +90,9 @@ class CuidadoresController extends Controller
             $distanciasPorId = $hostsCercanos->keyBy('user_id');
         }
 
+        // Por código postal
         if ($request->filled('postal_code')) {
             $coords = GeolocationService::fromPostalCode($request->postal_code);
-
             if ($coords && isset($coords['lat'], $coords['lon'])) {
                 $lat = (float) $coords['lat'];
                 $lon = (float) $coords['lon'];
@@ -113,8 +119,14 @@ class CuidadoresController extends Controller
             }
         }
 
+        // Obtenemos cuidadores
         $cuidadores = $query->get();
 
+        Log::info('📋 Cuidadores finales tras todos los filtros:', [
+            'ids' => $cuidadores->pluck('id')
+        ]);
+
+        // Añadir distancia si aplica
         if ($distanciasPorId) {
             $cuidadores = $cuidadores->map(function ($cuidador) use ($distanciasPorId) {
                 $cuidador->distance = $distanciasPorId[$cuidador->id]->distance ?? null;
@@ -139,4 +151,5 @@ class CuidadoresController extends Controller
         return response()->json($cuidador);
     }
 }
+
 

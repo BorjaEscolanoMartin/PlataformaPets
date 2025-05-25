@@ -64,31 +64,34 @@ export default function Header() {
 
             {open && (
               <div className="absolute right-0 mt-2 bg-white border rounded shadow w-48 z-50">
-                {esCliente && (
-                  <>
-                    <Link to="/mascotas" className="block px-4 py-2 hover:bg-gray-100">Mis mascotas</Link>
-                    <Link to="/mis-reservas" className="block px-4 py-2 hover:bg-gray-100">Mis reservas</Link>
-                  </>
-                )}
+              {esCliente && (
+                <>
+                  <Link to="/mascotas" className="block px-4 py-2 hover:bg-gray-100">Mis mascotas</Link>
+                  <Link to="/mis-reservas" className="block px-4 py-2 hover:bg-gray-100">Mis reservas</Link>
+                  <Link to="/notificaciones" className="block px-4 py-2 hover:bg-gray-100">Notificaciones</Link>
+                </>
+              )}
 
-                {(esCuidador || esEmpresa) && (
-                  <>
-                    <Link to="/mi-perfil-cuidador" className="block px-4 py-2 hover:bg-gray-100">
-                      {esEmpresa ? 'Mi perfil de empresa' : 'Mi perfil de cuidador'}
-                    </Link>
-                    <Link to="/reservas-recibidas" className="block px-4 py-2 hover:bg-gray-100">
-                      Reservas recibidas
-                    </Link>
-                  </>
-                )}
+              {(esCuidador || esEmpresa) && (
+                <>
+                  <Link to="/mi-perfil-cuidador" className="block px-4 py-2 hover:bg-gray-100">
+                    {esEmpresa ? 'Mi perfil de empresa' : 'Mi perfil de cuidador'}
+                  </Link>
+                  <Link to="/reservas-recibidas" className="block px-4 py-2 hover:bg-gray-100">
+                    Reservas recibidas
+                  </Link>
+                  <Link to="/notificaciones" className="block px-4 py-2 hover:bg-gray-100">Notificaciones</Link>
+                </>
+              )}
 
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
-                >
-                  Cerrar sesión
-                </button>
-              </div>
+              <button
+                onClick={handleLogout}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
+              >
+                Cerrar sesión
+              </button>
+            </div>
+
             )}
           </div>
         )}

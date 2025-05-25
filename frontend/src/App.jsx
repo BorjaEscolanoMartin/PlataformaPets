@@ -12,7 +12,8 @@ import ReservasRecibidas from './pages/ReservasRecibidas'
 import Inicio from './pages/Inicio'
 import Layout from './layout/Layout'
 import RegisterEmpresa from './pages/RegisterEmpresa'
-import ChatPage from './pages/ChatPage';
+import ChatPage from './components/Chat';
+import Notificaciones from "./components/Notificaciones";
 
 function App() {
   return (
@@ -79,6 +80,14 @@ function App() {
           element={
             <PrivateRoute>
               <Layout><ReservasRecibidas /></Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/notificaciones"
+          element={
+            <PrivateRoute>
+              <Layout><Notificaciones /></Layout>
             </PrivateRoute>
           }
         />

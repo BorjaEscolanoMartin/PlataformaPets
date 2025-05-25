@@ -1,0 +1,8 @@
+node_modules
+frontend/node_modules
+.git
+storage/logs
+storage/framework
+.env
+public/storage
+vendor

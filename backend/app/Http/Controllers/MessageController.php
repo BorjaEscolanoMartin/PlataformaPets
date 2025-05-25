@@ -5,22 +5,30 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Message;
 use Illuminate\Support\Facades\Auth;
+use App\Events\MessageSent;
+use Illuminate\Support\Facades\Log;
 
 class MessageController extends Controller
 {
     // Enviar mensaje
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'receiver_id' => 'required|exists:users,id',
-            'content' => 'required|string|max:1000',
+            'content' => 'required|string',
         ]);
 
         $message = Message::create([
-            'sender_id' => Auth::id(), // <- usamos el facade correctamente
-            'receiver_id' => $request->receiver_id,
-            'content' => $request->content,
+            'sender_id' => Auth::id(),
+            'receiver_id' => $validated['receiver_id'],
+            'content' => $validated['content'],
         ]);
+
+        Log::info('🧪 Emitiendo evento MessageSent con ID ' . $message->id);
+
+        broadcast(new MessageSent($message));
+
+        Log::info('✅ Evento emitido MessageSent enviado a cola');
 
         return response()->json($message, 201);
     }
@@ -28,7 +36,7 @@ class MessageController extends Controller
     // Listar mensajes con otro usuario
     public function index($userId)
     {
-        $authId = Auth::id(); // <- usamos Auth::id() correctamente
+        $authId = Auth::id();
 
         $messages = Message::where(function ($query) use ($authId, $userId) {
             $query->where('sender_id', $authId)
@@ -43,4 +51,3 @@ class MessageController extends Controller
         return response()->json($messages);
     }
 }
-
