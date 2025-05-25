@@ -42,7 +42,15 @@ class UserController extends Controller
 
     public function show($id)
     {
-        return User::with('hosts')->findOrFail($id);
+        $user = User::with(['host.reviews.user'])->findOrFail($id);
+
+        if ($user->host) {
+            // Calculamos manualmente la media y la inyectamos
+            $user->host->average_rating = round($user->host->reviews->avg('rating'), 1);
+        }
+
+        return response()->json($user);
     }
+
 }
 

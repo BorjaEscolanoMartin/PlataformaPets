@@ -17,6 +17,7 @@ use App\Http\Controllers\MessageController;
 
 use App\Services\GeolocationService;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ReviewController;
 
 
 /*
@@ -135,6 +136,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+
+    Route::get('/cuidadores/{hostId}/reviews', [ReviewController::class, 'index']);
+    Route::post('/cuidadores/{hostId}/reviews', [ReviewController::class, 'store']);
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
 
 });
 

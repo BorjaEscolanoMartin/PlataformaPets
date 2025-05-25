@@ -5,6 +5,9 @@ import ReservaForm from '../components/ReservaForm'
 import { useAuth } from '../context/AuthContext'
 import { useModal } from '../hooks/useModal'
 
+import ReviewList from '../components/ReviewList'
+import ReviewForm from '../components/ReviewForm'
+
 export default function PerfilCuidador() {
   const { id } = useParams()
   const { user } = useAuth()
@@ -13,6 +16,7 @@ export default function PerfilCuidador() {
   const [cuidador, setCuidador] = useState(null)
   const [loading, setLoading] = useState(true)
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
+  const [reviews, setReviews] = useState([])
 
   useEffect(() => {
     api.get(`/cuidadores/${id}`)
@@ -26,10 +30,20 @@ export default function PerfilCuidador() {
       .finally(() => setLoading(false))
   }, [id])
 
+  // ✅ Cargar reseñas solo cuando cuidador y host están disponibles
+  useEffect(() => {
+    if (cuidador?.host?.id) {
+      api.get(`/cuidadores/${cuidador.host.id}/reviews`)
+        .then(res => setReviews(res.data))
+        .catch(err => console.error('Error cargando reseñas:', err))
+    }
+  }, [cuidador])
+
   if (loading) return <p className="text-center mt-10">Cargando cuidador...</p>
   if (!cuidador) return <p className="text-center mt-10 text-red-600">Cuidador no encontrado</p>
 
   const host = cuidador.host
+  const userReview = user ? reviews.find(r => r.user.id === user.id) : null
 
   return (
     <div className="max-w-2xl mx-auto mt-10 p-6 border rounded shadow space-y-4">
@@ -58,7 +72,15 @@ export default function PerfilCuidador() {
           )}
 
           {host.title && (
-            <p className="text-xl font-semibold mt-4">{host.title}</p>
+            <>
+              <p className="text-xl font-semibold mt-4">{host.title}</p>
+
+              {host.average_rating && (
+                <p className="text-sm text-yellow-600">
+                  ⭐ Puntuación media: {host.average_rating} / 5
+                </p>
+              )}
+            </>
           )}
 
           <p className="text-sm text-gray-600">Tipo: {host.type}</p>
@@ -118,6 +140,24 @@ export default function PerfilCuidador() {
               </button>
             </div>
           )}
+
+          {/* ✅ Sección de reseñas */}
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold mb-4">Reseñas de otros usuarios</h2>
+
+            {user && (
+              <ReviewForm
+                hostId={host.id}
+                existingReview={userReview}
+                onSubmit={() => {
+                  api.get(`/cuidadores/${host.id}/reviews`)
+                    .then(res => setReviews(res.data))
+                }}
+              />
+            )}
+
+            <ReviewList reviews={reviews} />
+          </div>
         </>
       ) : (
         <p className="text-sm italic text-gray-500">Este cuidador aún no ha completado su perfil.</p>
