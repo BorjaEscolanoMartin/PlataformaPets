@@ -44,131 +44,253 @@ export default function PerfilCuidador() {
 
   const host = cuidador.host
   const userReview = user ? reviews.find(r => r.user.id === user.id) : null
-
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-6 border rounded shadow space-y-4">
-      <h1 className="text-3xl font-bold">{cuidador.name}</h1>
-      <p className="text-sm text-gray-600">Email: {cuidador.email}</p>
-
-      {cuidador.especie_preferida?.length > 0 && (
-        <p className="text-sm">
-          <strong>Acepta:</strong> {cuidador.especie_preferida.join(', ')}
-        </p>
-      )}
-      {cuidador.tamanos_aceptados?.length > 0 && (
-        <p className="text-sm">
-          <strong>Tamaños:</strong> {cuidador.tamanos_aceptados.join(', ')}
-        </p>
-      )}
-
-      {host ? (
-        <>
-          {host.profile_photo && (
-            <img
-              src={`http://localhost:8000/storage/${host.profile_photo}`}
-              alt="Foto de perfil"
-              className="w-32 h-32 rounded-full object-cover border"
-            />
-          )}
-
-          {host.title && (
-            <>
-              <p className="text-xl font-semibold mt-4">{host.title}</p>
-
-              {host.average_rating && (
-                <p className="text-sm text-yellow-600">
-                  ⭐ Puntuación media: {host.average_rating} / 5
-                </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+      <div className="max-w-6xl mx-auto px-6">
+        {/* Header Section */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6">
+            <div className="flex flex-col md:flex-row md:items-center gap-6">
+              {host?.profile_photo && (
+                <img
+                  src={`http://localhost:8000/storage/${host.profile_photo}`}
+                  alt="Foto de perfil"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                />
               )}
-            </>
-          )}
-
-          <p className="text-sm text-gray-600">Tipo: {host.type}</p>
-          <p className="text-sm text-gray-600">Ubicación: {host.location}</p>
-          {host.phone && (
-            <p className="text-sm text-gray-600">📱 Móvil: {host.phone}</p>
-          )}
-
-          {host.experience_years && (
-            <p className="text-sm text-gray-600">
-              🐾 Años de experiencia: {host.experience_years}
-            </p>
-          )}
-
-          {host.experience_details && (
-            <p className="text-sm whitespace-pre-wrap">
-              <strong>Sobre mi experiencia:</strong><br />
-              {host.experience_details}
-            </p>
-          )}
-
-          {host.has_own_pets && (
-            <p className="text-sm whitespace-pre-wrap">
-              <strong>🐶 Tiene mascotas propias:</strong><br />
-              {host.own_pets_description || 'Sí'}
-            </p>
-          )}
-
-          {host.description && (
-            <p className="whitespace-pre-wrap text-sm">
-              <strong>Entorno:</strong><br />
-              {host.description}
-            </p>
-          )}
-
-          {!mostrarFormulario ? (
-            <button
-              onClick={() => {
-                if (user) {
-                  setMostrarFormulario(true)
-                } else {
-                  openLogin()
-                }
-              }}
-              className="mt-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Solicitar reserva
-            </button>
-          ) : (
-            <div className="mt-6 space-y-2">
-              <ReservaForm hostId={host.id} />
-              <button
-                onClick={() => setMostrarFormulario(false)}
-                className="text-sm text-red-600 hover:underline"
-              >
-                Cancelar
-              </button>
+              <div>
+                <h1 className="text-3xl font-bold text-white">{cuidador.name}</h1>
+                {host?.title && (
+                  <p className="text-xl text-blue-100 mt-1">{host.title}</p>
+                )}
+                <p className="text-blue-100 mt-2 flex items-center gap-2">
+                  <span>✉️</span>
+                  {cuidador.email}
+                </p>
+                {host?.average_rating && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="flex text-yellow-400">
+                      {'★'.repeat(Math.round(host.average_rating))}
+                      {'☆'.repeat(5 - Math.round(host.average_rating))}
+                    </div>
+                    <span className="text-blue-100">
+                      {host.average_rating} / 5
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-
-          {/* ✅ Sección de reseñas */}
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Reseñas de otros usuarios</h2>
-
-            {user && (
-              <ReviewForm
-                hostId={host.id}
-                existingReview={userReview}
-                onSubmit={() => {
-                  api.get(`/cuidadores/${host.id}/reviews`)
-                    .then(res => setReviews(res.data))
-                }}
-              />
-            )}
-
-            <ReviewList reviews={reviews} />
           </div>
-        </>
-      ) : (
-        <p className="text-sm italic text-gray-500">Este cuidador aún no ha completado su perfil.</p>
-      )}
 
-      <Link
-        to="/cuidadores"
-        className="inline-block mt-6 text-blue-600 hover:underline"
-      >
-        ← Volver a cuidadores
-      </Link>
+          {/* Quick Info Cards */}
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {cuidador.especie_preferida?.length > 0 && (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                  <h3 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+                    🐕 Mascotas que acepta
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {cuidador.especie_preferida.map((especie, idx) => (
+                      <span key={idx} className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {especie.charAt(0).toUpperCase() + especie.slice(1)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {cuidador.tamanos_aceptados?.length > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <h3 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                    📏 Tamaños aceptados
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {cuidador.tamanos_aceptados.map((tamano, idx) => (
+                      <span key={idx} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {tamano.charAt(0).toUpperCase() + tamano.slice(1)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {cuidador.servicios_ofrecidos?.length > 0 && (
+                <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                  <h3 className="font-semibold text-purple-800 mb-2 flex items-center gap-2">
+                    ⚡ Servicios ofrecidos
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {cuidador.servicios_ofrecidos.map((servicio, idx) => (
+                      <span key={idx} className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {servicio.charAt(0).toUpperCase() + servicio.slice(1).replace(/_/g, ' ')}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>      {host ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Contact & Basic Info */}
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  📋 Información básica
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <span className="text-lg">📍</span>
+                    <div>
+                      <p className="text-sm text-gray-600">Ubicación</p>
+                      <p className="font-medium">{host.location}</p>
+                    </div>
+                  </div>
+                  {host.phone && (
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <span className="text-lg">📱</span>
+                      <div>
+                        <p className="text-sm text-gray-600">Teléfono</p>
+                        <p className="font-medium">{host.phone}</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <span className="text-lg">👤</span>
+                    <div>
+                      <p className="text-sm text-gray-600">Tipo</p>
+                      <p className="font-medium capitalize">{host.type}</p>
+                    </div>
+                  </div>
+                  {host.experience_years && (
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <span className="text-lg">🐾</span>
+                      <div>
+                        <p className="text-sm text-gray-600">Experiencia</p>
+                        <p className="font-medium">{host.experience_years} años</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Experience Details */}
+              {host.experience_details && (
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    💼 Sobre mi experiencia
+                  </h2>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                    {host.experience_details}
+                  </p>
+                </div>
+              )}
+
+              {/* Environment Description */}
+              {host.description && (
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    🏠 Mi entorno
+                  </h2>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                    {host.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Own Pets */}
+              {host.has_own_pets && (
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    🐶 Mis mascotas
+                  </h2>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                    {host.own_pets_description || 'Tengo mascotas propias.'}
+                  </p>
+                </div>
+              )}
+
+              {/* Reviews Section */}
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  ⭐ Reseñas de otros usuarios
+                </h2>
+
+                {user && (
+                  <div className="mb-6">
+                    <ReviewForm
+                      hostId={host.id}
+                      existingReview={userReview}
+                      onSubmit={() => {
+                        api.get(`/cuidadores/${host.id}/reviews`)
+                          .then(res => setReviews(res.data))
+                      }}
+                    />
+                  </div>
+                )}
+
+                <ReviewList reviews={reviews} />
+              </div>
+            </div>
+
+            {/* Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4">Solicitar reserva</h3>
+                
+                {!mostrarFormulario ? (
+                  <button
+                    onClick={() => {
+                      if (user) {
+                        setMostrarFormulario(true)
+                      } else {
+                        openLogin()
+                      }
+                    }}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                  >
+                    💬 Contactar cuidador
+                  </button>
+                ) : (
+                  <div className="space-y-4">
+                    <ReservaForm hostId={host.id} />
+                    <button
+                      onClick={() => setMostrarFormulario(false)}
+                      className="text-sm text-red-600 hover:underline w-full text-center"
+                    >
+                      Cancelar solicitud
+                    </button>
+                  </div>
+                )}
+
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <p className="text-xs text-gray-500 text-center">
+                    Al contactar, aceptas nuestros términos de servicio
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+            <div className="text-6xl mb-4">🚧</div>
+            <p className="text-lg text-gray-600">Este cuidador aún no ha completado su perfil.</p>
+            <p className="text-sm text-gray-500 mt-2">Por favor, inténtalo más tarde.</p>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div className="mt-8 text-center">
+          <Link
+            to="/cuidadores"
+            className="inline-flex items-center gap-2 bg-white text-blue-600 px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 font-semibold hover:bg-blue-50"
+          >
+            ← Volver a cuidadores
+          </Link>
+        </div>
+      </div>
     </div>
   )
 }
