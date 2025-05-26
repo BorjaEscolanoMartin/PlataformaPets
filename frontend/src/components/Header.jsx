@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useModal } from '../hooks/useModal'
+import { useState } from 'react'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -20,83 +21,103 @@ import {
   LogOut,
   UserRound,
   ChevronDown,
+  Menu,
+  X,
 } from 'lucide-react'
 
 export default function Header() {
   const { user, logout } = useAuth()
   const { openLogin, openRegister } = useModal()
   const navigate = useNavigate()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const handleLogout = async () => {
     await logout()
     navigate('/')
+    setIsMenuOpen(false)
   }
+  const closeMenu = () => setIsMenuOpen(false)
 
   const esCliente = user?.role === 'cliente'
   const esCuidador = user?.role === 'cuidador'
   const esEmpresa = user?.role === 'empresa'
   return (
-    <header className="bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 shadow-lg border-b border-blue-100 px-6 py-4 flex justify-between items-center sticky top-0 z-50 backdrop-blur-sm">
-      <Link to="/" className="text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3 hover:scale-105 transition-transform duration-300">
+    <header className="bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 shadow-lg border-b border-blue-100 px-6 py-4 flex justify-between items-center sticky top-0 z-50 backdrop-blur-sm">      <Link to="/" className="text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3 hover:scale-105 transition-transform duration-300">
         <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
           <PawPrint className="w-5 h-5 text-white" />
         </div>
-        Pet Hosting
-      </Link>      <nav className="flex items-center gap-3 text-sm relative">
-        {(!user || esCliente) && (
-          <Button variant="default" size="sm" asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 border-0 mr-2">
-            <Link to="/cuidadores" className="flex items-center gap-2">
+        <span className="hidden md:inline">Pet Hosting</span>
+        <span className="md:hidden">Pet</span>
+      </Link>{/* Botón hamburguesa solo para móvil */}
+      <button
+        className="lg:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors duration-300 z-50"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {/* Navegación para tablets y desktop */}
+      <nav className="hidden lg:flex items-center gap-2 xl:gap-3 text-sm relative">        {(!user || esCliente) && (
+          <Button variant="default" size="sm" asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 border-0 mr-1 xl:mr-2">
+            <Link to="/cuidadores" className="flex items-center gap-1 xl:gap-2 px-2 xl:px-3">
               <Search className="w-4 h-4" />
-              Buscar cuidadores
+              <span className="hidden md:inline">Buscar cuidadores</span>
+              <span className="md:hidden">Buscar</span>
             </Link>
           </Button>
         )}
 
         {esCliente && (
           <Button variant="ghost" size="sm" asChild className="hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 hover:border-purple-300 transition-all duration-300">
-            <Link to="/empresas" className="flex items-center gap-2 font-semibold text-gray-700 hover:text-purple-600">
+            <Link to="/empresas" className="flex items-center gap-1 xl:gap-2 font-semibold text-gray-700 hover:text-purple-600 px-2 xl:px-3">
               <Building2 className="w-4 h-4" />
-              Ver empresas
+              <span className="hidden md:inline">Ver empresas</span>
+              <span className="md:hidden">Empresas</span>
             </Link>
           </Button>
         )}
 
         {esCliente && (
           <Button variant="outline" size="sm" asChild className="border-2 border-orange-300 text-orange-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-purple-50 hover:border-orange-500 transition-all duration-300 shadow-md hover:shadow-lg">
-            <Link to="/mi-perfil-cuidador" className="flex items-center gap-2 font-semibold">
+            <Link to="/mi-perfil-cuidador" className="flex items-center gap-1 xl:gap-2 font-semibold px-2 xl:px-3">
               <ShieldCheck className="w-4 h-4" />
-              Quiero ser cuidador
+              <span className="hidden xl:inline">Quiero ser cuidador</span>
+              <span className="xl:hidden">Ser cuidador</span>
             </Link>
           </Button>
         )}
 
         {esCliente && (
           <Button variant="outline" size="sm" asChild className="border-2 border-green-300 text-green-700 hover:bg-gradient-to-r hover:from-green-50 hover:to-blue-50 hover:border-green-500 transition-all duration-300 shadow-md hover:shadow-lg">
-            <Link to="/registro-empresa" className="flex items-center gap-2 font-semibold">
+            <Link to="/registro-empresa" className="flex items-center gap-1 xl:gap-2 font-semibold px-2 xl:px-3">
               <Building2 className="w-4 h-4" />
-              Soy una empresa
+              <span className="hidden xl:inline">Soy una empresa</span>
+              <span className="xl:hidden">Empresa</span>
             </Link>
           </Button>
         )}        {!user ? (
           <>
-            <Button variant="ghost" size="sm" onClick={openRegister} className="font-semibold text-gray-700 hover:text-purple-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transition-all duration-300">
-              Registrarse
+            <Button variant="ghost" size="sm" onClick={openRegister} className="font-semibold text-gray-700 hover:text-purple-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transition-all duration-300 px-2 xl:px-3">
+              <span className="hidden md:inline">Registrarse</span>
+              <span className="md:hidden">Registro</span>
             </Button>
-            <Button variant="default" size="sm" onClick={openLogin} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0">
-              Iniciar sesión
+            <Button variant="default" size="sm" onClick={openLogin} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 border-0 px-2 xl:px-3">
+              <span className="hidden md:inline">Iniciar sesión</span>
+              <span className="md:hidden">Entrar</span>
             </Button>
           </>
         ) : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="font-bold text-gray-800 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 flex items-center gap-2 transition-all duration-300 px-4 py-2 rounded-xl shadow-md hover:shadow-lg">
+              <Button variant="ghost" className="font-bold text-gray-800 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 flex items-center gap-1 xl:gap-2 transition-all duration-300 px-2 xl:px-4 py-2 rounded-xl shadow-md hover:shadow-lg">
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
                   <UserRound className="w-3 h-3 text-white" />
                 </div>
-                {user.name}
+                <span className="hidden md:inline max-w-[80px] xl:max-w-none truncate">{user.name}</span>
                 <ChevronDown className="w-4 h-4" />
               </Button>
-            </DropdownMenuTrigger>            <DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200 shadow-xl rounded-xl p-2">
+            </DropdownMenuTrigger><DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200 shadow-xl rounded-xl p-2">
               {esCliente && (
                 <>
                   <DropdownMenuItem asChild className="rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-300">
@@ -162,10 +183,163 @@ export default function Header() {
                   Cerrar sesión
                 </div>
               </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </DropdownMenuContent>          </DropdownMenu>
         )}
-      </nav>
+      </nav>      {/* Menú móvil overlay - solo para pantallas pequeñas */}
+      {isMenuOpen && (
+        <div className="lg:hidden fixed inset-0 top-[88px] bg-black/50 backdrop-blur-sm z-40">
+          <div className="bg-white w-full min-h-screen p-6 shadow-xl">
+            <nav className="flex flex-col space-y-4">
+              {/* Opciones principales */}
+              {(!user || esCliente) && (
+                <Link 
+                  to="/cuidadores" 
+                  onClick={closeMenu}
+                  className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Search className="w-5 h-5" />
+                  <span className="font-semibold">Buscar cuidadores</span>
+                </Link>
+              )}
+
+              {esCliente && (
+                <>
+                  <Link 
+                    to="/empresas" 
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl hover:shadow-md transition-all duration-300"
+                  >
+                    <Building2 className="w-5 h-5 text-purple-600" />
+                    <span className="font-semibold text-gray-700">Ver empresas</span>
+                  </Link>
+                  
+                  <Link 
+                    to="/mi-perfil-cuidador" 
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-purple-50 border border-orange-200 rounded-xl hover:shadow-md transition-all duration-300"
+                  >
+                    <ShieldCheck className="w-5 h-5 text-orange-600" />
+                    <span className="font-semibold text-gray-700">Quiero ser cuidador</span>
+                  </Link>
+                  
+                  <Link 
+                    to="/registro-empresa" 
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl hover:shadow-md transition-all duration-300"
+                  >
+                    <Building2 className="w-5 h-5 text-green-600" />
+                    <span className="font-semibold text-gray-700">Soy una empresa</span>
+                  </Link>
+                </>
+              )}
+
+              {/* Opciones de usuario autenticado */}
+              {user ? (
+                <>
+                  <div className="border-t border-gray-200 pt-4 mt-4">
+                    <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl mb-4">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                        <UserRound className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="font-bold text-gray-800">{user.name}</span>
+                    </div>
+
+                    {esCliente && (
+                      <>
+                        <Link 
+                          to="/mascotas" 
+                          onClick={closeMenu}
+                          className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 rounded-xl transition-all duration-300"
+                        >
+                          <PawPrint className="w-5 h-5 text-blue-600" />
+                          <span className="font-medium text-gray-700">Mis mascotas</span>
+                        </Link>
+                        
+                        <Link 
+                          to="/mis-reservas" 
+                          onClick={closeMenu}
+                          className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-green-50 hover:to-blue-50 rounded-xl transition-all duration-300"
+                        >
+                          <Calendar className="w-5 h-5 text-green-600" />
+                          <span className="font-medium text-gray-700">Mis reservas</span>
+                        </Link>
+                        
+                        <Link 
+                          to="/notificaciones" 
+                          onClick={closeMenu}
+                          className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-orange-50 hover:to-yellow-50 rounded-xl transition-all duration-300"
+                        >
+                          <Bell className="w-5 h-5 text-orange-600" />
+                          <span className="font-medium text-gray-700">Notificaciones</span>
+                        </Link>
+                      </>
+                    )}
+
+                    {(esCuidador || esEmpresa) && (
+                      <>
+                        <Link 
+                          to="/mi-perfil-cuidador" 
+                          onClick={closeMenu}
+                          className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 rounded-xl transition-all duration-300"
+                        >
+                          <UserRound className="w-5 h-5 text-purple-600" />
+                          <span className="font-medium text-gray-700">
+                            {esEmpresa ? 'Mi perfil de empresa' : 'Mi perfil de cuidador'}
+                          </span>
+                        </Link>
+                        
+                        <Link 
+                          to="/reservas-recibidas" 
+                          onClick={closeMenu}
+                          className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 rounded-xl transition-all duration-300"
+                        >
+                          <Bookmark className="w-5 h-5 text-indigo-600" />
+                          <span className="font-medium text-gray-700">Reservas recibidas</span>
+                        </Link>
+                        
+                        <Link 
+                          to="/notificaciones" 
+                          onClick={closeMenu}
+                          className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-orange-50 hover:to-yellow-50 rounded-xl transition-all duration-300"
+                        >
+                          <Bell className="w-5 h-5 text-orange-600" />
+                          <span className="font-medium text-gray-700">Notificaciones</span>
+                        </Link>
+                      </>
+                    )}
+
+                    <div className="border-t border-gray-200 pt-4 mt-4">
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 rounded-xl transition-all duration-300"
+                      >
+                        <LogOut className="w-5 h-5 text-red-600" />
+                        <span className="font-medium text-red-600">Cerrar sesión</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="border-t border-gray-200 pt-4 mt-4 space-y-3">
+                  <button 
+                    onClick={() => { openRegister(); closeMenu(); }}
+                    className="w-full p-4 text-center font-semibold text-gray-700 hover:text-purple-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 rounded-xl transition-all duration-300"
+                  >
+                    Registrarse
+                  </button>
+                  
+                  <button 
+                    onClick={() => { openLogin(); closeMenu(); }}
+                    className="w-full p-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                  >
+                    Iniciar sesión
+                  </button>
+                </div>
+              )}
+            </nav>
+          </div>
+        </div>
+      )}
     </header>
   )
 }
