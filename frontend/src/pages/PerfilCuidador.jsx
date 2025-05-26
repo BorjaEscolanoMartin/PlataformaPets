@@ -38,9 +38,40 @@ export default function PerfilCuidador() {
         .catch(err => console.error('Error cargando reseñas:', err))
     }
   }, [cuidador])
-
-  if (loading) return <p className="text-center mt-10">Cargando cuidador...</p>
-  if (!cuidador) return <p className="text-center mt-10 text-red-600">Cuidador no encontrado</p>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 py-8 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl border border-blue-100 p-12 text-center max-w-md mx-auto">
+          <div className="w-16 h-16 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+            <span className="text-3xl">⏳</span>
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">Cargando perfil...</h3>
+          <p className="text-gray-600">Obteniendo información del cuidador</p>
+        </div>
+      </div>
+    )
+  }
+  
+  if (!cuidador) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 py-8 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl border border-red-100 p-12 text-center max-w-md mx-auto">
+          <div className="w-16 h-16 bg-gradient-to-r from-red-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="text-3xl">❌</span>
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 mb-4">Cuidador no encontrado</h3>
+          <p className="text-gray-600 mb-6">No pudimos encontrar el perfil que buscas. Es posible que haya sido eliminado o no exista.</p>
+          <Link
+            to="/cuidadores"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+          >
+            <span className="text-lg">👥</span>
+            Ver todos los cuidadores
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   const host = cuidador.host
   const userReview = user ? reviews.find(r => r.user.id === user.id) : null
