@@ -83,27 +83,6 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
           </p>
         </div>
 
-        {/* Botón de Google mejorado */}
-        <button
-          className="w-full border-2 border-gray-200 hover:border-blue-300 flex items-center justify-center gap-3 py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200 group"
-          onClick={() => alert('Integración con Google pendiente')}
-        >
-          <div className="w-5 h-5 group-hover:scale-110 transition-transform duration-200">
-            <img src="https://www.svgrepo.com/show/512317/google.svg" alt="Google" className="w-full h-full" />
-          </div>
-          <span className="font-medium text-gray-700">Registrarse con Google</span>
-        </button>
-
-        {/* Divisor elegante */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-gray-500 font-medium">o registrarse con email</span>
-          </div>
-        </div>
-
         {/* Formulario mejorado */}
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Input de nombre con icono */}
