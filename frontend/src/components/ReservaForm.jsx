@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import api from '../lib/axios'
 import { useAuth } from '../context/AuthContext'
+import { loadGoogleMaps } from '../utils/loadGoogleMaps'
 
 export default function ReservaForm({ hostId }) {
   const { user, loading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-
   const [form, setForm] = useState({
     pet_id: '',
     service_type: 'alojamiento',
@@ -17,11 +17,11 @@ export default function ReservaForm({ hostId }) {
     end_date: '',
     size: '',
   })
-
   const [mascotas, setMascotas] = useState([])
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState(null)
-
+  // const [latLng, setLatLng] = useState(null) // Para futuras funcionalidades
+  const direccionRef = useRef(null)
   useEffect(() => {
     if (user) {
       api.get('/pets')
@@ -29,6 +29,27 @@ export default function ReservaForm({ hostId }) {
         .catch(() => setError('Error cargando tus mascotas'))
     }
   }, [user])
+  useEffect(() => {
+    loadGoogleMaps().then(() => {
+      if (!direccionRef.current) return
+
+      const autocomplete = new window.google.maps.places.Autocomplete(direccionRef.current, {
+        types: ['geocode'],
+        componentRestrictions: { country: 'es' },
+      })
+
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace()
+        if (!place.geometry) return
+
+        // const lat = place.geometry.location.lat()
+        // const lng = place.geometry.location.lng()
+
+        setForm(prev => ({ ...prev, address: place.formatted_address }))
+        // setLatLng({ lat, lng }) // Para futuras funcionalidades
+      })
+    }).catch(console.error)
+  }, [])
 
   const handleChange = e => {
     const { name, value } = e.target
@@ -43,13 +64,16 @@ export default function ReservaForm({ hostId }) {
     if (new Date(form.start_date) > new Date(form.end_date)) {
       setError('La fecha de entrada no puede ser posterior a la de salida.')
       return
-    }
-
-    try {
-      await api.post('/reservations', {
+    }    try {
+      const reservationData = {
         ...form,
         host_id: hostId,
-      })
+      }
+      
+      // No enviamos lat/lng al backend por ahora ya que no están en el modelo
+      // Las coordenadas se guardan solo localmente para futuras funcionalidades
+
+      await api.post('/reservations', reservationData)
       setSuccess(true)
       setForm(prev => ({ ...prev, start_date: '', end_date: '' })) // opcional: limpia fechas
     } catch (err) {
@@ -153,16 +177,15 @@ export default function ReservaForm({ hostId }) {
           <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
             <span className="text-blue-600">🏥</span>
             Tipo de servicio
-          </label>
-          <select 
+          </label>          <select 
             name="service_type" 
             value={form.service_type} 
             onChange={handleChange} 
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 outline-none text-sm font-medium bg-white"
           >
             <option value="alojamiento">🏠 Alojamiento en casa del cuidador</option>
-            <option value="cuidado_a_domicilio">🏡 Cuidado en tu domicilio</option>
-            <option value="visitas_a_domicilio">🚪 Visitas a domicilio</option>
+            <option value="domicilio">🏡 Cuidado en tu domicilio</option>
+            <option value="visitas">🚪 Visitas a domicilio</option>
             <option value="guarderia">🌅 Guardería de día</option>
             <option value="paseo">🚶 Paseo de perros</option>
           </select>
@@ -183,15 +206,14 @@ export default function ReservaForm({ hostId }) {
             <option value="una_vez">Una sola vez</option>
             <option value="semanal">Recurrente (semanal)</option>
           </select>
-        </div>
-
-        {/* Dirección */}
+        </div>        {/* Dirección */}
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
             <span className="text-orange-600">📍</span>
             Dirección del servicio
           </label>
           <input
+            ref={direccionRef}
             type="text"
             name="address"
             placeholder="Introduce la dirección donde se realizará el servicio"

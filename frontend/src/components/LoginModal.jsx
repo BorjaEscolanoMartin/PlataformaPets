@@ -74,7 +74,7 @@ export default function LoginModal({ onClose, onSwitchToRegister }) {
             Bienvenido
           </h2>
           <p className="text-sm text-gray-500 font-medium">
-            Accede a tu cuenta de <span className="text-blue-600 font-semibold">PetHosting</span>
+            Accede a tu cuenta de <span className="text-blue-600 font-semibold">Pets</span>
           </p>
         </div>
 
