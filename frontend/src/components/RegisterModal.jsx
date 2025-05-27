@@ -68,12 +68,22 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
           className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-500 transition-all duration-200 flex items-center justify-center group"
         >
           <span className="transform group-hover:rotate-90 transition-transform duration-200">✕</span>
-        </button>
-
-        {/* Header con icono y gradiente */}
+        </button>        {/* Header con icono y gradiente */}
         <div className="text-center space-y-3">
-          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="text-2xl">🏠</span>
+          <div className="w-24 h-24 mx-auto flex items-center justify-center">
+            <img 
+              src="/LogoWeb-sinfondo.png" 
+              alt="Pet Hosting Logo" 
+              className="w-24 h-24 object-contain"
+              onError={(e) => {
+                // Fallback al icono original si la imagen no se encuentra
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center" style={{display: 'none'}}>
+              <span className="text-2xl">🏠</span>
+            </div>
           </div>
           <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Únete a nosotros
