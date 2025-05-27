@@ -89,7 +89,7 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
             Únete a nosotros
           </h2>
           <p className="text-sm text-gray-500 font-medium">
-            Crea tu cuenta en <span className="text-blue-600 font-semibold">PetHosting</span> y comienza hoy
+            Crea tu cuenta en <span className="text-blue-600 font-semibold">Pets</span> y comienza hoy
           </p>
         </div>
 
