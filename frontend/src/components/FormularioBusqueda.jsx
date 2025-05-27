@@ -75,16 +75,26 @@ export default function FormularioBusqueda() {
     navigate(`/cuidadores?${params.toString()}`)
   }
   return (
-    <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 p-4 rounded-2xl shadow-xl border border-blue-100">
-      {/* Header principal compacto */}
-      <div className="text-center mb-4">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1 flex items-center justify-center gap-2">
-          <span className="text-xl">🐾</span>
-          Encuentra el cuidador perfecto
-        </h1>
-        <p className="text-sm text-gray-600 font-medium">
-          Tu mascota merece el mejor cuidado
-        </p>
+    <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 p-4 rounded-2xl shadow-xl border border-blue-100">      {/* Header principal compacto */}
+      <div className="text-center mb-4 flex items-center justify-center gap-4">
+        <img 
+          src="/LogoWeb-sinfondo.png" 
+          alt="Pet Hosting Logo"
+          className="w-22 h-22 object-contain"
+          onError={(e) => {
+            e.target.style.display = 'none';
+            e.target.nextSibling.style.display = 'inline';
+          }}
+        />
+        <PawPrint className="w-8 h-8 text-blue-600 hidden" />
+        <div className="text-left">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
+            Encuentra el cuidador perfecto
+          </h1>
+          <p className="text-sm text-gray-600 font-medium">
+            Tu mascota merece el mejor cuidado
+          </p>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-4 space-y-4 max-w-6xl mx-auto border border-blue-100">

@@ -42,9 +42,21 @@ export default function Header() {
   const esCuidador = user?.role === 'cuidador'
   const esEmpresa = user?.role === 'empresa'
   return (
-    <header className="bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 shadow-lg border-b border-blue-100 px-6 py-4 flex justify-between items-center sticky top-0 z-50 backdrop-blur-sm">      <Link to="/" className="text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3 hover:scale-105 transition-transform duration-300">
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
-          <PawPrint className="w-5 h-5 text-white" />
+    <header className="bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 shadow-sm px-6 py-4 flex justify-between items-center sticky top-0 z-50 backdrop-blur-sm">
+     <Link to="/" className="text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3 hover:scale-105 transition-transform duration-300">        <div className="w-12 h-12">
+          <img 
+            src="/LogoWeb-sinfondo.png" 
+            alt="Pet Hosting Logo" 
+            className="w-full h-full object-contain"
+            onError={(e) => {
+              // Fallback al icono original si la imagen no se encuentra
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          <div className="w-full h-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center rounded-xl" style={{display: 'none'}}>
+            <PawPrint className="w-6 h-6 text-white" />
+          </div>
         </div>
         <span className="hidden md:inline">Pet Hosting</span>
         <span className="md:hidden">Pet</span>

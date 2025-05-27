@@ -13,9 +13,9 @@ export default function Layout({ children }) {
   } = useModal()
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <Header onLogin={openLogin} onRegister={openRegister} />
-      <main className="pt-6 px-4">
+      <main>
         {children}
       </main>
 
