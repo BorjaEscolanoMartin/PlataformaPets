@@ -267,92 +267,130 @@ export default function Cuidadores() {
               </div>
             )}
 
-            {cuidadores.map(cuidador => (
-              <div key={cuidador.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-5 border border-gray-100">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-800 mb-1">{cuidador.name}</h3>
-                    <p className="text-gray-600 text-sm">{cuidador.email}</p>
+            {cuidadores.map(cuidador => {
+              console.log(cuidador); 
+
+              return (
+                <div
+                  key={cuidador.id}
+                  className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-5 border border-gray-100"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex-1 flex items-start gap-4">
+                      {/* Foto de perfil */}
+                      {cuidador.host?.profile_photo ? (
+                        <img
+                          src={cuidador.host.profile_photo_url}
+                          alt={`Foto de ${cuidador.name}`}
+                          className="w-20 h-20 rounded-full object-cover border border-gray-300 transform transition-transform duration-300 hover:scale-105 shadow-sm"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm font-medium border border-gray-300 transform transition-transform duration-300 hover:scale-105 shadow-sm">
+                          {cuidador.name?.charAt(0) || "?"}
+                        </div>
+                      )}
+
+                      {/* Info del cuidador */}
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-800 mb-1">{cuidador.name}</h3>
+                        <p className="text-gray-600 text-sm">{cuidador.email}</p>
+                        {cuidador.host?.average_rating ? (
+                          <p className="text-sm text-yellow-600 font-medium mt-1">
+                            ⭐ {cuidador.host.average_rating.toFixed(1)} / 5
+                          </p>
+                        ) : (
+                          <p className="text-sm text-gray-500 mt-1">Sin reseñas aún</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      {cuidador.distance && (
+                        <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                          📍 {Number(cuidador.distance).toFixed(1)} km
+                        </div>
+                      )}
+                      <button
+                        onClick={() => {
+                          const ruta = `/cuidadores/${cuidador.id}`;
+                          if (!user) {
+                            localStorage.setItem('redirectAfterLogin', ruta);
+                            openLogin();
+                          } else {
+                            navigate(ruta);
+                          }
+                        }}
+                        className="group relative bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-purple-600 hover:to-indigo-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
+                      >
+                        <span className="relative z-10 flex items-center gap-2">
+                          <span>Ver perfil</span>
+                          <svg
+                            className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                      </button>
+                    </div>
                   </div>
-                  
-                  <div className="flex items-center gap-3">
-                    {cuidador.distance && (
-                      <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                        📍 {Number(cuidador.distance).toFixed(1)} km
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {cuidador.especie_preferida?.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-medium text-gray-700 mb-1">🐕 Mascotas:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {cuidador.especie_preferida.map((tipo, idx) => (
+                            <span
+                              key={`esp-${cuidador.id}-${idx}`}
+                              className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium"
+                            >
+                              {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     )}
-                    <button
-                      onClick={() => {
-                        const ruta = `/cuidadores/${cuidador.id}`
-                        if (!user) {
-                          localStorage.setItem('redirectAfterLogin', ruta)
-                          openLogin()
-                        } else {
-                          navigate(ruta)
-                        }                      }}
-                      className="group relative bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-purple-600 hover:to-indigo-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
-                    >
-                      <span className="relative z-10 flex items-center gap-2">
-                        <span>Ver perfil</span>
-                        <svg 
-                          className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                    </button>
+
+                    {cuidador.tamanos_aceptados?.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-medium text-gray-700 mb-1">📏 Tamaños:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {cuidador.tamanos_aceptados.map((t, idx) => (
+                            <span
+                              key={`tam-${cuidador.id}-${idx}`}
+                              className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium"
+                            >
+                              {t.charAt(0).toUpperCase() + t.slice(1)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {cuidador.servicios_ofrecidos?.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-medium text-gray-700 mb-1">⭐ Servicios:</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {cuidador.servicios_ofrecidos.map((s, idx) => (
+                            <span
+                              key={`serv-${cuidador.id}-${idx}`}
+                              className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full font-medium"
+                            >
+                              {s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' ')}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
+              );
+            })}
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {/* Especies preferidas */}
-                  {cuidador.especie_preferida && cuidador.especie_preferida.length > 0 && (
-                    <div>
-                      <h4 className="text-xs font-medium text-gray-700 mb-1">🐕 Mascotas:</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {cuidador.especie_preferida.map((tipo, idx) => (
-                          <span key={`esp-${cuidador.id}-${idx}`} className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
-                            {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Tamaños aceptados */}
-                  {cuidador.tamanos_aceptados && cuidador.tamanos_aceptados.length > 0 && (
-                    <div>
-                      <h4 className="text-xs font-medium text-gray-700 mb-1">📏 Tamaños:</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {cuidador.tamanos_aceptados.map((t, idx) => (
-                          <span key={`tam-${cuidador.id}-${idx}`} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">
-                            {t.charAt(0).toUpperCase() + t.slice(1)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Servicios ofrecidos */}
-                  {cuidador.servicios_ofrecidos && cuidador.servicios_ofrecidos.length > 0 && (
-                    <div>
-                      <h4 className="text-xs font-medium text-gray-700 mb-1">⭐ Servicios:</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {cuidador.servicios_ofrecidos.map((s, idx) => (
-                          <span key={`serv-${cuidador.id}-${idx}`} className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full font-medium">
-                            {s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, ' ')}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
           </div>          {/* Mapa */}
           <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">🗺️ Ubicación de cuidadores</h3>

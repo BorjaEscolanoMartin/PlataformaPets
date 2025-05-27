@@ -52,5 +52,21 @@ class Host extends Model
         return round($this->reviews()->avg('rating'), 1);
     }
 
+    protected $appends = ['average_rating', 'profile_photo_url'];
+
+    public function getAverageRatingAttribute()
+    {
+        return round($this->reviews()->avg('rating'), 1);
+    }
+
+    public function getProfilePhotoUrlAttribute()
+    {
+        return $this->profile_photo
+            ? asset('storage/' . $this->profile_photo)
+            : null;
+    }
+
+
+
 }
 

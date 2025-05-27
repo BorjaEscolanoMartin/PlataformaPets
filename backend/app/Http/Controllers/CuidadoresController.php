@@ -13,7 +13,7 @@ class CuidadoresController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::where('role', 'cuidador')->with('host');
+        $query = User::where('role', 'cuidador')->with('host.reviews');
 
         if ($request->has('servicio')) {
             $servicios = (array) $request->input('servicio');

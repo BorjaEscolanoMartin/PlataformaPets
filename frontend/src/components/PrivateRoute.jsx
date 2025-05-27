@@ -27,8 +27,6 @@ export default function PrivateRoute({ children }) {
 
           const rutasProtegidasPorPerfil = [
             '/reservas-recibidas',
-            '/mi-perfil-cuidador',
-            // añade más si hace falta
           ]
 
           const necesitaPerfil = rutasProtegidasPorPerfil.some(ruta =>
@@ -80,7 +78,7 @@ export default function PrivateRoute({ children }) {
     )
   }
 
-  if (!user) return <Navigate to="/login" />
+  if (!user) return <Navigate to="/" />
 
   if (checkingHost) {
     return (
