@@ -75,18 +75,24 @@ export default function FormularioBusqueda() {
     navigate(`/cuidadores?${params.toString()}`)
   }
   return (
-    <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 p-4 rounded-2xl shadow-xl border border-blue-100">      {/* Header principal compacto */}
-      <div className="text-center mb-4 flex items-center justify-center gap-4">
+    <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 p-4 rounded-2xl shadow-xl border border-blue-100">      {/* Header principal compacto */}      <div className="text-center mb-4 flex items-center justify-center gap-4">
         <img 
           src="/LogoWeb-sinfondo.png" 
           alt="Pet Hosting Logo"
-          className="w-22 h-22 object-contain"
+          className="w-22 h-22 object-contain animate-bounce hover:animate-pulse hover:scale-110 transition-all duration-500 cursor-pointer drop-shadow-lg hover:drop-shadow-xl"
+          style={{
+            animation: 'float 3s ease-in-out infinite',
+            animationDelay: '0.5s'
+          }}
           onError={(e) => {
             e.target.style.display = 'none';
             e.target.nextSibling.style.display = 'inline';
           }}
         />
-        <PawPrint className="w-8 h-8 text-blue-600 hidden" />
+        <PawPrint className="w-8 h-8 text-blue-600 hidden animate-bounce" style={{
+          animation: 'float 3s ease-in-out infinite',
+          animationDelay: '0.5s'
+        }} />
         <div className="text-left">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
             Encuentra el cuidador perfecto
