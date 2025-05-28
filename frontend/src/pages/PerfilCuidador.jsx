@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import api from '../lib/axios'
 import ReservaForm from '../components/ReservaForm'
 import { useAuth } from '../context/AuthContext'
@@ -12,11 +12,25 @@ export default function PerfilCuidador() {
   const { id } = useParams()
   const { user } = useAuth()
   const { openLogin } = useModal()
+  const navigate = useNavigate()
 
   const [cuidador, setCuidador] = useState(null)
   const [loading, setLoading] = useState(true)
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
   const [reviews, setReviews] = useState([])
+  const iniciarChat = async () => {
+    if (!user) {
+      openLogin()
+      return
+    }
+
+    try {
+      // Redirigir al chat con el ID del cuidador usando la ruta correcta
+      navigate(`/chat/${cuidador.id}`)
+    } catch (error) {
+      console.error('Error iniciando chat:', error)
+    }
+  }
 
   useEffect(() => {
     api.get(`/cuidadores/${id}`)
@@ -264,37 +278,47 @@ export default function PerfilCuidador() {
 
                 <ReviewList reviews={reviews} />
               </div>
-            </div>
-
-            {/* Sidebar */}
+            </div>            {/* Sidebar */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">Solicitar reserva</h3>
+                <h3 className="text-lg font-bold text-gray-800 mb-4">Contactar cuidador</h3>
                 
-                {!mostrarFormulario ? (
-                  <button
-                    onClick={() => {
-                      if (user) {
-                        setMostrarFormulario(true)
-                      } else {
-                        openLogin()
-                      }
-                    }}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                  >
-                    💬 Contactar cuidador
-                  </button>
-                ) : (
-                  <div className="space-y-4">
-                    <ReservaForm hostId={host.id} />
+                {/* Botón de Chat */}
+                <button
+                  onClick={iniciarChat}
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 mb-3 flex items-center justify-center gap-2"
+                >
+                  💬 Enviar mensaje
+                </button>
+
+                <div className="border-t border-gray-200 pt-4">
+                  <h4 className="text-md font-semibold text-gray-700 mb-3">Solicitar reserva</h4>
+                  
+                  {!mostrarFormulario ? (
                     <button
-                      onClick={() => setMostrarFormulario(false)}
-                      className="text-sm text-red-600 hover:underline w-full text-center"
+                      onClick={() => {
+                        if (user) {
+                          setMostrarFormulario(true)
+                        } else {
+                          openLogin()
+                        }
+                      }}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                     >
-                      Cancelar solicitud
+                      📅 Hacer reserva
                     </button>
-                  </div>
-                )}
+                  ) : (
+                    <div className="space-y-4">
+                      <ReservaForm hostId={host.id} />
+                      <button
+                        onClick={() => setMostrarFormulario(false)}
+                        className="text-sm text-red-600 hover:underline w-full text-center"
+                      >
+                        Cancelar solicitud
+                      </button>
+                    </div>
+                  )}
+                </div>
 
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <p className="text-xs text-gray-500 text-center">
