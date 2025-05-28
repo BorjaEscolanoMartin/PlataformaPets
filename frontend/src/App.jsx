@@ -12,7 +12,8 @@ import ReservasRecibidas from './pages/ReservasRecibidas'
 import Inicio from './pages/Inicio'
 import Layout from './layout/Layout'
 import RegisterEmpresa from './pages/RegisterEmpresa'
-import ChatPage from './components/Chat';
+import ChatPage from './pages/ChatPage';
+import DebugChat from './components/DebugChat';
 import Notificaciones from "./components/Notificaciones";
 
 function App() {
@@ -96,6 +97,14 @@ function App() {
           element={
             <PrivateRoute>
               <Layout><ChatPage /></Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/debug"
+          element={
+            <PrivateRoute>
+              <Layout><DebugChat /></Layout>
             </PrivateRoute>
           }
         />
