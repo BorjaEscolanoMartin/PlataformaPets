@@ -7,7 +7,7 @@ export default function Chat({ receiverId }) {
   const [content, setContent] = useState('');
   const [authUserId, setAuthUserId] = useState(null);
   const messagesEndRef = useRef(null);
-  const channelRef = useRef(null); // <--- referencia para el canal
+  const channelRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -33,7 +33,6 @@ export default function Chat({ receiverId }) {
 
   useEffect(() => {
     if (!receiverId) return;
-
     api.get(`/messages/${receiverId}`)
       .then(res => {
         setMessages(res.data);
@@ -46,11 +45,9 @@ export default function Chat({ receiverId }) {
       console.warn('[Chat.jsx] No se suscribe: authUserId o receiverId indefinido', { authUserId, receiverId });
       return;
     }
-
     import('../lib/echo').then(() => {
       const channelName = `private-chat.${authUserId}`;
       console.log('[Chat.jsx] Subscribing to:', channelName, { authUserId, receiverId });
-
       const channel = window.Echo.private(channelName)
         .notification((notification) => {
           console.log('[Echo] 🔔 Notification:', notification);
@@ -82,7 +79,6 @@ export default function Chat({ receiverId }) {
         .listen('.MessageSent', (e) => {
           console.log('[Echo] 📢 Evento recibido con punto:', { e, authUserId, receiverId });
         });
-
       channel.subscribed(() => {
         console.log('[Echo] ✅ Suscripción exitosa al canal:', channelName);
       });
@@ -92,10 +88,8 @@ export default function Chat({ receiverId }) {
       channel.listenForWhisper('MessageSent', (e) => {
         console.log('[Echo] 👂 Whisper recibido:', e);
       });
-
       channelRef.current = channel;
     });
-
     return () => {
       if (channelRef.current) {
         const channelName = `private-chat.${authUserId}`;
@@ -111,18 +105,14 @@ export default function Chat({ receiverId }) {
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!content.trim()) return;
-
     const messageContent = content.trim();
     setContent('');
-
     try {
       const response = await api.post('/messages', {
         receiver_id: receiverId,
         content: messageContent,
       });
-
       console.log('[Chat] ✅ Mensaje enviado al servidor:', response.data);
-
       const newMessage = {
         id: response.data.id,
         content: messageContent,
@@ -132,13 +122,11 @@ export default function Chat({ receiverId }) {
         sender: { name: 'Tú' },
         receiver: { name: 'Usuario' }
       };
-
       setMessages(prev => {
         const exists = prev.some(msg => msg.id === newMessage.id);
         if (exists) return prev;
         return [...prev, newMessage].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
       });
-
     } catch (err) {
       console.error('❌ Error enviando mensaje:', err);
       setContent(messageContent);
@@ -170,7 +158,6 @@ export default function Chat({ receiverId }) {
           </div>
         </div>
       </div>
-
       <div className="h-80 overflow-y-auto border-2 border-gray-200 rounded-xl p-4 mb-4 bg-gradient-to-b from-gray-50 to-white space-y-3 scroll-smooth">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 mt-16">
@@ -200,7 +187,6 @@ export default function Chat({ receiverId }) {
         )}
         <div ref={messagesEndRef} />
       </div>
-
       <form onSubmit={sendMessage} className="flex gap-3">
         <div className="flex-1 relative">
           <input
