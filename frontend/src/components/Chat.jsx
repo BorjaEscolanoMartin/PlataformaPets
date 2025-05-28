@@ -1,13 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import api from '../lib/axios';
 import axios from 'axios';
 import '../lib/echo';
+import EchoDebugger from './EchoDebugger';
+
 console.log('[DEBUG] Echo:', window.Echo);
 
 export default function Chat({ receiverId }) {
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState('');
   const [authUserId, setAuthUserId] = useState(null);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -34,47 +45,88 @@ export default function Chat({ receiverId }) {
       .catch(err => console.error('Error cargando mensajes:', err));
   }, [receiverId]);
 
+  // CORREGIDO: suscribirse solo si ambos están definidos
   useEffect(() => {
-    if (!authUserId) return;
+    if (!authUserId || !receiverId) return;
 
     const channelName = `private-chat.${authUserId}`;
     console.log(`🛰️ Suscribiéndose al canal: ${channelName}`);
 
-    window.Echo.private(channelName)
+    const channel = window.Echo.private(channelName)
       .listen('.MessageSent', (e) => {
-        console.log('[Echo] Evento recibido:', e);
-        setMessages((prev) => [...prev, e]);
-      });
-      window.Echo.connector.socket.on('error', (error) => {
-        console.error('Error en la conexión socket:', error);
-      });
+        console.log('[Echo] 📢 Evento recibido:', { e, authUserId, receiverId });
 
+        const isCurrentConversation =
+          (e.sender_id === authUserId && e.receiver_id === parseInt(receiverId)) ||
+          (e.sender_id === parseInt(receiverId) && e.receiver_id === authUserId);
+
+        if (!isCurrentConversation) {
+          console.log('[Echo] ❌ Mensaje no corresponde a esta conversación.');
+          return;
+        }
+
+        setMessages((prev) => {
+          const exists = prev.some(m => m.id === e.id);
+          if (exists) return prev;
+
+          const newMessage = {
+            id: e.id,
+            content: e.content,
+            sender_id: e.sender_id,
+            receiver_id: e.receiver_id,
+            created_at: e.created_at,
+            sender: e.sender || { name: 'Usuario' },
+            receiver: e.receiver || { name: 'Usuario' }
+          };
+
+          return [...prev, newMessage].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        });
+      });
 
     return () => {
       console.log(`🧹 Saliendo del canal: ${channelName}`);
+      channel.stopListening('.MessageSent');
       window.Echo.leave(channelName);
     };
-  }, [authUserId]);
+  }, [authUserId, receiverId]);
 
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!content.trim()) return;
 
+    const messageContent = content.trim();
+    setContent('');
+
     try {
-      const res = await api.post('/messages', {
+      const response = await api.post('/messages', {
         receiver_id: receiverId,
-        content,
+        content: messageContent,
       });
 
-      // 👇 Esta es la forma correcta para tu caso
-      setMessages((prev) => [...prev, res.data]);
+      console.log('[Chat] ✅ Mensaje enviado al servidor:', response.data);
 
-      setContent('');
+      const newMessage = {
+        id: response.data.id,
+        content: messageContent,
+        sender_id: authUserId,
+        receiver_id: parseInt(receiverId),
+        created_at: new Date().toISOString(),
+        sender: { name: 'Tú' },
+        receiver: { name: 'Usuario' }
+      };
+
+      setMessages(prev => {
+        const exists = prev.some(msg => msg.id === newMessage.id);
+        if (exists) return prev;
+        return [...prev, newMessage].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      });
 
     } catch (err) {
-      console.error('Error enviando mensaje:', err);
+      console.error('❌ Error enviando mensaje:', err);
+      setContent(messageContent);
     }
   };
+
   if (!authUserId) {
     return (
       <div className="bg-white rounded-2xl shadow-xl border border-blue-100 p-8 text-center max-w-md mx-auto">
@@ -86,9 +138,10 @@ export default function Chat({ receiverId }) {
       </div>
     );
   }
+
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-blue-100 p-6 max-w-2xl mx-auto">
-      {/* Header del chat */}
+      <EchoDebugger />
       <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-xl p-4 mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -101,7 +154,6 @@ export default function Chat({ receiverId }) {
         </div>
       </div>
 
-      {/* Área de mensajes */}
       <div className="h-80 overflow-y-auto border-2 border-gray-200 rounded-xl p-4 mb-4 bg-gradient-to-b from-gray-50 to-white space-y-3 scroll-smooth">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 mt-16">
@@ -113,28 +165,25 @@ export default function Chat({ receiverId }) {
           </div>
         ) : (
           messages.map((msg) => (
-            <div 
-              key={msg.id} 
-              className={`flex ${msg.sender_id === authUserId ? 'justify-end' : 'justify-start'}`}
-            >
+            <div key={msg.id} className={`flex ${msg.sender_id === authUserId ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${
-                msg.sender_id === authUserId 
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-br-md' 
+                msg.sender_id === authUserId
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-br-md'
                   : 'bg-white border border-gray-200 text-gray-800 rounded-bl-md'
               }`}>
                 <p className="text-sm font-medium break-words">{msg.content}</p>
                 <div className={`text-xs mt-1 ${
                   msg.sender_id === authUserId ? 'text-blue-100' : 'text-gray-500'
                 }`}>
-                  {msg.sender_id === authUserId ? 'Tú' : 'Usuario'}
+                  {msg.sender_id === authUserId ? 'Tú' : (msg.sender?.name || 'Usuario')}
                 </div>
               </div>
             </div>
           ))
         )}
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Formulario de envío */}
       <form onSubmit={sendMessage} className="flex gap-3">
         <div className="flex-1 relative">
           <input
@@ -148,8 +197,8 @@ export default function Chat({ receiverId }) {
             <span className="text-lg">✏️</span>
           </div>
         </div>
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={!content.trim()}
           className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center gap-2"
         >
