@@ -37,7 +37,6 @@ services:
       - "5432:5432"
     networks:
       - backend
-
   redis:
     image: redis:alpine
     container_name: redis
@@ -47,13 +46,14 @@ services:
       - redis-data:/data
     networks:
       - backend
+
   echo-server:
     image: node:18-alpine
     container_name: echo-server
     working_dir: /var/www
     volumes:
       - ./backend:/var/www
-    command: sh -c "npm install && npx laravel-echo-server start"
+    command: sh -c "rm -f /var/www/laravel-echo-server.lock && npm install && npx laravel-echo-server start"
     ports:
       - "6001:6001"
     depends_on:
@@ -61,6 +61,7 @@ services:
       - app
     networks:
       - backend
+    restart: unless-stopped
 
   queue-worker:
     build:
