@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import api from '../lib/axios'
-import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -18,39 +17,29 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
 
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
-
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError(null)
     setIsLoading(true)
 
     try {
-      await axios.get('http://localhost:8000/sanctum/csrf-cookie', {
-        withCredentials: true,
-      })
-
-      const xsrf = decodeURIComponent(
-        document.cookie
-          .split('; ')
-          .find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1]
-      )
-
-      await api.post('/register', form, {
-        headers: { 'X-XSRF-TOKEN': xsrf },
-        withCredentials: true,
-      })
-
-      const res = await api.get('/user', { withCredentials: true })
-
-      if (res.data && res.data.id) {
-        setUser(res.data)
+      const response = await api.post('/register', form)
+      
+      if (response.data.token) {
+        // Guardar token y usuario
+        localStorage.setItem('auth-token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        
+        // Configurar header de autorización
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
+        
+        setUser(response.data.user)
         navigate('/')
         onClose()
-      } else {
-        setError('No se pudo recuperar la sesión después del registro')
       }
     } catch (err) {
       console.error(err)

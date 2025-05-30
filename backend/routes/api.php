@@ -13,7 +13,6 @@ use App\Http\Controllers\HostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\CuidadoresController;
-use App\Http\Controllers\MessageController;
 
 use App\Services\GeolocationService;
 use App\Http\Controllers\NotificationController;
@@ -41,10 +40,17 @@ Route::post('/login', function (Request $request) {
         ]);
     }
 
-    Auth::login($user);
-    $request->session()->regenerate();
+    // Revocar tokens existentes para evitar acumulación
+    $user->tokens()->delete();
+    
+    // Crear nuevo token
+    $token = $user->createToken('auth-token')->plainTextToken;
 
-    return response()->json($user);
+    return response()->json([
+        'user' => $user,
+        'token' => $token,
+        'message' => 'Inicio de sesión exitoso'
+    ]);
 });
 
 // Registro
@@ -56,9 +62,7 @@ Route::post('/register', function (Request $request) {
         'postal_code' => 'required|string|max:10',
     ]);
 
-    $coords = GeolocationService::fromPostalCode($request->postal_code);
-
-    $user = User::create([
+    $coords = GeolocationService::fromPostalCode($request->postal_code);    $user = User::create([
         'name' => $request->name,
         'email' => $request->email,
         'password' => bcrypt($request->password),
@@ -76,18 +80,34 @@ Route::post('/register', function (Request $request) {
         logger(['lat' => $coords['lat'], 'lng' => $coords['lon']]);
     }
 
-    Auth::login($user);
+    // Crear token para el nuevo usuario
+    $token = $user->createToken('auth-token')->plainTextToken;
 
-    return response()->json($user);
+    return response()->json([
+        'user' => $user,
+        'token' => $token,
+        'message' => 'Registro exitoso'
+    ]);
 });
 
 // Logout
-Route::post('/logout', function (Request $request) {
-    Auth::logout();
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
+Route::middleware('auth:sanctum')->post('/logout', function (Request $request) {
+    // Revocar el token actual
+    $request->user()->currentAccessToken()->delete();
 
-    return response()->json(['message' => 'Sesión cerrada']);
+    return response()->json([
+        'message' => 'Sesión cerrada exitosamente'
+    ]);
+});
+
+// Logout de todos los dispositivos
+Route::middleware('auth:sanctum')->post('/logout-all', function (Request $request) {
+    // Revocar todos los tokens del usuario
+    $request->user()->tokens()->delete();
+
+    return response()->json([
+        'message' => 'Sesión cerrada en todos los dispositivos'
+    ]);
 });
 
 /*
@@ -130,8 +150,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reservations/host', [ReservationController::class, 'forHost']);
     Route::post('/reservations', [ReservationController::class, 'store']);
     Route::put('/reservations/{id}', [ReservationController::class, 'update']);
-    Route::post('/messages', [MessageController::class, 'store']);
-    Route::get('/messages/{user}', [MessageController::class, 'index']);
     });
 
     Route::get('/notifications', [NotificationController::class, 'index']);
