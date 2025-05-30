@@ -23,6 +23,7 @@ import {
   ChevronDown,
   Menu,
   X,
+  MessageCircle,
 } from 'lucide-react'
 
 export default function Header() {
@@ -129,8 +130,7 @@ export default function Header() {
                 <span className="hidden md:inline max-w-[80px] xl:max-w-none truncate">{user.name}</span>
                 <ChevronDown className="w-4 h-4" />
               </Button>
-            </DropdownMenuTrigger><DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200 shadow-xl rounded-xl p-2">
-              {esCliente && (
+            </DropdownMenuTrigger><DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200 shadow-xl rounded-xl p-2">              {esCliente && (
                 <>
                   <DropdownMenuItem asChild className="rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-300">
                     <Link to="/mascotas" className="flex items-center gap-3 p-2 font-medium text-gray-700 hover:text-blue-600">
@@ -154,6 +154,14 @@ export default function Header() {
                         <Bell className="w-3 h-3 text-orange-600" />
                       </div>
                       Notificaciones
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300">
+                    <Link to="/chat" className="flex items-center gap-3 p-2 font-medium text-gray-700 hover:text-blue-600">
+                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                        <MessageCircle className="w-3 h-3 text-blue-600" />
+                      </div>
+                      Mensajes
                     </Link>
                   </DropdownMenuItem>
                 </>
@@ -181,6 +189,14 @@ export default function Header() {
                         <Bell className="w-3 h-3 text-orange-600" />
                       </div>
                       Notificaciones
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300">
+                    <Link to="/chat" className="flex items-center gap-3 p-2 font-medium text-gray-700 hover:text-blue-600">
+                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                        <MessageCircle className="w-3 h-3 text-blue-600" />
+                      </div>
+                      Mensajes
                     </Link>
                   </DropdownMenuItem>
                 </>

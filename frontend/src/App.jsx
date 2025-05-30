@@ -10,6 +10,7 @@ import PerfilCuidador from './pages/PerfilCuidador'
 import MisReservas from './pages/MisReservas'
 import ReservasRecibidas from './pages/ReservasRecibidas'
 import Inicio from './pages/Inicio'
+import Chat from './pages/Chat'
 import Layout from './layout/Layout'
 import RegisterEmpresa from './pages/RegisterEmpresa'
 import Notificaciones from "./components/Notificaciones";
@@ -81,12 +82,19 @@ function App() {
               <Layout><ReservasRecibidas /></Layout>
             </PrivateRoute>
           }
-        />
-        <Route
+        />        <Route
           path="/notificaciones"
           element={
             <PrivateRoute>
               <Layout><Notificaciones /></Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <PrivateRoute>
+              <Chat />
             </PrivateRoute>
           }
         />

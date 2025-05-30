@@ -13,6 +13,8 @@ use App\Http\Controllers\HostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\CuidadoresController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\MessageController;
 
 use App\Services\GeolocationService;
 use App\Http\Controllers\NotificationController;
@@ -177,4 +179,25 @@ Route::get('/check', function (Request $request) {
 
 Route::get('/cuidadores', [CuidadoresController::class, 'index']);
 Route::get('/cuidadores/{id}', [CuidadoresController::class, 'show']);
+
+/*
+|--------------------------------------------------------------------------
+| Rutas del Sistema de Chat (Protegidas)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth:sanctum')->group(function () {
+    // Rutas de Chat
+    Route::apiResource('chats', ChatController::class);
+    Route::post('/chats/private', [ChatController::class, 'createPrivateChat']);
+    
+    // Rutas de Mensajes
+    Route::get('/chats/{chat}/messages', [MessageController::class, 'index']);
+    Route::post('/chats/{chat}/messages', [MessageController::class, 'store']);
+    Route::get('/chats/{chat}/messages/{message}', [MessageController::class, 'show']);
+    Route::put('/chats/{chat}/messages/{message}', [MessageController::class, 'update']);
+    Route::delete('/chats/{chat}/messages/{message}', [MessageController::class, 'destroy']);
+    Route::patch('/chats/{chat}/messages/{message}/read', [MessageController::class, 'markAsRead']);
+    Route::patch('/chats/{chat}/messages/read-all', [MessageController::class, 'markAllAsRead']);
+});
 
