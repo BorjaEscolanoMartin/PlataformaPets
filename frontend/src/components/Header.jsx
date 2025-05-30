@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useModal } from '../hooks/useModal'
 import { useState } from 'react'
+import ChatModal from './chat/ChatModal'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -31,12 +32,18 @@ export default function Header() {
   const { openLogin, openRegister } = useModal()
   const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false)
   const handleLogout = async () => {
     await logout()
     navigate('/')
     setIsMenuOpen(false)
   }
+  
+  const handleOpenChat = () => {
+    setIsChatModalOpen(true)
+    setIsMenuOpen(false)
+  }
+  
   const closeMenu = () => setIsMenuOpen(false)
 
   const esCliente = user?.role === 'cliente'
@@ -156,13 +163,16 @@ export default function Header() {
                       Notificaciones
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300">
-                    <Link to="/chat" className="flex items-center gap-3 p-2 font-medium text-gray-700 hover:text-blue-600">
+                  <DropdownMenuItem className="rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300">
+                    <button 
+                      onClick={handleOpenChat}
+                      className="flex items-center gap-3 p-2 font-medium text-gray-700 hover:text-blue-600 w-full text-left"
+                    >
                       <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
                         <MessageCircle className="w-3 h-3 text-blue-600" />
                       </div>
                       Mensajes
-                    </Link>
+                    </button>
                   </DropdownMenuItem>
                 </>
               )}              {(esCuidador || esEmpresa) && (
@@ -191,13 +201,16 @@ export default function Header() {
                       Notificaciones
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300">
-                    <Link to="/chat" className="flex items-center gap-3 p-2 font-medium text-gray-700 hover:text-blue-600">
+                  <DropdownMenuItem className="rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300">
+                    <button 
+                      onClick={handleOpenChat}
+                      className="flex items-center gap-3 p-2 font-medium text-gray-700 hover:text-blue-600 w-full text-left"
+                    >
                       <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
                         <MessageCircle className="w-3 h-3 text-blue-600" />
                       </div>
                       Mensajes
-                    </Link>
+                    </button>
                   </DropdownMenuItem>
                 </>
               )}
@@ -296,10 +309,17 @@ export default function Header() {
                           to="/notificaciones" 
                           onClick={closeMenu}
                           className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-orange-50 hover:to-yellow-50 rounded-xl transition-all duration-300"
-                        >
-                          <Bell className="w-5 h-5 text-orange-600" />
+                        >                          <Bell className="w-5 h-5 text-orange-600" />
                           <span className="font-medium text-gray-700">Notificaciones</span>
                         </Link>
+                        
+                        <button 
+                          onClick={handleOpenChat}
+                          className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-xl transition-all duration-300 w-full text-left"
+                        >
+                          <MessageCircle className="w-5 h-5 text-blue-600" />
+                          <span className="font-medium text-gray-700">Mensajes</span>
+                        </button>
                       </>
                     )}
 
@@ -324,8 +344,7 @@ export default function Header() {
                           <Bookmark className="w-5 h-5 text-indigo-600" />
                           <span className="font-medium text-gray-700">Reservas recibidas</span>
                         </Link>
-                        
-                        <Link 
+                          <Link 
                           to="/notificaciones" 
                           onClick={closeMenu}
                           className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-orange-50 hover:to-yellow-50 rounded-xl transition-all duration-300"
@@ -333,6 +352,14 @@ export default function Header() {
                           <Bell className="w-5 h-5 text-orange-600" />
                           <span className="font-medium text-gray-700">Notificaciones</span>
                         </Link>
+                        
+                        <button 
+                          onClick={handleOpenChat}
+                          className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-xl transition-all duration-300 w-full text-left"
+                        >
+                          <MessageCircle className="w-5 h-5 text-blue-600" />
+                          <span className="font-medium text-gray-700">Mensajes</span>
+                        </button>
                       </>
                     )}
 
@@ -368,6 +395,12 @@ export default function Header() {
           </div>
         </div>
       )}
+
+      {/* Chat Modal */}
+      <ChatModal 
+        isOpen={isChatModalOpen} 
+        onClose={() => setIsChatModalOpen(false)}
+      />
     </header>
   )
 }
