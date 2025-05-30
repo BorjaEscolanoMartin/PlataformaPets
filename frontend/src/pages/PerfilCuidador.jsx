@@ -4,6 +4,7 @@ import api from '../lib/axios'
 import ReservaForm from '../components/ReservaForm'
 import { useAuth } from '../context/AuthContext'
 import { useModal } from '../hooks/useModal'
+import StartChatButton from '../components/chat/StartChatButton'
 
 import ReviewList from '../components/ReviewList'
 import ReviewForm from '../components/ReviewForm'
@@ -265,11 +266,16 @@ export default function PerfilCuidador() {
                 <ReviewList reviews={reviews} />
               </div>
             </div>            {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
+            <div className="lg:col-span-1">              <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-4">Contactar cuidador</h3>
                 
-
+                {user && user.id !== cuidador.id && (                  <div className="mb-4">
+                    <StartChatButton 
+                      userId={cuidador.id} 
+                      className="w-full"
+                    />
+                  </div>
+                )}
 
                 <div className="border-t border-gray-200 pt-4">
                   <h4 className="text-md font-semibold text-gray-700 mb-3">Solicitar reserva</h4>
