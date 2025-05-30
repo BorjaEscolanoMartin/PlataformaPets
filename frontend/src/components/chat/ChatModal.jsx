@@ -31,10 +31,8 @@ const ChatModal = ({ isOpen, onClose }) => {
         }
     }, [activeChat, isMobile]);
 
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+    if (!isOpen) return null;    return (
+        <div className="fixed inset-0 z-[60] flex items-start justify-center pt-20 px-4">
             {/* Overlay */}
             <div 
                 className="absolute inset-0 bg-black bg-opacity-50"
@@ -42,9 +40,9 @@ const ChatModal = ({ isOpen, onClose }) => {
             />
             
             {/* Modal */}
-            <div className="relative bg-white rounded-lg shadow-xl w-full max-w-6xl h-[80vh] mx-4 flex overflow-hidden">
+            <div className="relative bg-white rounded-lg shadow-xl w-full max-w-6xl h-[calc(100vh-5rem)] flex overflow-hidden">
                 {/* Header with close button */}
-                <div className="absolute top-0 right-0 z-20 p-4">
+                <div className="absolute top-0 right-0 z-[70] p-4">
                     <button
                         onClick={onClose}
                         className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -55,7 +53,7 @@ const ChatModal = ({ isOpen, onClose }) => {
 
                 {/* Mobile menu toggle */}
                 {isMobile && (
-                    <div className="absolute top-0 left-0 z-20 p-4">
+                    <div className="absolute top-0 left-0 z-[70] p-4">
                         <button
                             onClick={() => setIsChatListVisible(!isChatListVisible)}
                             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -72,7 +70,7 @@ const ChatModal = ({ isOpen, onClose }) => {
                         ${isChatListVisible ? (isMobile ? 'w-full' : 'w-80') : 'w-0'} 
                         transition-all duration-300 overflow-hidden
                         border-r border-gray-200 bg-gray-50
-                        ${isMobile && isChatListVisible ? 'absolute inset-0 z-10' : ''}
+                        ${isMobile && isChatListVisible ? 'absolute inset-0 z-[65]' : ''}
                     `}>
                         <div className="p-4 border-b border-gray-200">
                             <h2 className="text-lg font-semibold text-gray-800">Mensajes</h2>
@@ -84,7 +82,8 @@ const ChatModal = ({ isOpen, onClose }) => {
                     <div className={`
                         ${isChatListVisible && isMobile ? 'hidden' : 'flex-1'} 
                         flex flex-col
-                    `}>                        {activeChat ? (
+                    `}>
+                        {activeChat ? (
                             <ChatWindow 
                                 onToggleChatList={() => setIsChatListVisible(!isChatListVisible)}
                                 isChatListVisible={isChatListVisible}
