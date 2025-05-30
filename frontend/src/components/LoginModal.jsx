@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../lib/axios'
-import axios from 'axios'
 
 export default function LoginModal({ onClose, onSwitchToRegister }) {
   const [email, setEmail] = useState('')
@@ -11,31 +10,35 @@ export default function LoginModal({ onClose, onSwitchToRegister }) {
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const { setUser } = useAuth()
-
   const handleLogin = async (e) => {
     e.preventDefault()
     setError(null)
     setIsLoading(true)
 
     try {
-      await axios.get('http://localhost:8000/sanctum/csrf-cookie', {
-        withCredentials: true
-      })
+      const response = await api.post('/login', { email, password })
+      
+      if (response.data.token) {
+        // Guardar token y usuario
+        localStorage.setItem('auth-token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        
+        // Configurar header de autorización para futuras peticiones
+        api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
+        
+        setUser(response.data.user)
 
-      const xsrf = decodeURIComponent(
-        document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1]
-      )
-
-      await api.post('/login', { email, password }, {
-        headers: { 'X-XSRF-TOKEN': xsrf },
-        withCredentials: true,
-      })
-
-      const res = await api.get('/user', { withCredentials: true })
-      setUser(res.data)
-
-      navigate('/')
-      onClose()
+        // Redireccionar si había una ruta guardada
+        const redirectPath = localStorage.getItem('redirectAfterLogin')
+        if (redirectPath) {
+          localStorage.removeItem('redirectAfterLogin')
+          navigate(redirectPath)
+        } else {
+          navigate('/')
+        }
+        
+        onClose()
+      }
     } catch (err) {
       console.error(err)
       setError('Credenciales incorrectas')

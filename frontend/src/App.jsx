@@ -12,7 +12,6 @@ import ReservasRecibidas from './pages/ReservasRecibidas'
 import Inicio from './pages/Inicio'
 import Layout from './layout/Layout'
 import RegisterEmpresa from './pages/RegisterEmpresa'
-import ChatPage from './pages/ChatPage';
 import Notificaciones from "./components/Notificaciones";
 
 function App() {
@@ -88,22 +87,6 @@ function App() {
           element={
             <PrivateRoute>
               <Layout><Notificaciones /></Layout>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/chat/:id"
-          element={
-            <PrivateRoute>
-              <Layout><ChatPage /></Layout>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/debug"
-          element={
-            <PrivateRoute>
-              <Layout><div className="text-center text-red-500 p-8">DebugChat no disponible</div></Layout>
             </PrivateRoute>
           }
         />

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import api from '../lib/axios'
-import axios from 'axios' // <- necesario para csrf-cookie
 import { Link } from 'react-router-dom';
 
 // ...
@@ -36,17 +35,13 @@ export default function Pets() {
       setForm({ ...form, [name]: value })
     }
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
     setError(null)
     setSuccess(false)
   
     try {
-      await axios.get('http://localhost:8000/sanctum/csrf-cookie', {
-        withCredentials: true
-      })
-  
       const data = new FormData()
       Object.keys(form).forEach((key) => {
         if (form[key]) data.append(key, form[key])
