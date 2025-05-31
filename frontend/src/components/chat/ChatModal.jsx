@@ -37,24 +37,23 @@ const ChatModal = ({ isOpen, onClose }) => {
         }
     }, [activeChat, isMobile]);
 
-    if (!isOpen) return null;
-    return (
-        <div className="fixed inset-0 z-[60] flex items-start justify-center pt-20 px-4">
+    if (!isOpen) return null;    return (
+        <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-purple-900/30 to-blue-900/30 backdrop-blur-sm flex items-start justify-center pt-8 px-4 z-[60]">
             {/* Overlay */}
             <div 
-                className="absolute inset-0 bg-black bg-opacity-50"
+                className="absolute inset-0"
                 onClick={onClose}
             />
             
             {/* Modal */}
-            <div className="relative bg-white rounded-lg shadow-xl w-full max-w-6xl h-[calc(100vh-5rem)] flex overflow-hidden">
+            <div className="relative bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-6xl h-[calc(100vh-4rem)] flex overflow-hidden border border-blue-100 transform transition-all duration-300 scale-100 hover:scale-[1.01]">
                 {/* Header with close button */}
                 <div className="absolute top-0 right-0 z-[70] p-4">
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        className="w-10 h-10 rounded-full bg-white/80 hover:bg-red-50 text-gray-500 hover:text-red-500 transition-all duration-200 flex items-center justify-center group shadow-lg border border-gray-200"
                     >
-                        <X className="h-5 w-5 text-gray-500" />
+                        <X className="h-5 w-5 transform group-hover:rotate-90 transition-transform duration-200" />
                     </button>
                 </div>
 
@@ -63,9 +62,9 @@ const ChatModal = ({ isOpen, onClose }) => {
                     <div className="absolute top-0 left-0 z-[70] p-4">
                         <button
                             onClick={() => setIsChatListVisible(!isChatListVisible)}
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            className="w-10 h-10 rounded-full bg-white/80 hover:bg-blue-50 text-gray-500 hover:text-blue-600 transition-all duration-200 flex items-center justify-center shadow-lg border border-gray-200"
                         >
-                            <Menu className="h-5 w-5 text-gray-500" />
+                            <Menu className="h-5 w-5" />
                         </button>
                     </div>
                 )}
@@ -76,11 +75,16 @@ const ChatModal = ({ isOpen, onClose }) => {
                     <div className={`
                         ${isChatListVisible ? (isMobile ? 'w-full' : 'w-80') : 'w-0'} 
                         transition-all duration-300 overflow-hidden
-                        border-r border-gray-200 bg-gray-50
-                        ${isMobile && isChatListVisible ? 'absolute inset-0 z-[65]' : ''}
+                        border-r border-blue-200/50 bg-gradient-to-b from-blue-50/80 to-purple-50/80 backdrop-blur-sm
+                        ${isMobile && isChatListVisible ? 'absolute inset-0 z-[65] rounded-3xl' : ''}
                     `}>
-                        <div className="p-4 border-b border-gray-200">
-                            <h2 className="text-lg font-semibold text-gray-800">Mensajes</h2>
+                        <div className="p-6 border-b border-blue-200/50">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                                    <span className="text-white text-lg">💬</span>
+                                </div>
+                                <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Mensajes</h2>
+                            </div>
                         </div>
                         <ChatList onChatSelect={() => isMobile && setIsChatListVisible(false)} />
                     </div>
@@ -88,7 +92,7 @@ const ChatModal = ({ isOpen, onClose }) => {
                     {/* Ventana de chat */}
                     <div className={`
                         ${isChatListVisible && isMobile ? 'hidden' : 'flex-1'} 
-                        flex flex-col
+                        flex flex-col bg-gradient-to-br from-white/90 to-blue-50/50 backdrop-blur-sm
                     `}>
                         {activeChat ? (
                             <ChatWindow 
@@ -97,22 +101,25 @@ const ChatModal = ({ isOpen, onClose }) => {
                                 isMobile={isMobile}
                             />
                         ) : (
-                            <div className="flex-1 flex items-center justify-center bg-gray-50">
+                            <div className="flex-1 flex items-center justify-center">
                                 <div className="text-center p-8">
-                                    <div className="text-gray-400 mb-4">
-                                        <div className="text-6xl">💬</div>
+                                    <div className="mb-6">
+                                        <div className="w-24 h-24 mx-auto bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg border border-blue-200">
+                                            <span className="text-4xl">💬</span>
+                                        </div>
                                     </div>
-                                    <h3 className="text-lg font-medium text-gray-600 mb-2">
+                                    <h3 className="text-xl font-bold text-gray-800 mb-3">
                                         Selecciona una conversación
                                     </h3>
-                                    <p className="text-gray-500 text-sm">
-                                        Elige un chat de la lista para comenzar a conversar
+                                    <p className="text-gray-600 text-sm mb-6 max-w-sm mx-auto">
+                                        Elige un chat de la lista para comenzar a conversar con otros usuarios
                                     </p>
                                     {isMobile && (
                                         <button
                                             onClick={() => setIsChatListVisible(true)}
-                                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                                            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                         >
+                                            <Menu className="w-4 h-4" />
                                             Ver conversaciones
                                         </button>
                                     )}
