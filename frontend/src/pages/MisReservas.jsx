@@ -1,15 +1,44 @@
 import { useEffect, useState } from 'react'
 import api from '../lib/axios'
 import { Link } from 'react-router-dom'
+import { useChat } from '../context/useChat'
+import ChatModal from '../components/chat/ChatModal'
 
 export default function MisReservas() {
   const [reservas, setReservas] = useState([])
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
-
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false)
+  const { createPrivateChat, setActiveChat } = useChat()
+    const handleContactarCuidador = async (cuidadorUserId) => {
+    try {
+      console.log('🚀 Iniciando chat con cuidador User ID:', cuidadorUserId)
+      
+      // Crear o obtener el chat privado con el cuidador
+      const chat = await createPrivateChat(cuidadorUserId)
+      console.log('✅ Chat creado/obtenido:', chat)
+      console.log('👥 Participantes del chat:', chat.participants)
+      console.log('👤 Otro participante:', chat.other_participant)
+      
+      // Establecer como chat activo
+      setActiveChat(chat)
+      console.log('✅ Chat establecido como activo')
+      
+      // Esperar un momento para que se establezca el estado
+      setTimeout(() => {
+        // Abrir el modal de chat
+        setIsChatModalOpen(true)
+        console.log('✅ Modal de chat abierto')
+      }, 100)
+    } catch (error) {
+      console.error('❌ Error al abrir chat con cuidador:', error)
+      alert(`Error al abrir chat: ${error.message}`)
+    }
+  }
   useEffect(() => {
     api.get('/reservations')
       .then(res => {
+        console.log('📋 Reservas cargadas:', res.data)
         setReservas(res.data)
         setLoading(false)
       })
@@ -18,13 +47,11 @@ export default function MisReservas() {
         setLoading(false)
       })
   }, [])
-
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'pendiente': return 'bg-yellow-50 text-yellow-700 border-yellow-200'
-      case 'confirmada': return 'bg-green-50 text-green-700 border-green-200'
+      case 'aceptada': return 'bg-green-50 text-green-700 border-green-200'
       case 'rechazada': return 'bg-red-50 text-red-700 border-red-200'
-      case 'completada': return 'bg-blue-50 text-blue-700 border-blue-200'
       default: return 'bg-gray-50 text-gray-700 border-gray-200'
     }
   }
@@ -32,9 +59,8 @@ export default function MisReservas() {
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
       case 'pendiente': return '⏳'
-      case 'confirmada': return '✅'
+      case 'aceptada': return '✅'
       case 'rechazada': return '❌'
-      case 'completada': return '🎉'
       default: return '📋'
     }
   }
@@ -117,8 +143,7 @@ export default function MisReservas() {
               </div>
               <h2 className="text-xl font-bold text-gray-800">Resumen de reservas</h2>
             </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
                 <div className="text-2xl font-bold text-blue-600">{reservas.length}</div>
                 <div className="text-sm text-blue-700">Total</div>
@@ -131,15 +156,9 @@ export default function MisReservas() {
               </div>
               <div className="bg-green-50 rounded-xl p-4 text-center border border-green-100">
                 <div className="text-2xl font-bold text-green-600">
-                  {reservas.filter(r => r.status?.toLowerCase() === 'confirmada').length}
+                  {reservas.filter(r => r.status?.toLowerCase() === 'aceptada').length}
                 </div>
                 <div className="text-sm text-green-700">Confirmadas</div>
-              </div>
-              <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
-                <div className="text-2xl font-bold text-blue-600">
-                  {reservas.filter(r => r.status?.toLowerCase() === 'completada').length}
-                </div>
-                <div className="text-sm text-blue-700">Completadas</div>
               </div>
             </div>
           </div>
@@ -236,11 +255,17 @@ export default function MisReservas() {
                     <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(reserva.status)}`}>
                       <span>{getStatusIcon(reserva.status)}</span>
                       <span className="capitalize">{reserva.status || 'Desconocido'}</span>
-                    </div>
-                    
-                    {reserva.status?.toLowerCase() === 'confirmada' && reserva.host && (
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <button className="bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium py-2 px-4 rounded-xl transition-all duration-200 text-sm">
+                    </div>                    {reserva.status?.toLowerCase() === 'aceptada' && reserva.host && (
+                      <div className="flex flex-col sm:flex-row gap-2">                        <button 
+                          onClick={() => {
+                            console.log('🎯 Botón contactar clickeado para reserva:', reserva.id)
+                            console.log('👤 Datos del host:', reserva.host)
+                            console.log('👤 Usuario del cuidador:', reserva.host.user)
+                            console.log('🆔 User ID del cuidador:', reserva.host.user?.id)
+                            handleContactarCuidador(reserva.host.user?.id)
+                          }}
+                          className="bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium py-2 px-4 rounded-xl transition-all duration-200 text-sm"
+                        >
                           📞 Contactar
                         </button>
                       </div>
@@ -260,9 +285,14 @@ export default function MisReservas() {
           >
             <span className="text-lg">🏠</span>
             Volver al Inicio
-          </Link>
-        </div>
+          </Link>        </div>
       </div>
+
+      {/* Chat Modal */}
+      <ChatModal 
+        isOpen={isChatModalOpen} 
+        onClose={() => setIsChatModalOpen(false)}
+      />
     </div>
   )
 }

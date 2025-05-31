@@ -44,12 +44,10 @@ public function store(Request $request)
         return response()->json($reservation, 201);
     }
 
-
-
     // Cliente: ver sus reservas
     public function index(Request $request)
     {
-        return $request->user()->reservations()->with('pet', 'host')->get();
+        return $request->user()->reservations()->with('pet', 'host.user')->get();
     }
 
     // Cuidador: ver reservas que recibió
