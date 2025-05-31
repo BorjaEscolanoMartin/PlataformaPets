@@ -1,21 +1,34 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../lib/axios'
+import { useChat } from '../context/useChat'
+import ChatModal from '../components/chat/ChatModal'
 
 export default function ReservasRecibidas() {
   const [reservas, setReservas] = useState([])
   const [error, setError] = useState(null)
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false)
+  const { createPrivateChat, setActiveChat } = useChat()
 
   useEffect(() => {
     fetchReservas()
   }, [])
-
   const fetchReservas = () => {
     api.get('/reservations/host')
-      .then(res => setReservas(res.data))
+      .then(res => {
+        console.log('📋 Reservas recibidas cargadas:', res.data)
+        // Ordenar reservas de la más reciente a la más antigua (basado en created_at o id)
+        const reservasOrdenadas = res.data.sort((a, b) => {
+          // Intentar ordenar por created_at si está disponible, sino por id (descendente)
+          if (a.created_at && b.created_at) {
+            return new Date(b.created_at) - new Date(a.created_at)
+          }
+          return b.id - a.id
+        })
+        setReservas(reservasOrdenadas)
+      })
       .catch(() => setError('Error al cargar las reservas'))
   }
-
   const actualizarEstado = async (id, status) => {
     try {
       await api.put(`/reservations/${id}`, { status })
@@ -24,6 +37,43 @@ export default function ReservasRecibidas() {
       alert('Error al actualizar el estado')
     }
   }
+
+  const handleContactarCliente = async (clienteUserId) => {
+    try {
+      console.log('🚀 Iniciando chat con cliente User ID:', clienteUserId)
+      
+      // Crear o obtener el chat privado con el cliente
+      const chat = await createPrivateChat(clienteUserId)
+      console.log('✅ Chat creado/obtenido:', chat)
+      console.log('👥 Participantes del chat:', chat.participants)
+      console.log('👤 Otro participante:', chat.other_participant)
+      
+      // Establecer como chat activo
+      setActiveChat(chat)
+      console.log('✅ Chat establecido como activo')
+      
+      // Esperar un momento para que se establezca el estado
+      setTimeout(() => {
+        // Abrir el modal de chat
+        setIsChatModalOpen(true)
+        console.log('✅ Modal de chat abierto')
+      }, 100)    } catch (error) {
+      console.error('❌ Error al abrir chat con cliente:', error)
+      alert(`Error al abrir chat: ${error.message}`)
+    }
+  }
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'No especificada'
+    const date = new Date(dateString)
+    // Formatear como día/mes/año
+    return date.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 py-8">
       <div className="max-w-6xl mx-auto p-6">
@@ -111,10 +161,9 @@ export default function ReservasRecibidas() {
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-gradient-to-r from-green-100 to-green-200 rounded-lg flex items-center justify-center">
                       <span className="text-green-600">📅</span>
-                    </div>
-                    <div>
+                    </div>                    <div>
                       <p className="text-sm font-semibold text-gray-500">Fechas</p>
-                      <p className="font-bold text-gray-800">{res.start_date} → {res.end_date}</p>
+                      <p className="font-bold text-gray-800">{formatDate(res.start_date)} → {formatDate(res.end_date)}</p>
                     </div>
                   </div>
 
@@ -128,9 +177,7 @@ export default function ReservasRecibidas() {
                     </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Botones de acción */}
+              </div>              {/* Botones de acción */}
               {res.status === 'pendiente' && (
                 <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
                   <button
@@ -149,10 +196,26 @@ export default function ReservasRecibidas() {
                   </button>
                 </div>
               )}
-            </div>
-          ))}        </div>
 
-        {/* Botón Volver al Inicio */}
+              {/* Botón de contacto para reservas aceptadas */}
+              {res.status === 'aceptada' && res.user && (
+                <div className="flex justify-center pt-6 border-t border-gray-200">
+                  <button 
+                    onClick={() => {
+                      console.log('🎯 Botón contactar clickeado para reserva:', res.id)
+                      console.log('👤 Datos del cliente:', res.user)
+                      console.log('🆔 User ID del cliente:', res.user?.id)
+                      handleContactarCliente(res.user?.id)
+                    }}
+                    className="bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium py-3 px-6 rounded-xl transition-all duration-200 text-sm flex items-center gap-2"
+                  >
+                    <span className="text-lg">📞</span>
+                    Contactar Cliente
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}        </div>        {/* Botón Volver al Inicio */}
         <div className="text-center pt-8">
           <Link
             to="/"
@@ -163,6 +226,12 @@ export default function ReservasRecibidas() {
           </Link>
         </div>
       </div>
+
+      {/* Chat Modal */}
+      <ChatModal 
+        isOpen={isChatModalOpen} 
+        onClose={() => setIsChatModalOpen(false)}
+      />
     </div>
   )
 }

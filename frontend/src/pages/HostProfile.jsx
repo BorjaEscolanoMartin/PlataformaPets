@@ -40,7 +40,6 @@ export default function HostProfile() {
 
   const { user, setUser } = useAuth()
   const locationRef = useRef(null)
-
   useEffect(() => {
     api.get('/hosts')
       .then(res => {
@@ -75,6 +74,15 @@ export default function HostProfile() {
       })
       .catch(() => setError('Error al cargar tus datos'))
   }, [])
+
+  // Efecto para sincronizar el tipo basado en el rol del usuario
+  useEffect(() => {
+    if (user?.role === 'empresa') {
+      setHost(prev => ({ ...prev, type: 'empresa' }))
+    } else if (user?.role === 'cuidador') {
+      setHost(prev => ({ ...prev, type: 'particular' }))
+    }
+  }, [user])
 
   useEffect(() => {
     loadGoogleMaps().then(() => {
@@ -242,7 +250,20 @@ export default function HostProfile() {
               </select>
             </div>
           ) : (
-            <input type="hidden" name="type" value="particular" />
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                <span className="text-blue-600">👤</span>
+                Tipo de cuidador
+              </label>
+              <select
+                value={host.type}
+                onChange={e => setHost({ ...host, type: e.target.value })}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 outline-none text-sm font-medium bg-white"
+              >
+                <option value="particular">Particular</option>
+                <option value="empresa">Empresa</option>
+              </select>
+            </div>
           )}
 
           {/* Ubicación y contacto */}

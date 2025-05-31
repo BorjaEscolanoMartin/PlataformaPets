@@ -75,9 +75,7 @@ export default function Header() {
         aria-label="Toggle menu"
       >
         {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-      </button>
-
-      {/* Navegación para tablets y desktop */}
+      </button>      {/* Navegación para tablets y desktop */}
       <nav className="hidden lg:flex items-center gap-2 xl:gap-3 text-sm relative">        {(!user || esCliente) && (
           <Button variant="default" size="sm" asChild className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 border-0 mr-1 xl:mr-2">
             <Link to="/cuidadores" className="flex items-center gap-1 xl:gap-2 px-2 xl:px-3">
@@ -116,7 +114,25 @@ export default function Header() {
               <span className="xl:hidden">Empresa</span>
             </Link>
           </Button>
-        )}        {!user ? (
+        )}        {/* Opciones principales para cuidadores en la barra */}
+        {(esCuidador || esEmpresa) && (
+          <>
+            <Button variant="outline" size="sm" asChild className="border-2 border-indigo-300 text-indigo-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:border-indigo-500 transition-all duration-300 shadow-md hover:shadow-lg">
+              <Link to="/reservas-recibidas" className="flex items-center gap-1 xl:gap-2 font-semibold px-2 xl:px-3">
+                <Bookmark className="w-4 h-4" />
+                <span className="hidden md:inline">Reservas recibidas</span>
+                <span className="md:hidden">Reservas</span>
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild className="border-2 border-orange-300 text-orange-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-yellow-50 hover:border-orange-500 transition-all duration-300 shadow-md hover:shadow-lg">
+              <Link to="/notificaciones" className="flex items-center gap-1 xl:gap-2 font-semibold px-2 xl:px-3">
+                <Bell className="w-4 h-4" />
+                <span className="hidden md:inline">Notificaciones</span>
+                <span className="md:hidden">Notific.</span>
+              </Link>
+            </Button>
+          </>
+        )}{!user ? (
           <>
             <Button variant="ghost" size="sm" onClick={openRegister} className="font-semibold text-gray-700 hover:text-purple-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transition-all duration-300 px-2 xl:px-3">
               <span className="hidden md:inline">Registrarse</span>
@@ -185,22 +201,6 @@ export default function Header() {
                       {esEmpresa ? 'Mi perfil de empresa' : 'Mi perfil de cuidador'}
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="rounded-lg hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-300">
-                    <Link to="/reservas-recibidas" className="flex items-center gap-3 p-2 font-medium text-gray-700 hover:text-indigo-600">
-                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                        <Bookmark className="w-3 h-3 text-indigo-600" />
-                      </div>
-                      Reservas recibidas
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="rounded-lg hover:bg-gradient-to-r hover:from-orange-50 hover:to-yellow-50 transition-all duration-300">
-                    <Link to="/notificaciones" className="flex items-center gap-3 p-2 font-medium text-gray-700 hover:text-orange-600">
-                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-100 to-yellow-100 flex items-center justify-center">
-                        <Bell className="w-3 h-3 text-orange-600" />
-                      </div>
-                      Notificaciones
-                    </Link>
-                  </DropdownMenuItem>
                   <DropdownMenuItem className="rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300">
                     <button 
                       onClick={handleOpenChat}
@@ -241,9 +241,7 @@ export default function Header() {
                   <Search className="w-5 h-5" />
                   <span className="font-semibold">Buscar cuidadores</span>
                 </Link>
-              )}
-
-              {esCliente && (
+              )}              {esCliente && (
                 <>
                   <Link 
                     to="/empresas" 
@@ -270,6 +268,27 @@ export default function Header() {
                   >
                     <Building2 className="w-5 h-5 text-green-600" />
                     <span className="font-semibold text-gray-700">Soy una empresa</span>
+                  </Link>
+                </>
+              )}              {/* Opciones principales para cuidadores en móvil */}
+              {(esCuidador || esEmpresa) && (
+                <>
+                  <Link 
+                    to="/reservas-recibidas" 
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:from-indigo-700 hover:to-purple-700"
+                  >
+                    <Bookmark className="w-5 h-5" />
+                    <span className="font-semibold">Reservas recibidas</span>
+                  </Link>
+                  
+                  <Link 
+                    to="/notificaciones" 
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-600 to-yellow-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:from-orange-700 hover:to-yellow-700"
+                  >
+                    <Bell className="w-5 h-5" />
+                    <span className="font-semibold">Notificaciones</span>
                   </Link>
                 </>
               )}
@@ -321,9 +340,7 @@ export default function Header() {
                           <span className="font-medium text-gray-700">Mensajes</span>
                         </button>
                       </>
-                    )}
-
-                    {(esCuidador || esEmpresa) && (
+                    )}                    {(esCuidador || esEmpresa) && (
                       <>
                         <Link 
                           to="/mi-perfil-cuidador" 
@@ -334,23 +351,6 @@ export default function Header() {
                           <span className="font-medium text-gray-700">
                             {esEmpresa ? 'Mi perfil de empresa' : 'Mi perfil de cuidador'}
                           </span>
-                        </Link>
-                        
-                        <Link 
-                          to="/reservas-recibidas" 
-                          onClick={closeMenu}
-                          className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 rounded-xl transition-all duration-300"
-                        >
-                          <Bookmark className="w-5 h-5 text-indigo-600" />
-                          <span className="font-medium text-gray-700">Reservas recibidas</span>
-                        </Link>
-                          <Link 
-                          to="/notificaciones" 
-                          onClick={closeMenu}
-                          className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-orange-50 hover:to-yellow-50 rounded-xl transition-all duration-300"
-                        >
-                          <Bell className="w-5 h-5 text-orange-600" />
-                          <span className="font-medium text-gray-700">Notificaciones</span>
                         </Link>
                         
                         <button 
