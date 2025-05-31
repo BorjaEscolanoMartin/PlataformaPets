@@ -12,12 +12,10 @@ class ReservationController extends Controller
 {
 
 public function store(Request $request)
-    {
-        $validated = $request->validate([
+    {        $validated = $request->validate([
             'pet_id' => 'required|exists:pets,id',
             'host_id' => 'required|exists:hosts,id',
             'service_type' => 'required|in:alojamiento,domicilio,visitas,guarderia,paseo',
-            'frequency' => 'required|in:una_vez,semanal',
             'address' => 'nullable|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',

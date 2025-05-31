@@ -11,7 +11,6 @@ export default function ReservaForm({ hostId }) {
   const [form, setForm] = useState({
     pet_id: '',
     service_type: 'alojamiento',
-    frequency: 'una_vez',
     address: '',
     start_date: '',
     end_date: '',
@@ -188,25 +187,9 @@ export default function ReservaForm({ hostId }) {
             <option value="visitas">🚪 Visitas a domicilio</option>
             <option value="guarderia">🌅 Guardería de día</option>
             <option value="paseo">🚶 Paseo de perros</option>
-          </select>
-        </div>
+          </select>        </div>
 
-        {/* Frecuencia */}
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
-            <span className="text-green-600">🔄</span>
-            Frecuencia del servicio
-          </label>
-          <select 
-            name="frequency" 
-            value={form.frequency} 
-            onChange={handleChange} 
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all duration-200 outline-none text-sm font-medium bg-white"
-          >
-            <option value="una_vez">Una sola vez</option>
-            <option value="semanal">Recurrente (semanal)</option>
-          </select>
-        </div>        {/* Dirección */}
+        {/* Dirección */}
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
             <span className="text-orange-600">📍</span>
