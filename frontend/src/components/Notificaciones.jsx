@@ -64,10 +64,8 @@ const Notificaciones = () => {
           </p>
         </div>
       );
-    }
-
-    if (data.tipo === "reserva_actualizada") {
-      const estadoColor = data.estado === 'confirmada' ? 'text-green-600' : 
+    }    if (data.tipo === "reserva_actualizada") {
+      const estadoColor = data.estado === 'aceptada' ? 'text-green-600' : 
                          data.estado === 'rechazada' ? 'text-red-600' : 'text-yellow-600';
       return (
         <div>

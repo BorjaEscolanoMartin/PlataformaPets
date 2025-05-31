@@ -146,9 +146,7 @@ export const ChatProvider = ({ children }) => {
             console.error('❌ Error sending message:', error);
             throw error;
         }
-    };
-
-    // Crear chat privado
+    };    // Crear chat privado
     const createPrivateChat = async (otherUserId) => {
         console.log('🚀 createPrivateChat called with otherUserId:', otherUserId);
         console.log('👤 Current user:', user);
@@ -164,24 +162,28 @@ export const ChatProvider = ({ children }) => {
             const newChat = response.data.data;
             console.log('💬 New chat data:', newChat);
             
+            // Actualizar la lista de chats
             setChats(prev => {
-                const exists = prev.find(chat => chat.id === newChat.id);
-                if (exists) {
-                    console.log('⚠️ Chat already exists, returning existing');
-                    return prev;
+                const existingIndex = prev.findIndex(chat => chat.id === newChat.id);
+                if (existingIndex !== -1) {
+                    console.log('⚠️ Chat already exists, updating existing');
+                    // Reemplazar el chat existente con los datos actualizados
+                    const updatedChats = [...prev];
+                    updatedChats[existingIndex] = newChat;
+                    return updatedChats;
                 }
                 console.log('✨ Adding new chat to list');
                 return [newChat, ...prev];
             });
               
-            console.log('✅ createPrivateChat completed successfully');
+            console.log('✅ createPrivateChat completed successfully, returning chat:', newChat);
             return newChat;
         } catch (error) {
             console.error('❌ Error creating private chat:', error);
             console.error('❌ Error details:', error.response?.data);
             throw error;
         }
-    };    // Suscribirse a eventos de chat
+    };// Suscribirse a eventos de chat
     useEffect(() => {
         if (!user || !activeChat || !echo) {
             console.log('❌ No se puede suscribir a eventos de chat:', { 
