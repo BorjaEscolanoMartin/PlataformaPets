@@ -275,23 +275,24 @@ export default function Cuidadores() {
                   key={cuidador.id}
                   className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-5 border border-gray-100"
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex-1 flex items-start gap-4">
+                  {/* Layout responsivo: columna en móvil, fila en desktop */}
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-3 gap-4">
+                    <div className="flex items-start gap-4">
                       {/* Foto de perfil */}
                       {cuidador.host?.profile_photo ? (
                         <img
                           src={cuidador.host.profile_photo_url}
                           alt={`Foto de ${cuidador.name}`}
-                          className="w-20 h-20 rounded-full object-cover border border-gray-300 transform transition-transform duration-300 hover:scale-105 shadow-sm"
+                          className="w-16 h-16 lg:w-20 lg:h-20 rounded-full object-cover border border-gray-300 transform transition-transform duration-300 hover:scale-105 shadow-sm"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm font-medium border border-gray-300 transform transition-transform duration-300 hover:scale-105 shadow-sm">
+                        <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm font-medium border border-gray-300 transform transition-transform duration-300 hover:scale-105 shadow-sm">
                           {cuidador.name?.charAt(0) || "?"}
                         </div>
                       )}
 
                       {/* Info del cuidador */}
-                      <div>
+                      <div className="flex-1">
                         <h3 className="text-lg font-bold text-gray-800 mb-1">{cuidador.name}</h3>
                         <p className="text-gray-600 text-sm">{cuidador.email}</p>
                         {cuidador.host?.average_rating ? (
@@ -304,37 +305,89 @@ export default function Cuidadores() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      {cuidador.distance && (
-                        <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-                          📍 {Number(cuidador.distance).toFixed(1)} km
-                        </div>
-                      )}
-                      <button
-                        onClick={() => {
-                          const ruta = `/cuidadores/${cuidador.id}`;
-                          if (!user) {
-                            localStorage.setItem('redirectAfterLogin', ruta);
-                            openLogin();
-                          } else {
-                            navigate(ruta);
+                    {/* Precio y botones - en columna en móvil, en fila en desktop */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 lg:gap-4">
+                      {/* Precio del servicio principal */}
+                      <div className="w-full sm:w-auto">
+                        {(() => {
+                          // Buscar precio de alojamiento primero
+                          const alojamientoPrice = cuidador.host?.service_prices?.find(p => p.service_type === 'alojamiento');
+                          if (alojamientoPrice) {
+                            return (
+                              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg px-3 py-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm">🏠</span>
+                                  <span className="text-xs font-medium text-gray-600">Alojamiento/noche</span>
+                                </div>
+                                <div className="text-lg font-bold text-green-700">{alojamientoPrice.price}€</div>
+                              </div>
+                            );
                           }
-                        }}
-                        className="group relative bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-purple-600 hover:to-indigo-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
-                      >
-                        <span className="relative z-10 flex items-center gap-2">
-                          <span>Ver perfil</span>
-                          <svg
-                            className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </span>
-                        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                      </button>
+                          
+                          // Si no tiene alojamiento, buscar otros servicios
+                          const otherServices = cuidador.host?.service_prices || [];
+                          if (otherServices.length > 0) {
+                            const firstService = otherServices[0];
+                            const serviceLabels = {
+                              'paseo': { icon: '🚶', label: 'Paseo/hora' },
+                              'guarderia': { icon: '🏢', label: 'Guardería/día' },
+                              'cuidado_a_domicilio': { icon: '🏡', label: 'Cuidado/día' },
+                              'visitas_a_domicilio': { icon: '🚪', label: 'Visita' }
+                            };
+                            
+                            const serviceInfo = serviceLabels[firstService.service_type] || { icon: '💼', label: 'Servicio' };
+                            
+                            return (
+                              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-3 py-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm">{serviceInfo.icon}</span>
+                                  <span className="text-xs font-medium text-gray-600">{serviceInfo.label}</span>
+                                </div>
+                                <div className="text-lg font-bold text-blue-700">{firstService.price}€</div>
+                              </div>
+                            );
+                          }
+                          
+                          // Si no tiene precios configurados
+                          return (
+                            <div className="bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-lg px-3 py-2">
+                              <div className="text-xs font-medium text-gray-500">Consultar precio</div>
+                            </div>
+                          );                        })()}
+                      </div>
+
+                      <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                        {cuidador.distance && (
+                          <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                            📍 {Number(cuidador.distance).toFixed(1)} km
+                          </div>
+                        )}
+                        <button
+                          onClick={() => {
+                            const ruta = `/cuidadores/${cuidador.id}`;
+                            if (!user) {
+                              localStorage.setItem('redirectAfterLogin', ruta);
+                              openLogin();
+                            } else {
+                              navigate(ruta);
+                            }
+                          }}
+                          className="group relative bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-purple-600 hover:to-indigo-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden"
+                        >
+                          <span className="relative z-10 flex items-center gap-2">
+                            <span>Ver perfil</span>
+                            <svg
+                              className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </span>
+                          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                        </button>
+                      </div>
                     </div>
                   </div>
 

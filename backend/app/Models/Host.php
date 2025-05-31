@@ -47,6 +47,11 @@ class Host extends Model
         return $this->hasMany(Review::class);
     }
 
+    public function servicePrices()
+    {
+        return $this->hasMany(ServicePrice::class);
+    }
+
     public function averageRating()
     {
         return round($this->reviews()->avg('rating'), 1);

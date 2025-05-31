@@ -135,6 +135,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Hosts
     Route::apiResource('hosts', HostController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+    
+    // Precios de servicios para hosts
+    Route::get('/hosts/{host}/service-prices', [HostController::class, 'getServicePrices']);
+    Route::post('/hosts/{host}/service-prices', [HostController::class, 'updateServicePrices']);
 
     // Cuidadores y empresas (usuarios por rol)
     Route::get('/users', function (Request $request) {

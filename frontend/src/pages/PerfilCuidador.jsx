@@ -208,6 +208,68 @@ export default function PerfilCuidador() {
                 </div>
               </div>
 
+              {/* Precios de servicios */}
+              {host.service_prices && host.service_prices.length > 0 && (
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                  <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    💰 Tarifas de servicios
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {host.service_prices.map((precio, idx) => {
+                      const getServiceIcon = (serviceType) => {
+                        switch(serviceType) {
+                          case 'paseo': return '🚶'
+                          case 'alojamiento': return '🏠'
+                          case 'guarderia': return '🏢'
+                          case 'cuidado_a_domicilio': return '🏡'
+                          case 'visitas_a_domicilio': return '🚪'
+                          default: return '⭐'
+                        }
+                      }
+                      
+                      const getServiceLabel = (serviceType) => {
+                        switch(serviceType) {
+                          case 'paseo': return 'Paseo'
+                          case 'alojamiento': return 'Alojamiento'
+                          case 'guarderia': return 'Guardería'
+                          case 'cuidado_a_domicilio': return 'Cuidado a domicilio'
+                          case 'visitas_a_domicilio': return 'Visitas a domicilio'
+                          default: return serviceType
+                        }
+                      }
+                      
+                      const getPriceUnit = (priceUnit) => {
+                        switch(priceUnit) {
+                          case 'por_hora': return 'por hora'
+                          case 'por_noche': return 'por noche'
+                          case 'por_dia': return 'por día'
+                          case 'por_visita': return 'por visita'
+                          default: return priceUnit
+                        }
+                      }
+
+                      return (
+                        <div key={idx} className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{getServiceIcon(precio.service_type)}</span>
+                              <h3 className="font-semibold text-gray-800">{getServiceLabel(precio.service_type)}</h3>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-xl font-bold text-green-700">{precio.price}€</span>
+                              <div className="text-xs text-gray-600">{getPriceUnit(precio.price_unit)}</div>
+                            </div>
+                          </div>
+                          {precio.description && (
+                            <p className="text-sm text-gray-600 mt-2">{precio.description}</p>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Experience Details */}
               {host.experience_details && (
                 <div className="bg-white rounded-xl shadow-lg p-6">

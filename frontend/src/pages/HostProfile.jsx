@@ -22,6 +22,18 @@ export default function HostProfile() {
   const [tamanos, setTamanos] = useState([])
   const [especies, setEspecies] = useState([])
   const [servicios, setServicios] = useState([])
+  
+  // Estado para precios de servicios
+  const [precios, setPrecios] = useState({})
+  
+  // Servicios disponibles con sus unidades por defecto
+  const serviciosDisponibles = [
+    { key: 'paseo', label: 'Paseo', unidad: 'por_hora' },
+    { key: 'alojamiento', label: 'Alojamiento', unidad: 'por_noche' },
+    { key: 'guarderia', label: 'Guardería', unidad: 'por_dia' },
+    { key: 'cuidado_a_domicilio', label: 'Cuidado a domicilio', unidad: 'por_dia' },
+    { key: 'visitas_a_domicilio', label: 'Visitas a domicilio', unidad: 'por_visita' },
+  ]
 
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
@@ -33,7 +45,25 @@ export default function HostProfile() {
     api.get('/hosts')
       .then(res => {
         if (Array.isArray(res.data) && res.data.length > 0 && res.data[0]?.id) {
-          setHost(res.data[0])
+          const hostData = res.data[0]
+          setHost(hostData)
+          
+          // Cargar precios de servicios si el host existe
+          if (hostData.id) {
+            api.get(`/hosts/${hostData.id}/service-prices`)
+              .then(pricesRes => {
+                const preciosObj = {}
+                pricesRes.data.forEach(precio => {
+                  preciosObj[precio.service_type] = {
+                    price: precio.price,
+                    price_unit: precio.price_unit,
+                    description: precio.description
+                  }
+                })
+                setPrecios(preciosObj)
+              })
+              .catch(() => console.log('No hay precios configurados aún'))
+          }
         }
       })
 
@@ -108,7 +138,21 @@ export default function HostProfile() {
       })
 
       const userResponse = await api.get('/user')
-      setUser(userResponse.data)
+      setUser(userResponse.data)      // Actualizar precios de servicios si hay alguno configurado
+      const preciosConfigurados = Object.entries(precios).filter(([, data]) => data.price && data.price > 0)
+      
+      if (preciosConfigurados.length > 0 && host?.id) {
+        const preciosArray = preciosConfigurados.map(([service_type, data]) => ({
+          service_type,
+          price: parseFloat(data.price),
+          price_unit: data.price_unit,
+          description: data.description || ''
+        }))
+
+        await api.post(`/hosts/${host.id}/service-prices`, {
+          prices: preciosArray
+        })
+      }
 
       setSuccess('Perfil actualizado correctamente ✅')
     } catch (err) {
@@ -392,7 +436,7 @@ export default function HostProfile() {
             ¿Qué servicios ofreces?
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {['paseo', 'alojamiento', 'guarderia', 'cuidado a domicilio', 'visitas a domicilio'].map(servicio => (
+            {['paseo', 'alojamiento', 'guarderia', 'cuidado_a_domicilio', 'visitas_a_domicilio'].map(servicio => (
               <label key={servicio} className="group cursor-pointer">
                 <div className={`flex items-center p-3 rounded-lg border-2 transition-all duration-200 ${
                   servicios.includes(servicio)
@@ -416,7 +460,91 @@ export default function HostProfile() {
               </label>
             ))}
           </div>
-        </div>          {/* Botón de envío */}
+        </div>          {/* Configuración de precios */}
+        <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-xl border border-yellow-100 shadow-sm">
+          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-lg flex items-center justify-center">
+              💰
+            </div>
+            Precios de tus servicios
+          </h2>
+          <p className="text-sm text-gray-600 mb-6">
+            Configura los precios para los servicios que ofreces. Solo aparecerán en tu perfil los servicios que tengan precio configurado.
+          </p>
+          
+          <div className="space-y-4">
+            {serviciosDisponibles.map(({ key, label, unidad }) => {
+              // Solo mostrar servicios que el usuario ha seleccionado como ofrecidos
+              if (!servicios.includes(key)) return null;
+              
+              return (
+                <div key={key} className="bg-white p-4 rounded-lg border border-yellow-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-gray-800">{label}</h3>
+                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                      {unidad === 'por_hora' ? 'Por hora' :
+                       unidad === 'por_noche' ? 'Por noche' :
+                       unidad === 'por_dia' ? 'Por día' :
+                       unidad === 'por_visita' ? 'Por visita' : unidad}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Precio (€)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="Ej: 15.00"
+                        value={precios[key]?.price || ''}
+                        onChange={(e) => setPrecios(prev => ({
+                          ...prev,
+                          [key]: {
+                            ...prev[key],
+                            price: e.target.value,
+                            price_unit: unidad
+                          }
+                        }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none text-sm"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Descripción adicional (opcional)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ej: Incluye paseo de 1 hora"
+                        value={precios[key]?.description || ''}
+                        onChange={(e) => setPrecios(prev => ({
+                          ...prev,
+                          [key]: {
+                            ...prev[key],
+                            description: e.target.value,
+                            price_unit: unidad
+                          }
+                        }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            
+            {servicios.length === 0 && (
+              <div className="text-center py-6 text-gray-500">
+                <p>Primero selecciona los servicios que ofreces para configurar sus precios.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Botón de envío */}
           <div className="pt-6 border-t border-gray-200">
             <button
               type="submit"
