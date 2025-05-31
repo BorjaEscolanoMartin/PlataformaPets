@@ -20,6 +20,23 @@ const Notificaciones = () => {
         setLoading(false);
       });
   }, []);
+
+  const handleEliminarNotificacion = async (notificationId) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta notificación?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`/notifications/${notificationId}`);
+      console.log('✅ Notificación eliminada exitosamente');
+      
+      // Actualizar la lista local removiendo la notificación eliminada
+      setNotificaciones(prev => prev.filter(notif => notif.id !== notificationId));
+    } catch (error) {
+      console.error('❌ Error al eliminar notificación:', error);
+      alert('Error al eliminar la notificación. Por favor intenta de nuevo.');
+    }
+  };
   const getNotificationIcon = (tipo) => {
     switch (tipo) {
       case 'reserva_solicitada': return '📩'
@@ -218,9 +235,7 @@ const Notificaciones = () => {
                     <span className="text-white text-xl">
                       {getNotificationIcon(notif.data?.tipo)}
                     </span>
-                  </div>
-
-                  {/* Contenido */}
+                  </div>                  {/* Contenido */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -231,11 +246,20 @@ const Notificaciones = () => {
                           {formatDate(notif.created_at)}
                         </span>
                       </div>
-                      {!notif.read_at && (
-                        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
-                          Nueva
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {!notif.read_at && (
+                          <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
+                            Nueva
+                          </span>
+                        )}
+                        <button
+                          onClick={() => handleEliminarNotificacion(notif.id)}
+                          className="bg-red-50 text-red-600 hover:bg-red-100 p-1.5 rounded-lg transition-all duration-200 flex items-center justify-center"
+                          title="Eliminar notificación"
+                        >
+                          <span className="text-sm">🗑️</span>
+                        </button>
+                      </div>
                     </div>
                     
                     {renderNotificationContent(notif)}

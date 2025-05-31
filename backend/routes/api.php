@@ -155,10 +155,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reservations', [ReservationController::class, 'store']);
     Route::put('/reservations/{id}', [ReservationController::class, 'update']);
     Route::patch('/reservations/{id}/cancel', [ReservationController::class, 'cancel']);
-    });
-
-    Route::get('/notifications', [NotificationController::class, 'index']);
+    });    Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy']);
 
     Route::get('/cuidadores/{hostId}/reviews', [ReviewController::class, 'index']);
     Route::post('/cuidadores/{hostId}/reviews', [ReviewController::class, 'store']);

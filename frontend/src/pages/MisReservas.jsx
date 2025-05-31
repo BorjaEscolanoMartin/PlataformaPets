@@ -47,10 +47,16 @@ export default function MisReservas() {
       
       await api.patch(`/reservations/${reservaId}/cancel`)
       console.log('✅ Reserva cancelada exitosamente')
-      
-      // Recargar la lista de reservas
+        // Recargar la lista de reservas
       const res = await api.get('/reservations')
-      setReservas(res.data)
+      // Ordenar reservas de la más reciente a la más antigua
+      const reservasOrdenadas = res.data.sort((a, b) => {
+        if (a.created_at && b.created_at) {
+          return new Date(b.created_at) - new Date(a.created_at)
+        }
+        return b.id - a.id
+      })
+      setReservas(reservasOrdenadas)
       console.log('📋 Lista de reservas actualizada')
       
       alert('Reserva cancelada exitosamente. El cuidador ha sido notificado.')
@@ -66,12 +72,19 @@ export default function MisReservas() {
       }
     }
   }
-
   useEffect(() => {
     api.get('/reservations')
       .then(res => {
         console.log('📋 Reservas cargadas:', res.data)
-        setReservas(res.data)
+        // Ordenar reservas de la más reciente a la más antigua (basado en created_at o id)
+        const reservasOrdenadas = res.data.sort((a, b) => {
+          // Intentar ordenar por created_at si está disponible, sino por id (descendente)
+          if (a.created_at && b.created_at) {
+            return new Date(b.created_at) - new Date(a.created_at)
+          }
+          return b.id - a.id
+        })
+        setReservas(reservasOrdenadas)
         setLoading(false)
       })
       .catch(() => {
@@ -108,7 +121,6 @@ export default function MisReservas() {
       default: return '⚡'
     }
   }
-
   const formatServiceType = (serviceType) => {
     const services = {
       'alojamiento': 'Alojamiento en casa del cuidador',
@@ -118,6 +130,17 @@ export default function MisReservas() {
       'paseo': 'Paseo'
     }
     return services[serviceType] || serviceType
+  }
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'No especificada'
+    const date = new Date(dateString)
+    // Formatear como día/mes/año
+    return date.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
   }
 
   if (loading) {
@@ -259,12 +282,11 @@ export default function MisReservas() {
                           <p className="font-medium text-gray-800">{reserva.host?.name || 'Desconocido'}</p>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2">
                         <span className="text-lg">📅</span>
                         <div>
                           <p className="text-sm text-gray-500">Fecha de inicio</p>
-                          <p className="font-medium text-gray-800">{reserva.start_date}</p>
+                          <p className="font-medium text-gray-800">{formatDate(reserva.start_date)}</p>
                         </div>
                       </div>
                       
@@ -272,7 +294,7 @@ export default function MisReservas() {
                         <span className="text-lg">📅</span>
                         <div>
                           <p className="text-sm text-gray-500">Fecha de fin</p>
-                          <p className="font-medium text-gray-800">{reserva.end_date}</p>
+                          <p className="font-medium text-gray-800">{formatDate(reserva.end_date)}</p>
                         </div>
                       </div>
                     </div>

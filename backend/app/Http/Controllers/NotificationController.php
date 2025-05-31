@@ -19,13 +19,19 @@ class NotificationController extends Controller
 
         return response()->json($notifications);
     }
-
-
     public function markAsRead(Request $request, $id)
     {
         $notification = $request->user()->notifications()->findOrFail($id);
         $notification->markAsRead();
 
         return response()->json(['message' => 'Notificación marcada como leída']);
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $notification = $request->user()->notifications()->findOrFail($id);
+        $notification->delete();
+
+        return response()->json(['message' => 'Notificación eliminada exitosamente']);
     }
 }
