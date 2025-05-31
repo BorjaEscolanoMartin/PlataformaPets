@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Host;
+use App\Models\ServicePrice;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
@@ -131,5 +132,61 @@ class HostController extends Controller
         $host->delete();
 
         return response()->json(['message' => 'Host eliminado']);
+    }
+
+    /**
+     * Obtener precios de servicios de un host
+     */
+    public function getServicePrices($hostId)
+    {
+        $host = Host::findOrFail($hostId);
+        
+        if ($host->user_id !== Auth::id()) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        return response()->json($host->servicePrices);
+    }
+
+    /**
+     * Actualizar precios de servicios
+     */
+    public function updateServicePrices(Request $request, $hostId)
+    {
+        $host = Host::findOrFail($hostId);
+        
+        if ($host->user_id !== Auth::id()) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $validated = $request->validate([
+            'prices' => 'required|array',
+            'prices.*.service_type' => 'required|in:paseo,alojamiento,guarderia,cuidado_a_domicilio,visitas_a_domicilio',
+            'prices.*.price' => 'required|numeric|min:0',
+            'prices.*.price_unit' => 'required|in:por_noche,por_dia,por_hora,por_visita',
+            'prices.*.description' => 'nullable|string|max:500',
+        ]);
+
+        // Eliminar precios existentes para estos servicios
+        $serviceTypes = collect($validated['prices'])->pluck('service_type');
+        ServicePrice::where('host_id', $host->id)
+            ->whereIn('service_type', $serviceTypes)
+            ->delete();
+
+        // Crear nuevos precios
+        foreach ($validated['prices'] as $priceData) {
+            ServicePrice::create([
+                'host_id' => $host->id,
+                'service_type' => $priceData['service_type'],
+                'price' => $priceData['price'],
+                'price_unit' => $priceData['price_unit'],
+                'description' => $priceData['description'] ?? null,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Precios actualizados correctamente',
+            'prices' => $host->fresh()->servicePrices
+        ]);
     }
 }

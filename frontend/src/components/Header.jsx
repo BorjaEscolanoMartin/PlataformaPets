@@ -67,7 +67,7 @@ export default function Header() {
           </div>
         </div>
         <span className="hidden md:inline">Pet Hosting</span>
-        <span className="md:hidden">Pet</span>
+        <span className="md:hidden">Pets</span>
       </Link>{/* Botón hamburguesa solo para móvil */}
       <button
         className="lg:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors duration-300 z-50"

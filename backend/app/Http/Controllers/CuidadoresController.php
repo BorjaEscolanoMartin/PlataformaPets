@@ -10,10 +10,9 @@ use App\Services\GeolocationService;
 use Carbon\Carbon;
 
 class CuidadoresController extends Controller
-{
-    public function index(Request $request)
+{    public function index(Request $request)
     {
-        $query = User::where('role', 'cuidador')->with('host.reviews');
+        $query = User::where('role', 'cuidador')->with(['host.reviews', 'host.servicePrices']);
 
         if ($request->has('servicio')) {
             $servicios = (array) $request->input('servicio');
@@ -135,11 +134,9 @@ class CuidadoresController extends Controller
         }
 
         return response()->json($cuidadores);
-    }
-
-    public function show($id)
+    }    public function show($id)
     {
-        $cuidador = User::with('host')->findOrFail($id);
+        $cuidador = User::with(['host.servicePrices', 'host.reviews'])->findOrFail($id);
 
         if (!$cuidador->host) {
             return response()->json([
