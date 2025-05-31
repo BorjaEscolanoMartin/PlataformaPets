@@ -5,13 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class Reservation extends Model
-{
-    protected $fillable = [
+{    protected $fillable = [
         'user_id',
         'pet_id',
         'host_id',
         'service_type',
-        'frequency',
         'address',
         'start_date',
         'end_date',
