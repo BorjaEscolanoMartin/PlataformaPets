@@ -20,11 +20,11 @@ const Notificaciones = () => {
         setLoading(false);
       });
   }, []);
-
   const getNotificationIcon = (tipo) => {
     switch (tipo) {
       case 'reserva_solicitada': return '📩'
       case 'reserva_actualizada': return '🔄'
+      case 'reserva_cancelada': return '🚫'
       case 'mensaje': return '💬'
       case 'recordatorio': return '⏰'
       default: return '🔔'
@@ -35,6 +35,7 @@ const Notificaciones = () => {
     switch (tipo) {
       case 'reserva_solicitada': return 'bg-blue-50 border-blue-200'
       case 'reserva_actualizada': return 'bg-green-50 border-green-200'
+      case 'reserva_cancelada': return 'bg-red-50 border-red-200'
       case 'mensaje': return 'bg-purple-50 border-purple-200'
       case 'recordatorio': return 'bg-yellow-50 border-yellow-200'
       default: return 'bg-gray-50 border-gray-200'
@@ -75,6 +76,20 @@ const Notificaciones = () => {
             <strong className="text-gray-800">{data.fecha_fin?.split("T")[0]}</strong> fue{" "}
             <strong className={estadoColor}>{data.estado}</strong> por{" "}
             <strong className="text-blue-600">{data.cuidador_nombre}</strong>.
+          </p>
+        </div>      );
+    }
+
+    if (data.tipo === "reserva_cancelada") {
+      return (
+        <div>
+          <p className="font-medium text-gray-800 mb-2">Reserva cancelada</p>
+          <p className="text-gray-700 leading-relaxed">
+            <strong className="text-blue-600">{data.cliente_nombre}</strong> ha cancelado su reserva para{" "}
+            <strong className="text-purple-600">{data.mascota_nombre}</strong> del{" "}
+            <strong className="text-gray-800">{data.fecha_inicio?.split("T")[0]}</strong> al{" "}
+            <strong className="text-gray-800">{data.fecha_fin?.split("T")[0]}</strong>.{" "}
+            <span className="text-red-600 font-medium">Las fechas han quedado disponibles nuevamente.</span>
           </p>
         </div>
       );
@@ -145,8 +160,7 @@ const Notificaciones = () => {
               </div>
               <h2 className="text-xl font-bold text-gray-800">Notificaciones</h2>
             </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
                 <div className="text-2xl font-bold text-blue-600">{notificaciones.length}</div>
                 <div className="text-sm text-blue-700">Total</div>
@@ -163,11 +177,11 @@ const Notificaciones = () => {
                 </div>
                 <div className="text-sm text-green-700">Actualizaciones</div>
               </div>
-              <div className="bg-yellow-50 rounded-xl p-4 text-center border border-yellow-100">
-                <div className="text-2xl font-bold text-yellow-600">
-                  {notificaciones.filter(n => !n.read_at).length}
+              <div className="bg-red-50 rounded-xl p-4 text-center border border-red-100">
+                <div className="text-2xl font-bold text-red-600">
+                  {notificaciones.filter(n => n.data?.tipo === 'reserva_cancelada').length}
                 </div>
-                <div className="text-sm text-yellow-700">No leídas</div>
+                <div className="text-sm text-red-700">Cancelaciones</div>
               </div>
             </div>
           </div>

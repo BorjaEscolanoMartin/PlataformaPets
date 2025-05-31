@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Notifications\ReservaSolicitada;
 use Illuminate\Support\Facades\Log;
 use App\Notifications\ReservaActualizada;
+use App\Notifications\ReservaCancelada;
 
 class ReservationController extends Controller
 {
@@ -87,6 +88,38 @@ public function store(Request $request)
         $reservation->user->notifyNow(new ReservaActualizada($reservation));
 
         return response()->json($reservation);
+    }
+
+    // Cliente: cancelar reserva
+    public function cancel(Request $request, $id)
+    {
+        $reservation = Reservation::findOrFail($id);
+
+        // Solo permitir que el cliente propietario de la reserva la cancele
+        if ($reservation->user_id !== $request->user()->id) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        // Solo permitir cancelar reservas pendientes o aceptadas
+        if (!in_array($reservation->status, ['pendiente', 'aceptada'])) {
+            return response()->json(['error' => 'No se puede cancelar esta reserva'], 400);
+        }
+
+        // Actualizar estado a cancelada
+        $reservation->update(['status' => 'cancelada']);
+
+        // Cargar relaciones para la notificación
+        $reservation->load('host.user', 'user', 'pet');
+
+        // Notificar al cuidador
+        if ($reservation->host && $reservation->host->user) {
+            $reservation->host->user->notifyNow(new ReservaCancelada($reservation));
+        }
+
+        return response()->json([
+            'message' => 'Reserva cancelada exitosamente',
+            'reservation' => $reservation
+        ]);
     }
 }
 
