@@ -1,5 +1,5 @@
 import React from 'react';
-import { useChat } from '../../context/ChatContext';
+import { useChat } from '../../context/useChat';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';

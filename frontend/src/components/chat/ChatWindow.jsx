@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useChat } from '../../context/ChatContext';
-import { useAuth } from '../../context/AuthContext';
+import { useChat } from '../../context/useChat';
+import { useAuth } from '../../context/useAuth';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Menu, Send, ArrowLeft } from 'lucide-react';
@@ -116,14 +116,17 @@ const ChatWindow = ({
                                 ¡Comienza la conversación enviando un mensaje!
                             </p>
                         </div>
-                    </div>
-                ) : (
-                    messages.map((message) => {
+                    </div>                ) : (
+                    messages.map((message, index) => {
                         const isOwnMessage = message.user_id === user?.id;
+                        // Crear una key única y estable para cada mensaje
+                        const messageKey = message.id ? 
+                            `msg-${message.id}` : 
+                            `temp-${message.created_at}-${message.user_id}-${index}`;
                         
                         return (
                             <div
-                                key={message.id}
+                                key={messageKey}
                                 className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
                             >
                                 <div className={`flex max-w-xs lg:max-w-md space-x-2 ${isOwnMessage ? 'flex-row-reverse space-x-reverse' : ''}`}>

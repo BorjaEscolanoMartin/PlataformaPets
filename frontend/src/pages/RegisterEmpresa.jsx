@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import api from '../lib/axios'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { loadGoogleMaps } from '../utils/loadGoogleMaps'
 

@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import api from '../lib/axios'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 
 export default function RegisterModal({ onClose, onSwitchToLogin }) {
   const navigate = useNavigate()
-  const { setUser } = useAuth()
+  const { setUser, setToken } = useAuth()
 
   const [form, setForm] = useState({
     name: '',
@@ -33,11 +33,12 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
         // Guardar token y usuario
         localStorage.setItem('auth-token', response.data.token)
         localStorage.setItem('user', JSON.stringify(response.data.user))
-        
-        // Configurar header de autorización
+          // Configurar header de autorización
         api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
         
+        // Actualizar contexto
         setUser(response.data.user)
+        setToken(response.data.token)
         navigate('/')
         onClose()
       }

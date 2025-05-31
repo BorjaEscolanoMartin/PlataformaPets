@@ -1,17 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useAuth } from './AuthContext';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from './useAuth';
 import { getEcho } from '../lib/echo';
 import axios from '../lib/axios';
-
-const ChatContext = createContext();
-
-export const useChat = () => {
-    const context = useContext(ChatContext);
-    if (!context) {
-        throw new Error('useChat must be used within a ChatProvider');
-    }
-    return context;
-};
+import { ChatContext } from './chatContext';
 
 export const ChatProvider = ({ children }) => {
     const { user, token } = useAuth();
@@ -20,7 +11,9 @@ export const ChatProvider = ({ children }) => {
     const [messages, setMessages] = useState({});
     const [loading, setLoading] = useState(false);
     const [onlineUsers, setOnlineUsers] = useState(new Set());
-    const [echo, setEcho] = useState(null);    // Cargar chats del usuario
+    const [echo, setEcho] = useState(null);
+
+    // Cargar chats del usuario
     const loadChats = useCallback(async () => {
         if (!user) return;
         
@@ -33,7 +26,9 @@ export const ChatProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    }, [user]);    // Cargar mensajes de un chat específico
+    }, [user]);
+
+    // Cargar mensajes de un chat específico
     const loadMessages = useCallback(async (chatId) => {
         try {
             const response = await axios.get(`/chats/${chatId}/messages`);
@@ -62,7 +57,9 @@ export const ChatProvider = ({ children }) => {
                 [chatId]: []
             }));
         }
-    }, []);// Marcar mensajes como leídos
+    }, []);
+
+    // Marcar mensajes como leídos
     const markMessagesAsRead = useCallback(async (chatId) => {
         try {
             await axios.patch(`/chats/${chatId}/messages/read-all`);
@@ -77,38 +74,81 @@ export const ChatProvider = ({ children }) => {
         } catch (error) {
             console.error('Error marking messages as read:', error);
         }
-    }, []);// Configurar Echo cuando el usuario se autentique
+    }, []);    // Configurar Echo cuando el usuario se autentique
     useEffect(() => {
+        console.log('🔧 Configurando Echo - Usuario:', !!user, 'Token:', !!token);
+        
         if (token && user) {
             // Configurar axios
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             
             // Crear instancia de Echo con token
-            const echoInstance = getEcho(token);
-            setEcho(echoInstance);
+            console.log('🔧 Creando instancia de Echo...');
+            try {
+                const echoInstance = getEcho(token);
+                
+                // Solo setear Echo si se creó exitosamente
+                if (echoInstance !== false && echoInstance !== null) {
+                    setEcho(echoInstance);
+                    console.log('✅ Echo configurado exitosamente');
+                } else {
+                    console.log('❌ Echo falló al inicializar, usando solo polling');
+                    setEcho(null);
+                }
+            } catch (error) {
+                console.error('❌ Error al crear Echo:', error);
+                setEcho(null);
+            }
             
-            // Cargar chats cuando se configura Echo
+            // Cargar chats cuando se configura Echo (o falla)
             loadChats();
         } else {
+            console.log('🧹 Limpiando estado - no hay usuario o token');
             // Limpiar cuando no hay usuario autenticado
+            setChats([]);
+            setActiveChat(null);
+            setMessages({});
             setEcho(null);
             delete axios.defaults.headers.common['Authorization'];
         }
-    }, [token, user, loadChats]);    // Enviar mensaje
+    }, [user, token, loadChats]);    // Cargar chats inmediatamente cuando el usuario está autenticado
+    useEffect(() => {
+        if (user && token) {
+            loadChats();
+        }
+    }, [user, token, loadChats]);// Enviar mensaje
     const sendMessage = async (chatId, content, type = 'text') => {
+        console.log('📤 Enviando mensaje:', { chatId, content, type });
         try {
             const response = await axios.post(`/chats/${chatId}/messages`, {
                 content,
                 type
             });
             
-            // El mensaje se agregará automáticamente via broadcasting
-            return response.data.data;
+            console.log('✅ Mensaje enviado exitosamente:', response.data);
+            
+            // Actualizar mensajes inmediatamente (optimistic update)
+            const newMessage = response.data.data;
+            setMessages(prev => ({
+                ...prev,
+                [chatId]: [...(prev[chatId] || []), newMessage]
+            }));
+            
+            // Actualizar último mensaje en la lista de chats
+            setChats(prev => prev.map(chat => 
+                chat.id === parseInt(chatId) 
+                    ? { ...chat, latest_message: newMessage }
+                    : chat
+            ));
+            
+            return newMessage;
         } catch (error) {
-            console.error('Error sending message:', error);
+            console.error('❌ Error sending message:', error);
             throw error;
         }
-    };    // Crear chat privado
+    };
+
+    // Crear chat privado
     const createPrivateChat = async (otherUserId) => {
         console.log('🚀 createPrivateChat called with otherUserId:', otherUserId);
         console.log('👤 Current user:', user);
@@ -141,58 +181,100 @@ export const ChatProvider = ({ children }) => {
             console.error('❌ Error details:', error.response?.data);
             throw error;
         }
-    };
-
-    // Suscribirse a eventos de chat
+    };    // Suscribirse a eventos de chat
     useEffect(() => {
-        if (!user || !activeChat || !echo) return;
-
-        const chatChannel = echo.private(`chat.${activeChat.id}`);
-        
-        // Escuchar nuevos mensajes
-        chatChannel.listen('.message.sent', (e) => {
-            const newMessage = e.message;
-            setMessages(prev => ({
-                ...prev,
-                [activeChat.id]: [...(prev[activeChat.id] || []), newMessage]
-            }));
-
-            // Actualizar último mensaje en la lista de chats
-            setChats(prev => prev.map(chat => 
-                chat.id === activeChat.id 
-                    ? { ...chat, latest_message: newMessage }
-                    : chat
-            ));
-        });
-
-        // Suscribirse al canal de presencia para ver usuarios online
-        const presenceChannel = echo.join(`chat.${activeChat.id}.presence`);
-        
-        presenceChannel.here((users) => {
-            setOnlineUsers(new Set(users.map(u => u.id)));
-        });
-
-        presenceChannel.joining((user) => {
-            setOnlineUsers(prev => new Set([...prev, user.id]));
-        });
-
-        presenceChannel.leaving((user) => {
-            setOnlineUsers(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(user.id);
-                return newSet;
+        if (!user || !activeChat || !echo) {
+            console.log('❌ No se puede suscribir a eventos de chat:', { 
+                user: !!user, 
+                activeChat: !!activeChat, 
+                echo: !!echo 
             });
-        });
+            return;
+        }
 
-        return () => {
-            echo.leave(`chat.${activeChat.id}`);
-            echo.leave(`chat.${activeChat.id}.presence`);
-        };
+        console.log('🔌 Suscribiéndose a eventos de chat para chat:', activeChat.id);
+        console.log('👤 Usuario actual:', user.id, user.name);
+        
+        try {
+            const chatChannel = echo.private(`chat.${activeChat.id}`);
+            
+            // Agregar listeners para eventos del canal
+            chatChannel.subscribed(() => {
+                console.log('✅ Suscrito exitosamente al canal chat.', activeChat.id);
+            });
+
+            chatChannel.error((error) => {
+                console.error('❌ Error al suscribirse al canal:', error);
+            });
+            
+            // Escuchar nuevos mensajes
+            chatChannel.listen('.message.sent', (e) => {
+                console.log('📨 Nuevo mensaje recibido via WebSocket:', e);
+                const newMessage = e.message;
+                setMessages(prev => ({
+                    ...prev,
+                    [activeChat.id]: [...(prev[activeChat.id] || []), newMessage]
+                }));
+
+                // Actualizar último mensaje en la lista de chats
+                setChats(prev => prev.map(chat => 
+                    chat.id === activeChat.id 
+                        ? { ...chat, latest_message: newMessage }
+                        : chat
+                ));
+            });
+
+            // Suscribirse al canal de presencia para ver usuarios online
+            console.log('👥 Intentando unirse al canal de presencia...');
+            const presenceChannel = echo.join(`chat.${activeChat.id}.presence`);
+            
+            presenceChannel.here((users) => {
+                console.log('👥 Usuarios en el chat:', users);
+                setOnlineUsers(new Set(users.map(u => u.id)));
+            });
+
+            presenceChannel.joining((user) => {
+                console.log('✅ Usuario se unió al chat:', user);
+                setOnlineUsers(prev => new Set([...prev, user.id]));
+            });
+
+            presenceChannel.leaving((user) => {
+                console.log('❌ Usuario salió del chat:', user);
+                setOnlineUsers(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(user.id);
+                    return newSet;
+                });
+            });
+
+            presenceChannel.error((error) => {
+                console.error('❌ Error en canal de presencia:', error);
+            });
+
+            return () => {
+                console.log('🔌 Desconectando de eventos de chat para chat:', activeChat.id);
+                try {
+                    echo.leave(`chat.${activeChat.id}`);
+                    echo.leave(`chat.${activeChat.id}.presence`);
+                } catch (error) {
+                    console.error('❌ Error al desconectarse:', error);
+                }
+            };
+        } catch (error) {
+            console.error('❌ Error general al configurar eventos de chat:', error);
+        }
     }, [user, activeChat, echo]);    // Cargar mensajes cuando se selecciona un chat
     useEffect(() => {
         if (activeChat) {
             loadMessages(activeChat.id);
             markMessagesAsRead(activeChat.id);
+            
+            // Agregar polling como fallback si WebSockets fallan
+            const pollInterval = setInterval(() => {
+                loadMessages(activeChat.id);
+            }, 2000); // Polling cada 2 segundos
+            
+            return () => clearInterval(pollInterval);
         }
     }, [activeChat, loadMessages, markMessagesAsRead]);
 

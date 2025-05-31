@@ -1,4 +1,4 @@
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import api from '../lib/axios'

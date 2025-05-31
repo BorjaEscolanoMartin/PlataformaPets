@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useChat } from '../../context/ChatContext';
+import { useChat } from '../../context/useChat';
 import ChatList from './ChatList';
 import ChatWindow from './ChatWindow';
 import { Card } from '../ui/card';
