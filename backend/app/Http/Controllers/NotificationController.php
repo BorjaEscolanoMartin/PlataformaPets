@@ -25,13 +25,17 @@ class NotificationController extends Controller
         $notification->markAsRead();
 
         return response()->json(['message' => 'Notificación marcada como leída']);
-    }
-
-    public function destroy(Request $request, $id)
+    }    public function destroy(Request $request, $id)
     {
         $notification = $request->user()->notifications()->findOrFail($id);
         $notification->delete();
 
         return response()->json(['message' => 'Notificación eliminada exitosamente']);
+    }
+
+    public function getUnreadCount(Request $request)
+    {
+        $count = $request->user()->unreadNotifications()->count();
+        return response()->json(['count' => $count]);
     }
 }

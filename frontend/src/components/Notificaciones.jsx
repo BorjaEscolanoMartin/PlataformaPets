@@ -2,25 +2,41 @@ import { useEffect, useState } from "react";
 import axios from "../lib/axios"; // usa tu config de axios con withCredentials
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
+import { useNotifications } from "../hooks/useNotifications";
 
 const Notificaciones = () => {
   const [notificaciones, setNotificaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const { fetchUnreadCount, decrementUnreadCount } = useNotifications();
   useEffect(() => {
     axios.get("/notifications")
       .then((res) => {
         setNotificaciones(res.data);
         setLoading(false);
+        
+        // Marcar todas las notificaciones no leídas como leídas y actualizar el contador
+        const unreadNotifications = res.data.filter(notif => !notif.read_at);
+        if (unreadNotifications.length > 0) {
+          // Marcar como leídas en el servidor
+          unreadNotifications.forEach(async (notif) => {
+            try {
+              await axios.post(`/notifications/${notif.id}/read`);
+            } catch (error) {
+              console.error('Error marking notification as read:', error);
+            }
+          });
+          
+          // Actualizar el contador local
+          fetchUnreadCount();
+        }
       })
       .catch((err) => {
         console.error("Error al obtener notificaciones", err);
         setError("Error al cargar las notificaciones");
         setLoading(false);
       });
-  }, []);
-
+  }, [fetchUnreadCount]);
   const handleEliminarNotificacion = async (notificationId) => {
     if (!confirm('¿Estás seguro de que quieres eliminar esta notificación?')) {
       return;
@@ -29,6 +45,12 @@ const Notificaciones = () => {
     try {
       await axios.delete(`/notifications/${notificationId}`);
       console.log('✅ Notificación eliminada exitosamente');
+      
+      // Verificar si la notificación eliminada no estaba leída para decrementar el contador
+      const notificationToDelete = notificaciones.find(notif => notif.id === notificationId);
+      if (notificationToDelete && !notificationToDelete.read_at) {
+        decrementUnreadCount();
+      }
       
       // Actualizar la lista local removiendo la notificación eliminada
       setNotificaciones(prev => prev.filter(notif => notif.id !== notificationId));
