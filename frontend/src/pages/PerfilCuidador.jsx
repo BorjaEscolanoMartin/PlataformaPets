@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import api from '../lib/axios'
 import ReservaForm from '../components/ReservaForm'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { useModal } from '../hooks/useModal'
 import StartChatButton from '../components/chat/StartChatButton'
 

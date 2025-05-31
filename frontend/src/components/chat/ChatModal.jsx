@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, Menu } from 'lucide-react';
-import { useChat } from '../../context/ChatContext';
+import { useChat } from '../../context/useChat';
 import ChatList from './ChatList';
 import ChatWindow from './ChatWindow';
 
 const ChatModal = ({ isOpen, onClose }) => {
-    const { activeChat } = useChat();
+    const { activeChat, loadChats } = useChat();
     const [isChatListVisible, setIsChatListVisible] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -22,7 +22,13 @@ const ChatModal = ({ isOpen, onClose }) => {
         checkScreenSize();
         window.addEventListener('resize', checkScreenSize);
         return () => window.removeEventListener('resize', checkScreenSize);
-    }, []);
+    }, []);    // Cargar chats cuando se abre el modal
+    useEffect(() => {
+        if (isOpen) {
+            // Siempre intentar recargar chats cuando se abre el modal
+            loadChats();
+        }
+    }, [isOpen, loadChats]);
 
     // Auto-hide chat list on mobile when chat is selected
     useEffect(() => {
@@ -31,7 +37,8 @@ const ChatModal = ({ isOpen, onClose }) => {
         }
     }, [activeChat, isMobile]);
 
-    if (!isOpen) return null;    return (
+    if (!isOpen) return null;
+    return (
         <div className="fixed inset-0 z-[60] flex items-start justify-center pt-20 px-4">
             {/* Overlay */}
             <div 

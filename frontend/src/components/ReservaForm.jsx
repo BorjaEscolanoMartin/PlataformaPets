@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import api from '../lib/axios'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { loadGoogleMaps } from '../utils/loadGoogleMaps'
 
 export default function ReservaForm({ hostId }) {

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import api from '../lib/axios'
 
 export default function LoginModal({ onClose, onSwitchToRegister }) {
@@ -9,7 +9,7 @@ export default function LoginModal({ onClose, onSwitchToRegister }) {
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  const { setUser } = useAuth()
+  const { setUser, setToken } = useAuth()
   const handleLogin = async (e) => {
     e.preventDefault()
     setError(null)
@@ -22,11 +22,12 @@ export default function LoginModal({ onClose, onSwitchToRegister }) {
         // Guardar token y usuario
         localStorage.setItem('auth-token', response.data.token)
         localStorage.setItem('user', JSON.stringify(response.data.user))
-        
-        // Configurar header de autorización para futuras peticiones
+          // Configurar header de autorización para futuras peticiones
         api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
         
+        // Actualizar contexto
         setUser(response.data.user)
+        setToken(response.data.token)
 
         // Redireccionar si había una ruta guardada
         const redirectPath = localStorage.getItem('redirectAfterLogin')

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import api from '../lib/axios'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { loadGoogleMaps } from '../utils/loadGoogleMaps'
 
 export default function HostProfile() {

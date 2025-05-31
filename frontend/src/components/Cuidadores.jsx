@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import api from '../lib/axios'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/useAuth'
 import { useModal } from '../hooks/useModal'
 import MapaGoogle from './MapaGoogle'
 import { loadGoogleMaps } from '../utils/loadGoogleMaps'

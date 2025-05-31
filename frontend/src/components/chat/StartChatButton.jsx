@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useChat } from '../../context/ChatContext';
+import { useChat } from '../../context/useChat';
 import { Button } from '../ui/button';
 import { MessageCircle } from 'lucide-react';
 import ChatModal from './ChatModal';
