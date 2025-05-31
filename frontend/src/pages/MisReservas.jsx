@@ -10,7 +10,8 @@ export default function MisReservas() {
   const [loading, setLoading] = useState(true)
   const [isChatModalOpen, setIsChatModalOpen] = useState(false)
   const { createPrivateChat, setActiveChat } = useChat()
-    const handleContactarCuidador = async (cuidadorUserId) => {
+  
+  const handleContactarCuidador = async (cuidadorUserId) => {
     try {
       console.log('🚀 Iniciando chat con cuidador User ID:', cuidadorUserId)
       
@@ -35,6 +36,37 @@ export default function MisReservas() {
       alert(`Error al abrir chat: ${error.message}`)
     }
   }
+
+  const handleCancelarReserva = async (reservaId) => {
+    if (!confirm('¿Estás seguro de que quieres cancelar esta reserva? Esta acción no se puede deshacer.')) {
+      return
+    }
+
+    try {
+      console.log('🚫 Cancelando reserva ID:', reservaId)
+      
+      await api.patch(`/reservations/${reservaId}/cancel`)
+      console.log('✅ Reserva cancelada exitosamente')
+      
+      // Recargar la lista de reservas
+      const res = await api.get('/reservations')
+      setReservas(res.data)
+      console.log('📋 Lista de reservas actualizada')
+      
+      alert('Reserva cancelada exitosamente. El cuidador ha sido notificado.')
+    } catch (error) {
+      console.error('❌ Error al cancelar reserva:', error)
+      
+      if (error.response?.status === 400) {
+        alert('No se puede cancelar esta reserva en su estado actual.')
+      } else if (error.response?.status === 403) {
+        alert('No tienes permisos para cancelar esta reserva.')
+      } else {
+        alert(`Error al cancelar reserva: ${error.response?.data?.error || error.message}`)
+      }
+    }
+  }
+
   useEffect(() => {
     api.get('/reservations')
       .then(res => {
@@ -44,23 +76,24 @@ export default function MisReservas() {
       })
       .catch(() => {
         setError('Error al cargar tus reservas')
-        setLoading(false)
-      })
+        setLoading(false)      })
   }, [])
+  
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'pendiente': return 'bg-yellow-50 text-yellow-700 border-yellow-200'
       case 'aceptada': return 'bg-green-50 text-green-700 border-green-200'
       case 'rechazada': return 'bg-red-50 text-red-700 border-red-200'
+      case 'cancelada': return 'bg-gray-50 text-gray-700 border-gray-200'
       default: return 'bg-gray-50 text-gray-700 border-gray-200'
     }
   }
-
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
       case 'pendiente': return '⏳'
       case 'aceptada': return '✅'
       case 'rechazada': return '❌'
+      case 'cancelada': return '🚫'
       default: return '📋'
     }
   }
@@ -142,8 +175,7 @@ export default function MisReservas() {
                 <span className="text-white text-xl">📊</span>
               </div>
               <h2 className="text-xl font-bold text-gray-800">Resumen de reservas</h2>
-            </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            </div>              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
                 <div className="text-2xl font-bold text-blue-600">{reservas.length}</div>
                 <div className="text-sm text-blue-700">Total</div>
@@ -159,6 +191,12 @@ export default function MisReservas() {
                   {reservas.filter(r => r.status?.toLowerCase() === 'aceptada').length}
                 </div>
                 <div className="text-sm text-green-700">Confirmadas</div>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
+                <div className="text-2xl font-bold text-gray-600">
+                  {reservas.filter(r => r.status?.toLowerCase() === 'cancelada').length}
+                </div>
+                <div className="text-sm text-gray-700">Canceladas</div>
               </div>
             </div>
           </div>
@@ -256,7 +294,8 @@ export default function MisReservas() {
                       <span>{getStatusIcon(reserva.status)}</span>
                       <span className="capitalize">{reserva.status || 'Desconocido'}</span>
                     </div>                    {reserva.status?.toLowerCase() === 'aceptada' && reserva.host && (
-                      <div className="flex flex-col sm:flex-row gap-2">                        <button 
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <button 
                           onClick={() => {
                             console.log('🎯 Botón contactar clickeado para reserva:', reserva.id)
                             console.log('👤 Datos del host:', reserva.host)
@@ -267,6 +306,22 @@ export default function MisReservas() {
                           className="bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium py-2 px-4 rounded-xl transition-all duration-200 text-sm"
                         >
                           📞 Contactar
+                        </button>
+                        <button
+                          onClick={() => handleCancelarReserva(reserva.id)}
+                          className="bg-red-50 text-red-600 hover:bg-red-100 font-medium py-2 px-4 rounded-xl transition-all duration-200 text-sm"
+                        >
+                          🚫 Cancelar
+                        </button>
+                      </div>
+                    )}
+                    
+                    {(reserva.status?.toLowerCase() === 'pendiente') && (
+                      <div className="flex flex-col sm:flex-row gap-2">                        <button
+                          onClick={() => handleCancelarReserva(reserva.id)}
+                          className="w-full bg-red-50 text-red-600 hover:bg-red-100 font-medium py-2 px-4 rounded-xl transition-all duration-200 text-sm"
+                        >
+                          🚫 Cancelar reserva
                         </button>
                       </div>
                     )}
