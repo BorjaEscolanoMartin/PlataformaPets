@@ -4,6 +4,7 @@ import { useModal } from '../hooks/useModal'
 import { useNotifications } from '../hooks/useNotifications'
 import { useChatUnreadCount } from '../hooks/useChatUnreadCount'
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import ChatModal from './chat/ChatModal'
 import {
   DropdownMenu,
@@ -443,14 +444,16 @@ export default function Header() {
               )}
             </nav>
           </div>
-        </div>
-      )}
+        </div>      )}
 
-      {/* Chat Modal */}
-      <ChatModal 
-        isOpen={isChatModalOpen} 
-        onClose={() => setIsChatModalOpen(false)}
-      />
+      {/* Chat Modal - Renderizado con portal fuera del header */}
+      {createPortal(
+        <ChatModal 
+          isOpen={isChatModalOpen} 
+          onClose={() => setIsChatModalOpen(false)}
+        />,
+        document.body
+      )}
     </header>
   )
 }
