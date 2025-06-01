@@ -175,16 +175,17 @@ export default function HostProfile() {
 
       for (let [key, value] of formData.entries()) {
         console.log(`${key}:`, value)
-      }
-
+      }      let hostResponse;
       if (host?.id) {
-        await api.post(`/hosts/${host.id}?_method=PUT`, formData, {
+        hostResponse = await api.post(`/hosts/${host.id}?_method=PUT`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
       } else {
-        await api.post('/hosts', formData, {
+        hostResponse = await api.post('/hosts', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
+        // Actualizar el host local con el ID recién creado
+        setHost(hostResponse.data)
       }
 
       await api.put('/user', {
@@ -197,7 +198,10 @@ export default function HostProfile() {
       setUser(userResponse.data)      // Actualizar precios de servicios si hay alguno configurado
       const preciosConfigurados = Object.entries(precios).filter(([, data]) => data.price && data.price > 0)
       
-      if (preciosConfigurados.length > 0 && host?.id) {
+      // Usar el ID del host de la respuesta o el host existente
+      const hostId = hostResponse.data.id || host?.id;
+      
+      if (preciosConfigurados.length > 0 && hostId) {
         const preciosArray = preciosConfigurados.map(([service_type, data]) => ({
           service_type,
           price: parseFloat(data.price),
@@ -205,7 +209,7 @@ export default function HostProfile() {
           description: data.description || ''
         }))
 
-        await api.post(`/hosts/${host.id}/service-prices`, {
+        await api.post(`/hosts/${hostId}/service-prices`, {
           prices: preciosArray
         })
       }
