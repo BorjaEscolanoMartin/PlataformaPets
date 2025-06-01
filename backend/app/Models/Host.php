@@ -24,6 +24,11 @@ class Host extends Model
         'has_own_pets',
         'own_pets_description',
         'profile_photo',
+        // Campos específicos de empresas
+        'cif',
+        'fiscal_address',
+        'licenses',
+        'team_info',
     ];
 
 

@@ -27,7 +27,7 @@ class HostController extends Controller
                 'latitude' => 'nullable|numeric',
                 'longitude' => 'nullable|numeric',
 
-                // Nuevos campos
+                // Campos comunes
                 'title' => 'nullable|string|max:255',
                 'phone' => 'nullable|string|max:20',
                 'experience_years' => 'nullable|integer|min:0',
@@ -35,6 +35,12 @@ class HostController extends Controller
                 'has_own_pets' => 'nullable|boolean',
                 'own_pets_description' => 'nullable|string',
                 'profile_photo' => 'nullable|image|max:2048',
+
+                // Campos específicos de empresas
+                'cif' => 'nullable|string|max:20',
+                'fiscal_address' => 'nullable|string|max:500',
+                'licenses' => 'nullable|string',
+                'team_info' => 'nullable|string',
             ]);
 
             $validated['user_id'] = Auth::id();
@@ -101,7 +107,7 @@ class HostController extends Controller
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
 
-            // Nuevos campos
+            // Campos comunes
             'title' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'experience_years' => 'nullable|integer|min:0',
@@ -109,6 +115,12 @@ class HostController extends Controller
             'has_own_pets' => 'nullable|boolean',
             'own_pets_description' => 'nullable|string',
             'profile_photo' => 'sometimes|nullable|image|max:2048',
+
+            // Campos específicos de empresas
+            'cif' => 'nullable|string|max:20',
+            'fiscal_address' => 'nullable|string|max:500',
+            'licenses' => 'nullable|string',
+            'team_info' => 'nullable|string',
         ]);
 
         // Foto de perfil
@@ -161,9 +173,9 @@ class HostController extends Controller
 
         $validated = $request->validate([
             'prices' => 'required|array',
-            'prices.*.service_type' => 'required|in:paseo,alojamiento,guarderia,cuidado_a_domicilio,visitas_a_domicilio',
+            'prices.*.service_type' => 'required|in:paseo,alojamiento,guarderia,cuidado_a_domicilio,visitas_a_domicilio,veterinario,adiestrador,emergencias,cirugia,vacunacion,adiestramiento_basico,adiestramiento_avanzado,modificacion_conducta',
             'prices.*.price' => 'required|numeric|min:0',
-            'prices.*.price_unit' => 'required|in:por_noche,por_dia,por_hora,por_visita',
+            'prices.*.price_unit' => 'required|in:por_noche,por_dia,por_hora,por_visita,por_consulta,por_sesion,por_intervencion,por_vacuna',
             'prices.*.description' => 'nullable|string|max:500',
         ]);
 
