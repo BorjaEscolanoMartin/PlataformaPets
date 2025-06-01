@@ -3,8 +3,12 @@ import Footer from '../components/Footer'
 import LoginModal from '../components/LoginModal'
 import RegisterModal from '../components/RegisterModal'
 import { useModal } from '../hooks/useModal'
+import { useLocation } from 'react-router-dom'
 
 export default function Layout({ children }) {
+  const location = useLocation()
+  const isHomePage = location.pathname === '/' || location.pathname === '/inicio'
+  
   const {
     showLogin,
     showRegister,
@@ -34,7 +38,7 @@ export default function Layout({ children }) {
         <main>
           {children}
         </main>
-        <Footer />
+        <Footer isHomePage={isHomePage} />
       </div>
 
       {showLogin && (

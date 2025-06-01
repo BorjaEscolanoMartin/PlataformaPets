@@ -14,7 +14,7 @@ import {
   MessageCircle
 } from 'lucide-react'
 
-export default function Footer() {
+export default function Footer({ isHomePage = false }) {
   const { user } = useAuth()
   
   // Determinar el tipo de usuario (igual que en Header.jsx)
@@ -22,7 +22,7 @@ export default function Footer() {
   const esCuidador = user?.role === 'cuidador'
   const esEmpresa = user?.role === 'empresa'
     return (
-    <footer className="relative mt-12">
+    <footer className={`relative ${isHomePage ? 'mt-0' : 'mt-12'}`}>
       {/* Contenedor principal del footer */}
       <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 border-t border-blue-100">
         <div className="max-w-7xl mx-auto px-6 py-12">
