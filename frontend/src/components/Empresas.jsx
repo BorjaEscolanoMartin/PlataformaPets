@@ -147,40 +147,21 @@ export default function Empresas() {
                         <p className="text-sm text-purple-600 font-medium mb-2">{empresa.host.title}</p>
                       )}
                     </div>
-                  </div>                  {/* Información de contacto */}
+                  </div>{/* Información de contacto */}
                   <div className="space-y-3 mb-6">
-                    {empresa.location && (
+                    {empresa.host?.location && (
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-green-600" />
-                        <span className="text-sm text-gray-700">{empresa.location}</span>
+                        <span className="text-sm text-gray-700">{empresa.host.location}</span>
                       </div>
                     )}
-                      {empresa.host?.phone && (
+                    {empresa.host?.phone && (
                       <div className="flex items-center gap-2">
                         <Phone className="w-4 h-4 text-orange-600" />
                         <span className="text-sm text-gray-700">{empresa.host.phone}</span>
                       </div>
-                    )}
-
-                    {empresa.fiscal_address && empresa.fiscal_address !== empresa.location && (
-                      <div className="flex items-start gap-2">
-                        <Building2 className="w-4 h-4 text-blue-600 mt-0.5" />
-                        <div>
-                          <p className="text-xs font-semibold text-gray-500">Dirección fiscal</p>
-                          <p className="text-sm text-gray-700">{empresa.fiscal_address}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>                  {/* Licencias y certificaciones */}
-                  {empresa.host?.licenses && (
-                    <div className="mb-6 bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-lg border border-emerald-200">
-                      <h5 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                        <Award className="w-4 h-4 text-emerald-600" />
-                        Licencias y certificaciones
-                      </h5>
-                      <p className="text-sm text-gray-700 leading-relaxed">{empresa.host.licenses}</p>
-                    </div>
-                  )}{/* Servicios ofrecidos con precios */}
+                    )}                   
+                  </div>                {/* Servicios ofrecidos con precios */}
                   {empresa.servicios_ofrecidos && empresa.servicios_ofrecidos.length > 0 && (
                     <div className="mb-6">
                       <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
@@ -213,7 +194,16 @@ export default function Empresas() {
                         })}
                       </div>
                     </div>
-                  )}                  {/* Descripción */}
+                  )}{/* Licencias y certificaciones */}
+                  {empresa.host?.licenses && (
+                    <div className="mb-6 bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-lg border border-emerald-200">
+                      <h5 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <Award className="w-4 h-4 text-emerald-600" />
+                        Licencias y certificaciones
+                      </h5>
+                      <p className="text-sm text-gray-700 leading-relaxed">{empresa.host.licenses}</p>
+                    </div>
+                  )}                    {/* Descripción */}
                   {empresa.description && (
                     <div className="mb-6">
                       <h4 className="text-sm font-bold text-gray-700 mb-2">📝 Descripción</h4>
