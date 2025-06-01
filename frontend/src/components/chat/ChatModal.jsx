@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { X, Menu } from 'lucide-react';
 import { useChat } from '../../context/useChat';
+import { useChatUnreadCount } from '../../hooks/useChatUnreadCount';
 import ChatList from './ChatList';
 import ChatWindow from './ChatWindow';
 
 const ChatModal = ({ isOpen, onClose }) => {
-    const { activeChat, loadChats } = useChat();
+    const { activeChat, loadChats, markMessagesAsRead } = useChat();
+    const { fetchUnreadCount } = useChatUnreadCount();
     const [isChatListVisible, setIsChatListVisible] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -28,14 +30,26 @@ const ChatModal = ({ isOpen, onClose }) => {
             // Siempre intentar recargar chats cuando se abre el modal
             loadChats();
         }
-    }, [isOpen, loadChats]);
-
-    // Auto-hide chat list on mobile when chat is selected
+    }, [isOpen, loadChats]);    // Auto-hide chat list on mobile when chat is selected
     useEffect(() => {
         if (isMobile && activeChat) {
             setIsChatListVisible(false);
         }
     }, [activeChat, isMobile]);
+
+    // Marcar mensajes como leídos cuando se selecciona un chat activo
+    useEffect(() => {
+        if (activeChat && isOpen) {
+            markMessagesAsRead(activeChat.id);
+        }
+    }, [activeChat, isOpen, markMessagesAsRead]);
+
+    // Actualizar contador cuando se cierre el modal
+    useEffect(() => {
+        if (!isOpen) {
+            fetchUnreadCount();
+        }
+    }, [isOpen, fetchUnreadCount]);
 
     if (!isOpen) return null;    return (
         <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-purple-900/30 to-blue-900/30 backdrop-blur-sm flex items-start justify-center pt-20 p-4 z-[9999]">

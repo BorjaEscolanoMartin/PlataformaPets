@@ -318,4 +318,27 @@ class MessageController extends Controller
             'message' => 'Todos los mensajes marcados como leídos'
         ]);
     }
+
+    /**
+     * Get unread messages count for authenticated user
+     */
+    public function getUnreadCount(): JsonResponse
+    {
+        $user = Auth::user();
+        
+        // Obtener todos los chats donde el usuario es participante
+        $userChats = Chat::whereJsonContains('participants', $user->id)->pluck('id');
+        
+        // Contar mensajes no leídos en todos los chats del usuario
+        // (excluyendo sus propios mensajes)
+        $unreadCount = Message::whereIn('chat_id', $userChats)
+                              ->where('user_id', '!=', $user->id)
+                              ->whereNull('read_at')
+                              ->count();
+
+        return response()->json([
+            'success' => true,
+            'count' => $unreadCount
+        ]);
+    }
 }

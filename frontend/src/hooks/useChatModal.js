@@ -1,18 +1,18 @@
 import { useState } from 'react'
-import { useMessages } from './useMessages.jsx'
+import { useChatUnreadCount } from './useChatUnreadCount'
 
 export const useChatModal = () => {
   const [isChatModalOpen, setIsChatModalOpen] = useState(false)
-  const { updateAfterRead } = useMessages()
+  const { resetUnreadCount } = useChatUnreadCount()
 
   const openChatModal = () => {
     setIsChatModalOpen(true)
   }
 
-  const closeChatModal = async () => {
+  const closeChatModal = () => {
     setIsChatModalOpen(false)
-    // Actualizar el contador de mensajes no leídos cuando se cierre el modal
-    await updateAfterRead()
+    // Resetear el contador de mensajes no leídos cuando se cierre el modal
+    resetUnreadCount()
   }
 
   return {

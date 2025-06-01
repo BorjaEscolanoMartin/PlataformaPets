@@ -195,6 +195,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/chats/private', [ChatController::class, 'createPrivateChat']);
     
     // Rutas de Mensajes
+    Route::get('/messages/unread-count', [MessageController::class, 'getUnreadCount']);
     Route::get('/chats/{chat}/messages', [MessageController::class, 'index']);
     Route::post('/chats/{chat}/messages', [MessageController::class, 'store']);
     Route::get('/chats/{chat}/messages/{message}', [MessageController::class, 'show']);

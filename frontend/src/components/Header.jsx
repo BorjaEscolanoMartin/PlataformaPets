@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
 import { useModal } from '../hooks/useModal'
 import { useNotifications } from '../hooks/useNotifications'
+import { useChatUnreadCount } from '../hooks/useChatUnreadCount'
 import { useState } from 'react'
 import ChatModal from './chat/ChatModal'
 import {
@@ -32,6 +33,7 @@ export default function Header() {
   const { user, logout } = useAuth()
   const { openLogin, openRegister } = useModal()
   const { unreadCount } = useNotifications()
+  const { unreadCount: chatUnreadCount } = useChatUnreadCount()
   const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isChatModalOpen, setIsChatModalOpen] = useState(false)
@@ -187,8 +189,7 @@ export default function Header() {
                             {unreadCount > 9 ? '9+' : unreadCount}
                           </span>
                         )}
-                      </div>
-                      Notificaciones
+                      </div>                      Notificaciones
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300">
@@ -196,21 +197,25 @@ export default function Header() {
                       onClick={handleOpenChat}
                       className="flex items-center gap-3 p-2 font-medium text-gray-700 hover:text-blue-600 w-full text-left"
                     >
-                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center relative">
                         <MessageCircle className="w-3 h-3 text-blue-600" />
+                        {chatUnreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-1 shadow-lg border border-white">
+                            {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
+                          </span>
+                        )}
                       </div>
                       Mensajes
                     </button>
                   </DropdownMenuItem>
                 </>
-              )}              {(esCuidador || esEmpresa) && (
+              )}{(esCuidador || esEmpresa) && (
                 <>
                   <DropdownMenuItem asChild className="rounded-lg hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transition-all duration-300">
                     <Link to="/mi-perfil-cuidador" className="flex items-center gap-3 p-2 font-medium text-gray-700 hover:text-purple-600">
                       <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
                         <UserRound className="w-3 h-3 text-purple-600" />
-                      </div>
-                      {esEmpresa ? 'Mi perfil de empresa' : 'Mi perfil de cuidador'}
+                      </div>                      {esEmpresa ? 'Mi perfil de empresa' : 'Mi perfil de cuidador'}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300">
@@ -218,8 +223,13 @@ export default function Header() {
                       onClick={handleOpenChat}
                       className="flex items-center gap-3 p-2 font-medium text-gray-700 hover:text-blue-600 w-full text-left"
                     >
-                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center relative">
                         <MessageCircle className="w-3 h-3 text-blue-600" />
+                        {chatUnreadCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[14px] h-[14px] flex items-center justify-center px-1 shadow-lg border border-white">
+                            {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
+                          </span>
+                        )}
                       </div>
                       Mensajes
                     </button>
@@ -353,19 +363,25 @@ export default function Header() {
                                 {unreadCount > 9 ? '9+' : unreadCount}
                               </span>
                             )}
-                          </div>
-                          <span className="font-medium text-gray-700">Notificaciones</span>
+                          </div>                          <span className="font-medium text-gray-700">Notificaciones</span>
                         </Link>
                         
                         <button 
                           onClick={handleOpenChat}
                           className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-xl transition-all duration-300 w-full text-left"
                         >
-                          <MessageCircle className="w-5 h-5 text-blue-600" />
+                          <div className="relative">
+                            <MessageCircle className="w-5 h-5 text-blue-600" />
+                            {chatUnreadCount > 0 && (
+                              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1 shadow-lg border border-white">
+                                {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
+                              </span>
+                            )}
+                          </div>
                           <span className="font-medium text-gray-700">Mensajes</span>
                         </button>
                       </>
-                    )}                    {(esCuidador || esEmpresa) && (
+                    )}{(esCuidador || esEmpresa) && (
                       <>
                         <Link 
                           to="/mi-perfil-cuidador" 
@@ -377,12 +393,18 @@ export default function Header() {
                             {esEmpresa ? 'Mi perfil de empresa' : 'Mi perfil de cuidador'}
                           </span>
                         </Link>
-                        
-                        <button 
+                          <button 
                           onClick={handleOpenChat}
                           className="flex items-center gap-3 p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-xl transition-all duration-300 w-full text-left"
                         >
-                          <MessageCircle className="w-5 h-5 text-blue-600" />
+                          <div className="relative">
+                            <MessageCircle className="w-5 h-5 text-blue-600" />
+                            {chatUnreadCount > 0 && (
+                              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1 shadow-lg border border-white">
+                                {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
+                              </span>
+                            )}
+                          </div>
                           <span className="font-medium text-gray-700">Mensajes</span>
                         </button>
                       </>
