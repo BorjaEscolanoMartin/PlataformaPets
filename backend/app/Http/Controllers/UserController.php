@@ -7,10 +7,11 @@ use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
-{
-    public function indexEmpresas()
+{    public function indexEmpresas()
     {
-        return User::where('role', 'empresa')->get();
+        return User::where('role', 'empresa')
+                   ->with(['host.servicePrices'])
+                   ->get();
     }
 
     public function update(Request $request)
