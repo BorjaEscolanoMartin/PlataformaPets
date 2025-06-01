@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, Menu } from 'lucide-react';
 import { useChat } from '../../context/useChat';
-import { useChatUnreadCount } from '../../hooks/useChatUnreadCount';
 import ChatList from './ChatList';
 import ChatWindow from './ChatWindow';
 
 const ChatModal = ({ isOpen, onClose }) => {
     const { activeChat, loadChats, markMessagesAsRead } = useChat();
-    const { fetchUnreadCount } = useChatUnreadCount();
     const [isChatListVisible, setIsChatListVisible] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -42,14 +40,8 @@ const ChatModal = ({ isOpen, onClose }) => {
         if (activeChat && isOpen) {
             markMessagesAsRead(activeChat.id);
         }
-    }, [activeChat, isOpen, markMessagesAsRead]);
-
-    // Actualizar contador cuando se cierre el modal
-    useEffect(() => {
-        if (!isOpen) {
-            fetchUnreadCount();
-        }
-    }, [isOpen, fetchUnreadCount]);
+    }, [activeChat, isOpen, markMessagesAsRead]);    // No necesitamos refrescar el contador al cerrar el modal
+    // ya que se resetea cuando se abre desde el header
 
     if (!isOpen) return null;    return (
         <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-purple-900/30 to-blue-900/30 backdrop-blur-sm flex items-start justify-center pt-20 p-4 z-[9999]">
