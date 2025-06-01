@@ -131,9 +131,8 @@ export default function MisReservas() {
     }
     return services[serviceType] || serviceType
   }
-
   const formatDate = (dateString) => {
-    if (!dateString) return 'No especificada'
+    if (!dateString) return 'No especificada';
     const date = new Date(dateString)
     // Formatear como día/mes/año
     return date.toLocaleDateString('es-ES', {
@@ -142,9 +141,10 @@ export default function MisReservas() {
       year: 'numeric'
     })
   }
+  
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
+      <div className="min-h-screen flex items-center justify-center py-8">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center border border-blue-100">
           {/* Animated loading icon */}
           <div className="relative mb-6">

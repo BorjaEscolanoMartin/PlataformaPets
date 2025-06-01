@@ -7,6 +7,7 @@ import ChatModal from '../components/chat/ChatModal'
 export default function ReservasRecibidas() {
   const [reservas, setReservas] = useState([])
   const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(true)
   const [isChatModalOpen, setIsChatModalOpen] = useState(false)
   const { createPrivateChat, setActiveChat } = useChat()
 
@@ -14,6 +15,7 @@ export default function ReservasRecibidas() {
     fetchReservas()
   }, [])
   const fetchReservas = () => {
+    setLoading(true)
     api.get('/reservations/host')
       .then(res => {
         console.log('📋 Reservas recibidas cargadas:', res.data)
@@ -26,8 +28,12 @@ export default function ReservasRecibidas() {
           return b.id - a.id
         })
         setReservas(reservasOrdenadas)
+        setLoading(false)
       })
-      .catch(() => setError('Error al cargar las reservas'))
+      .catch(() => {
+        setError('Error al cargar las reservas')
+        setLoading(false)
+      })
   }
   const actualizarEstado = async (id, status) => {
     try {
@@ -62,7 +68,6 @@ export default function ReservasRecibidas() {
       alert(`Error al abrir chat: ${error.message}`)
     }
   }
-
   const formatDate = (dateString) => {
     if (!dateString) return 'No especificada'
     const date = new Date(dateString)
@@ -73,6 +78,37 @@ export default function ReservasRecibidas() {
       year: 'numeric'
     })
   }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center py-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center border border-blue-100">
+          {/* Animated loading icon */}
+          <div className="relative mb-6">
+            <div className="w-16 h-16 mx-auto bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            {/* Pulsing ring effect */}
+            <div className="absolute inset-0 w-16 h-16 mx-auto bg-gradient-to-r from-blue-600 to-purple-600 rounded-full opacity-20 animate-pulse"></div>
+          </div>
+          
+          {/* Loading text */}
+          <h2 className="text-xl font-bold text-gray-800 mb-3">Cargando reservas</h2>
+          <p className="text-gray-600 text-sm leading-relaxed">
+            Obteniendo las solicitudes recibidas...
+          </p>
+          
+          {/* Progress dots */}
+          <div className="flex justify-center space-x-1 mt-6">
+            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="py-8">
       <div className="max-w-6xl mx-auto p-6">
