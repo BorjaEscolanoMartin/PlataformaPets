@@ -42,14 +42,11 @@ function App() {
               </PrivateRoute>
             </Layout>
           }
-        />
-        <Route
+        />        <Route
           path="/empresas"
           element={
             <Layout>
-              <PrivateRoute>
-                <Empresas />
-              </PrivateRoute>
+              <Empresas />
             </Layout>
           }
         />

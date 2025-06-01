@@ -112,6 +112,9 @@ Route::middleware('auth:sanctum')->post('/logout-all', function (Request $reques
     ]);
 });
 
+// Empresas específicas (ruta pública)
+Route::get('/empresas', [UserController::class, 'indexEmpresas']);
+
 /*
 |--------------------------------------------------------------------------
 | Rutas Protegidas con Sanctum
@@ -148,8 +151,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/users/{id}', [UserController::class, 'show']);
 
-    // Empresas específicas con controlador
-    Route::get('/empresas', [UserController::class, 'indexEmpresas']);    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reservations', [ReservationController::class, 'index']);
     Route::get('/reservations/host', [ReservationController::class, 'forHost']);
     Route::post('/reservations', [ReservationController::class, 'store']);
