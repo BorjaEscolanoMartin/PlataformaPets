@@ -179,10 +179,6 @@ export default function Pets() {
                     <option value="">Selecciona la especie</option>
                     <option value="perro">🐕 Perro</option>
                     <option value="gato">🐱 Gato</option>
-                    <option value="ave">🐦 Ave</option>
-                    <option value="hamster">🐹 Hámster</option>
-                    <option value="conejo">🐰 Conejo</option>
-                    <option value="otro">🐾 Otro</option>
                   </select>
                 </div>
 
