@@ -58,7 +58,7 @@ export default function Header() {
   const esEmpresa = user?.role === 'empresa'
   return (
     <header className="bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 shadow-sm px-6 py-4 flex justify-between items-center sticky top-0 z-50 backdrop-blur-sm">
-     <Link to="/" className="text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3 hover:scale-105 transition-transform duration-300">        <div className="w-12 h-12">
+     <Link to="/" className="text-3xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3 hover:scale-105 transition-transform duration-300">        <div className="w-12 h-12">
           <img 
             src="/LogoWeb-sinfondo.png" 
             alt="Pet Hosting Logo" 
@@ -73,7 +73,7 @@ export default function Header() {
             <PawPrint className="w-6 h-6 text-white" />
           </div>
         </div>
-        <span className="hidden md:inline">Pet Hosting</span>
+        <span className="hidden md:inline">Pets</span>
         <span className="md:hidden">Pets</span>
       </Link>{/* Botón hamburguesa solo para móvil */}
       <button
