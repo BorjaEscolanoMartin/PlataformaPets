@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useChat } from '../../context/useChat';
 import { Button } from '../ui/button';
 import { MessageCircle } from 'lucide-react';
@@ -23,25 +24,28 @@ const StartChatButton = ({ userId, className = '' }) => {
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
-    };
-
-    return (
-        <>            <Button
+    };    return (
+        <>
+            <Button
                 onClick={handleStartChat}
                 disabled={isCreatingChat}
                 className={`bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 
                            text-white font-medium px-6 py-3 rounded-xl shadow-lg hover:shadow-xl 
                            transform hover:scale-[1.02] transition-all duration-300 
                            flex items-center justify-center space-x-2 
-                           disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${className}`}            >
+                           disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${className}`}
+            >
                 <MessageCircle className="h-5 w-5" />
                 <span>{isCreatingChat ? 'Iniciando...' : 'Enviar mensaje'}</span>
             </Button>
 
-            <ChatModal 
-                isOpen={isModalOpen} 
-                onClose={handleCloseModal}
-            />
+            {isModalOpen && createPortal(
+                <ChatModal 
+                    isOpen={isModalOpen} 
+                    onClose={handleCloseModal}
+                />,
+                document.body
+            )}
         </>
     );
 };
