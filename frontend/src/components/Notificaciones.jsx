@@ -141,10 +141,9 @@ const Notificaciones = () => {
         <p className="text-gray-700">Contenido de la notificación no disponible.</p>
       </div>
     );
-  };
-  if (loading) {
+  };  if (loading) {
     return (
-      <div className="py-8 flex items-center justify-center">
+      <div className="min-h-screen py-8 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center border border-blue-100">
           {/* Animated loading icon */}
           <div className="relative mb-6">
