@@ -6,7 +6,6 @@ export const useChatUnreadCount = () => {
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const { user } = useAuth()
-
   const fetchUnreadCount = useCallback(async () => {
     if (!user) {
       setUnreadCount(0)
@@ -26,6 +25,7 @@ export const useChatUnreadCount = () => {
   }, [user])
 
   const resetUnreadCount = () => {
+    console.log('resetUnreadCount hook called, setting count to 0')
     setUnreadCount(0)
   }
 
@@ -36,9 +36,10 @@ export const useChatUnreadCount = () => {
   const incrementUnreadCount = () => {
     setUnreadCount(prev => prev + 1)
   }
+  
   useEffect(() => {
     fetchUnreadCount()
-  }, [user, fetchUnreadCount])
+  }, [fetchUnreadCount])
 
   return {
     unreadCount,

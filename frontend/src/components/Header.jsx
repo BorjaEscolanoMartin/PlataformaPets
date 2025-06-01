@@ -33,17 +33,20 @@ export default function Header() {
   const { user, logout } = useAuth()
   const { openLogin, openRegister } = useModal()
   const { unreadCount } = useNotifications()
-  const { unreadCount: chatUnreadCount } = useChatUnreadCount()
+  const { unreadCount: chatUnreadCount, resetUnreadCount } = useChatUnreadCount()
   const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isChatModalOpen, setIsChatModalOpen] = useState(false)
+  
   const handleLogout = async () => {
     await logout()
     navigate('/')
     setIsMenuOpen(false)
   }
-  
-  const handleOpenChat = () => {
+    const handleOpenChat = () => {
+    console.log('handleOpenChat called, current chatUnreadCount:', chatUnreadCount)
+    resetUnreadCount() // Reset unread count immediately when opening chat
+    console.log('resetUnreadCount called')
     setIsChatModalOpen(true)
     setIsMenuOpen(false)
   }
