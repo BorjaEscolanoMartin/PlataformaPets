@@ -21,8 +21,7 @@ export default function PrivateRoute({ children }) {
     const checkHost = async () => {
       if (user?.role === 'cliente') {
         setCheckingHost(true)
-        try {
-          const res = await api.get('/hosts')
+        try {          const res = await api.get('/hosts')
           const hasHost = res.data.length > 0
 
           const rutasProtegidasPorPerfil = [
@@ -43,14 +42,15 @@ export default function PrivateRoute({ children }) {
         }
       }
     }
-
+    
     if (user) {
       checkHost()
-    }  }, [user, location.pathname])
+    }
+  }, [user, location.pathname])
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen py-8 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center border border-blue-100">
           {/* Animated loading icon */}
           <div className="relative mb-6">
@@ -82,7 +82,7 @@ export default function PrivateRoute({ children }) {
 
   if (checkingHost) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen py-8 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center border border-blue-100">
           {/* Animated loading icon */}
           <div className="relative mb-6">

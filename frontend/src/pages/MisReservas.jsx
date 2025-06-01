@@ -142,10 +142,9 @@ export default function MisReservas() {
       year: 'numeric'
     })
   }
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-8">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center border border-blue-100">
           {/* Animated loading icon */}
           <div className="relative mb-6">
@@ -172,9 +171,8 @@ export default function MisReservas() {
       </div>
     )
   }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 p-6">
+    <div className="p-6">
       <div className="max-w-6xl mx-auto space-y-8">
 
         {/* Error Message */}

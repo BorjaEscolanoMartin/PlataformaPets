@@ -41,7 +41,6 @@ export default function Cuidadores() {
       setErrorFecha('')
     }
   }, [fechaEntrada, fechaSalida])
-
   useEffect(() => {
     const timeout = setTimeout(() => {
       const fetchCuidadores = async () => {
@@ -63,8 +62,7 @@ export default function Cuidadores() {
           setCuidadores(res.data)
         } catch (err) {
           console.error(err)
-          setError('No se pudieron cargar los cuidadores.')
-        }
+          setError('No se pudieron cargar los cuidadores.')        }
       }
 
       fetchCuidadores()
@@ -131,17 +129,15 @@ export default function Cuidadores() {
             pathname: '/cuidadores',
             search: `?${nuevosParams.toString()}`
           })
-        }
-      })    })
+        }      })
+    })
   }, [])
-
   const searchLocation = lat && lon
     ? { lat: parseFloat(lat), lng: parseFloat(lon) }
-    : null
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="p-4 max-w-none mx-auto px-6">{/* Header */}
+    : null;
+      return (
+    <div className="py-2">
+      <div className="p-2 max-w-none mx-auto px-6">{/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">          <h2 className="text-lg font-semibold text-gray-800 mb-3">Filtros de búsqueda</h2>          {/* Primera fila: 4 filtros principales */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
             <div>

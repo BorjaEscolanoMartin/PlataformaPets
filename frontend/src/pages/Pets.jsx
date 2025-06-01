@@ -97,7 +97,7 @@ export default function Pets() {
     }
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 p-6">      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="p-6">      <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100">
           <div className="text-center">
