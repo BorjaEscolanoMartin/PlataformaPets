@@ -83,9 +83,7 @@ export default function RegisterEmpresa() {
 
       if (profilePhotoFile instanceof File) {
         formData.append('profile_photo', profilePhotoFile)
-      }
-
-      await api.post('/hosts', formData, {
+      }      await api.post('/hosts', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
 
@@ -94,7 +92,7 @@ export default function RegisterEmpresa() {
 
       setSuccess('Perfil de empresa creado correctamente ✅')
       setTimeout(() => {
-        navigate('/perfil-host')
+        navigate('/')
       }, 2000)
     } catch (err) {
       console.error(err)

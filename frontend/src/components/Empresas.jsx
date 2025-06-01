@@ -6,6 +6,8 @@ export default function Empresas() {
   const [empresas, setEmpresas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [expandedDescriptions, setExpandedDescriptions] = useState({})
+  const [expandedLicenses, setExpandedLicenses] = useState({})
 
   useEffect(() => {
   const fetchEmpresas = async () => {
@@ -80,20 +82,43 @@ export default function Empresas() {
     }
     
     return phone // Devolver original si no coincide con formato esperado
-  }
-
-  // Función para formatear dirección
+  }  // Función para formatear dirección
   const formatAddress = (address) => {
-    if (!address) return address
+    if (!address) return { street: '', city: '', full: '' }
+    
+    // Lista de países a filtrar
+    const countries = ['España', 'Spain', 'France', 'Francia', 'Portugal', 'Italy', 'Italia', 'Germany', 'Alemania']
     
     // Dividir por comas y limpiar espacios
-    const parts = address.split(',').map(part => part.trim())
+    let parts = address.split(',').map(part => part.trim()).filter(part => part.length > 0)
     
-    if (parts.length >= 3) {
+    // Filtrar países de la lista
+    parts = parts.filter(part => !countries.some(country => 
+      part.toLowerCase() === country.toLowerCase()
+    ))
+    
+    if (parts.length === 0) {
+      return { street: '', city: '', full: '' }
+    } else if (parts.length === 1) {
+      // Solo una parte - podría ser solo la calle o solo la ciudad
       return {
         street: parts[0],
-        city: parts.slice(-2).join(', '), // Las últimas dos partes (ciudad, provincia)
-        full: address
+        city: '',
+        full: parts[0]
+      }
+    } else if (parts.length === 2) {
+      // Dos partes - generalmente calle y ciudad
+      return {
+        street: parts[0],
+        city: parts[1],
+        full: parts.join(', ')
+      }
+    } else if (parts.length >= 3) {
+      // Tres o más partes - calle, ciudad, provincia, etc.
+      return {
+        street: parts[0],
+        city: parts.slice(1).join(', '), // Todo después de la calle como ciudad/localidad
+        full: parts.join(', ')
       }
     }
     
@@ -103,7 +128,6 @@ export default function Empresas() {
       full: address
     }
   }
-
   // Función para truncar descripción
   const formatDescription = (description, maxLength = 150) => {
     if (!description) return description
@@ -119,6 +143,27 @@ export default function Empresas() {
     return lastSpace > 0 
       ? truncated.substring(0, lastSpace) + '...'
       : truncated + '...'
+  }
+
+  // Función para verificar si el texto necesita ser truncado
+  const needsTruncation = (text, maxLength = 150) => {
+    return text && text.length > maxLength
+  }
+
+  // Función para alternar la expansión de descripción
+  const toggleDescriptionExpansion = (empresaId) => {
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [empresaId]: !prev[empresaId]
+    }))
+  }
+
+  // Función para alternar la expansión de licencias
+  const toggleLicensesExpansion = (empresaId) => {
+    setExpandedLicenses(prev => ({
+      ...prev,
+      [empresaId]: !prev[empresaId]
+    }))
   }
 
   if (loading) {
@@ -207,26 +252,52 @@ export default function Empresas() {
                       {empresa.host?.title && (
                         <p className="text-sm text-purple-600 font-medium mb-2">{empresa.host.title}</p>
                       )}
-                    </div>                  </div>                  {/* 1. Ubicación */}
-                  {empresa.host?.location && (
+                    </div>                  </div>                  {/* 1. Ubicación y Teléfono */}
+                  {(empresa.host?.location || empresa.host?.phone) && (
                     <div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-                      <h5 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-green-600" />
-                        Ubicación
-                      </h5>
-                      {(() => {
-                        const addressData = formatAddress(empresa.host.location);
-                        return (
-                          <div>
-                            <p className="text-sm font-medium text-gray-800">{addressData.street}</p>
-                            {addressData.city && (
-                              <p className="text-xs text-gray-600 mt-1">{addressData.city}</p>
-                            )}
+                      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+                        {/* Sección de Ubicación */}
+                        {empresa.host?.location && (
+                          <div className="flex-1">
+                            <h5 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                              <MapPin className="w-4 h-4 text-green-600" />
+                              Ubicación
+                            </h5>
+                            {(() => {
+                              const addressData = formatAddress(empresa.host.location);
+                              return (
+                                <div>
+                                  {addressData.street && (
+                                    <p className="text-sm font-medium text-gray-800">{addressData.street}</p>
+                                  )}
+                                  {addressData.city && (
+                                    <p className="text-sm text-green-700 font-semibold mt-1 flex items-center gap-1">
+                                      <span className="text-green-600">📍</span>
+                                      {addressData.city}
+                                    </p>
+                                  )}
+                                  {!addressData.city && !addressData.street && (
+                                    <p className="text-sm font-medium text-gray-800">{addressData.full}</p>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
-                        );
-                      })()}
+                        )}
+                        
+                        {/* Sección de Teléfono */}
+                        {empresa.host?.phone && (
+                          <div className="lg:text-right">
+                            <h5 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2 lg:justify-end">
+                              <Phone className="w-4 h-4 text-orange-600" />
+                              Teléfono
+                            </h5>
+                            <p className="text-sm font-medium text-gray-800">{formatPhoneNumber(empresa.host.phone)}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}                  {/* 2. Servicios y tarifas */}
+                  )}{/* 2. Servicios y tarifas */}
                   {empresa.servicios_ofrecidos && empresa.servicios_ofrecidos.length > 0 && (
                     <div className="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
                       <h5 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
@@ -264,30 +335,54 @@ export default function Empresas() {
                         })}
                       </div>
                     </div>
-                  )}
-
-                  {/* 3. Descripción */}
+                  )}                  {/* 3. Descripción */}
                   {empresa.host?.description && (
                     <div className="mb-6 bg-gradient-to-r from-gray-50 to-slate-50 p-4 rounded-lg border border-gray-200">
                       <h5 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                         <span className="text-gray-600">📝</span>
                         Descripción
                       </h5>
-                      <p className="text-sm text-gray-700 leading-relaxed">
-                        {formatDescription(empresa.host.description)}
-                      </p>
+                      <div>
+                        <p className="text-sm text-gray-700 leading-relaxed">
+                          {expandedDescriptions[empresa.id] 
+                            ? empresa.host.description 
+                            : formatDescription(empresa.host.description)
+                          }
+                        </p>
+                        {needsTruncation(empresa.host.description) && (
+                          <button
+                            onClick={() => toggleDescriptionExpansion(empresa.id)}
+                            className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200 hover:underline"
+                          >
+                            {expandedDescriptions[empresa.id] ? 'Leer menos' : 'Leer más'}
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  {/* 5. Teléfono de contacto y botón de llamada */}
-                  {empresa.host?.phone && (
-                    <div className="bg-gradient-to-r from-orange-50 to-yellow-50 p-4 rounded-lg border border-orange-200">
-                      <h5 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-orange-600" />
-                        Teléfono de contacto
+                  )}                  {/* 4. Licencias y certificaciones */}
+                  {empresa.host?.licenses && (
+                    <div className="mb-6 bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-lg border border-emerald-200">
+                      <h5 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                        <span className="text-emerald-600">📜</span>
+                        Licencias y certificaciones
                       </h5>
-                      <p className="text-sm font-medium text-gray-800 mb-3">{formatPhoneNumber(empresa.host.phone)}</p>                  
-                    </div>
-                  )}
+                      <div>
+                        <p className="text-sm text-gray-700 leading-relaxed">
+                          {expandedLicenses[empresa.id] 
+                            ? empresa.host.licenses 
+                            : formatDescription(empresa.host.licenses)
+                          }
+                        </p>
+                        {needsTruncation(empresa.host.licenses) && (
+                          <button
+                            onClick={() => toggleLicensesExpansion(empresa.id)}
+                            className="mt-2 text-xs font-medium text-emerald-600 hover:text-emerald-800 transition-colors duration-200 hover:underline"
+                          >
+                            {expandedLicenses[empresa.id] ? 'Leer menos' : 'Leer más'}
+                          </button>
+                        )}
+                      </div>
+                    </div>                  )}
                 </div>
               </div>
             ))}
