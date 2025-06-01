@@ -142,10 +142,9 @@ const Notificaciones = () => {
       </div>
     );
   };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 flex items-center justify-center">
+      <div className="py-8 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center border border-blue-100">
           {/* Animated loading icon */}
           <div className="relative mb-6">
@@ -172,10 +171,9 @@ const Notificaciones = () => {
       </div>
     );
   }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 p-6">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="py-8">
+      <div className="max-w-4xl mx-auto space-y-8 px-6">
 
         {/* Error Message */}
         {error && (

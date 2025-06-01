@@ -24,70 +24,85 @@ function App() {
         <Route path="/cuidadores" element={<Layout><Cuidadores /></Layout>} />
 
         {/* Rutas de invitado (sin layout) */}
-        <Route path="/registro-empresa" element={<RegisterEmpresa />} />
-
-        {/* Rutas protegidas con Layout */}
+        <Route path="/registro-empresa" element={<RegisterEmpresa />} />        {/* Rutas protegidas con Layout */}
         <Route
           path="/mascotas"
           element={
-            <PrivateRoute>
-              <Layout><Pets /></Layout>
-            </PrivateRoute>
+            <Layout>
+              <PrivateRoute>
+                <Pets />
+              </PrivateRoute>
+            </Layout>
           }
         />
         <Route
           path="/mascotas/:id"
           element={
-            <PrivateRoute>
-              <Layout><PetsDetail /></Layout>
-            </PrivateRoute>
+            <Layout>
+              <PrivateRoute>
+                <PetsDetail />
+              </PrivateRoute>
+            </Layout>
           }
         />
         <Route
           path="/empresas"
           element={
-            <PrivateRoute>
-              <Layout><Empresas /></Layout>
-            </PrivateRoute>
+            <Layout>
+              <PrivateRoute>
+                <Empresas />
+              </PrivateRoute>
+            </Layout>
           }
         />
         <Route
           path="/mi-perfil-cuidador"
           element={
-            <PrivateRoute>
-              <Layout><HostProfile /></Layout>
-            </PrivateRoute>
+            <Layout>
+              <PrivateRoute>
+                <HostProfile />
+              </PrivateRoute>
+            </Layout>
           }
         />
         <Route
           path="/cuidadores/:id"
           element={
-            <PrivateRoute>
-              <Layout><PerfilCuidador /></Layout>
-            </PrivateRoute>
+            <Layout>
+              <PrivateRoute>
+                <PerfilCuidador />
+              </PrivateRoute>
+            </Layout>
           }
         />
         <Route
           path="/mis-reservas"
           element={
-            <PrivateRoute>
-              <Layout><MisReservas /></Layout>
-            </PrivateRoute>
+            <Layout>
+              <PrivateRoute>
+                <MisReservas />
+              </PrivateRoute>
+            </Layout>
           }
         />
         <Route
           path="/reservas-recibidas"
           element={
-            <PrivateRoute>
-              <Layout><ReservasRecibidas /></Layout>
-            </PrivateRoute>
+            <Layout>
+              <PrivateRoute>
+                <ReservasRecibidas />
+              </PrivateRoute>
+            </Layout>
           }
-        />        <Route
+        />
+        <Route
           path="/notificaciones"
           element={
-            <PrivateRoute>
-              <Layout><Notificaciones /></Layout>
-            </PrivateRoute>
+            <Layout>
+              <PrivateRoute>
+                <Notificaciones />
+              </PrivateRoute>
+            </Layout>
           }
         />
         <Route

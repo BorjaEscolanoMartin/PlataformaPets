@@ -17,14 +17,14 @@ export default function PetDetail() {
       } catch (err) {
         setError('No se pudo cargar la mascota')
         console.error(err)
-      }
-    }
+      }    }
 
     fetchPet()
-  }, [id])
+  }, [id]);
+
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 flex items-center justify-center p-6">
+      <div className="min-h-screen flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-auto text-center border border-red-200">
           <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
             <span className="text-red-600 text-2xl">⚠️</span>
@@ -45,7 +45,7 @@ export default function PetDetail() {
 
   if (!pet) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center border border-blue-100">
           {/* Animated loading icon */}
           <div className="relative mb-6">
@@ -74,7 +74,7 @@ export default function PetDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 p-6">
+    <div className="p-6">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-blue-100">

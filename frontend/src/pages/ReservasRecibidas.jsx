@@ -73,9 +73,8 @@ export default function ReservasRecibidas() {
       year: 'numeric'
     })
   }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 py-8">
+    <div className="py-8">
       <div className="max-w-6xl mx-auto p-6">
         {/* Header principal */}
         <div className="bg-white rounded-2xl shadow-xl border border-blue-100 p-8 mb-8 text-center">

@@ -30,7 +30,6 @@ export default function PerfilCuidador() {
       })
       .finally(() => setLoading(false))
   }, [id])
-
   // ✅ Cargar reseñas solo cuando cuidador y host están disponibles
   useEffect(() => {
     if (cuidador?.host?.id) {
@@ -38,10 +37,10 @@ export default function PerfilCuidador() {
         .then(res => setReviews(res.data))
         .catch(err => console.error('Error cargando reseñas:', err))
     }
-  }, [cuidador])
+  }, [cuidador]);
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 py-8 flex items-center justify-center">
+      <div className="min-h-screen py-8 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-xl border border-blue-100 p-12 text-center max-w-md mx-auto">
           <div className="w-16 h-16 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
             <span className="text-3xl">⏳</span>
@@ -51,11 +50,9 @@ export default function PerfilCuidador() {
         </div>
       </div>
     )
-  }
-  
-  if (!cuidador) {
+  }    if (!cuidador) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 py-8 flex items-center justify-center">
+      <div className="min-h-screen py-8 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-xl border border-red-100 p-12 text-center max-w-md mx-auto">
           <div className="w-16 h-16 bg-gradient-to-r from-red-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <span className="text-3xl">❌</span>
@@ -73,11 +70,10 @@ export default function PerfilCuidador() {
       </div>
     )
   }
-
   const host = cuidador.host
   const userReview = user ? reviews.find(r => r.user.id === user.id) : null
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+    <div className="py-8">
       <div className="max-w-6xl mx-auto px-6">
         {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">

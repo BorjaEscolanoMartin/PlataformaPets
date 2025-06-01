@@ -3,10 +3,10 @@ import { Navigate } from 'react-router-dom'
 
 export default function GuestRoute({ children }) {
   const { user, loading } = useAuth()
-
+  
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen py-8 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center border border-blue-100">
           {/* Animated loading icon */}
           <div className="relative mb-6">
