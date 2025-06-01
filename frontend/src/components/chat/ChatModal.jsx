@@ -38,15 +38,14 @@ const ChatModal = ({ isOpen, onClose }) => {
     }, [activeChat, isMobile]);
 
     if (!isOpen) return null;    return (
-        <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-purple-900/30 to-blue-900/30 backdrop-blur-sm flex items-start justify-center pt-8 px-4 z-[60]">
+        <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-purple-900/30 to-blue-900/30 backdrop-blur-sm flex items-start justify-center pt-20 p-4 z-[9999]">
             {/* Overlay */}
             <div 
                 className="absolute inset-0"
                 onClick={onClose}
             />
-            
-            {/* Modal */}
-            <div className="relative bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-6xl h-[calc(100vh-4rem)] flex overflow-hidden border border-blue-100 transform transition-all duration-300 scale-100 hover:scale-[1.01]">
+              {/* Modal */}
+            <div className="relative bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl w-full max-w-6xl h-[calc(100vh-6rem)] max-h-[80vh] flex overflow-hidden border border-blue-100 transform transition-all duration-300 scale-100 hover:scale-[1.01]">
                 {/* Header with close button */}
                 <div className="absolute top-0 right-0 z-[70] p-4">
                     <button
