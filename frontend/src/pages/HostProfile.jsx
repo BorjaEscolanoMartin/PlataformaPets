@@ -5,6 +5,8 @@ import { useAuth } from '../context/useAuth'
 import { loadGoogleMaps } from '../utils/loadGoogleMaps'
 
 export default function HostProfile() {
+  const { user, setUser } = useAuth()
+  
   const [host, setHost] = useState({
     name: '',
     type: 'particular',
@@ -16,6 +18,11 @@ export default function HostProfile() {
     experience_details: '',
     has_own_pets: false,
     own_pets_description: '',
+    // Campos específicos de empresas
+    cif: '',
+    fiscal_address: '',
+    licenses: '',
+    team_info: '',
   })
 
   const [profilePhotoFile, setProfilePhotoFile] = useState(null)
@@ -26,8 +33,16 @@ export default function HostProfile() {
   // Estado para precios de servicios
   const [precios, setPrecios] = useState({})
   
-  // Servicios disponibles con sus unidades por defecto
-  const serviciosDisponibles = [
+  // Servicios disponibles según el tipo de usuario
+  const serviciosDisponibles = user?.role === 'empresa' ? [
+    { key: 'veterinario', label: 'Servicios veterinarios', unidad: 'por_consulta' },
+    { key: 'adiestrador', label: 'Servicios de adiestramiento', unidad: 'por_sesion' },
+    { key: 'emergencias', label: 'Atención de emergencias', unidad: 'por_consulta' },
+    { key: 'cirugia', label: 'Cirugías', unidad: 'por_intervencion' },
+    { key: 'vacunacion', label: 'Vacunación', unidad: 'por_vacuna' },
+    { key: 'adiestramiento_basico', label: 'Adiestramiento básico', unidad: 'por_sesion' },
+    { key: 'adiestramiento_avanzado', label: 'Adiestramiento avanzado', unidad: 'por_sesion' },
+    { key: 'modificacion_conducta', label: 'Modificación de conducta', unidad: 'por_sesion' },  ] : [
     { key: 'paseo', label: 'Paseo', unidad: 'por_hora' },
     { key: 'alojamiento', label: 'Alojamiento', unidad: 'por_noche' },
     { key: 'guarderia', label: 'Guardería', unidad: 'por_dia' },
@@ -37,15 +52,30 @@ export default function HostProfile() {
 
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
-
-  const { user, setUser } = useAuth()
   const locationRef = useRef(null)
+  const fiscalAddressRef = useRef(null)
+  
   useEffect(() => {
     api.get('/hosts')
       .then(res => {
         if (Array.isArray(res.data) && res.data.length > 0 && res.data[0]?.id) {
-          const hostData = res.data[0]
-          setHost(hostData)
+          const hostData = res.data[0]          // Asegurar que todos los campos no sean null
+          const cleanedHostData = {
+            ...hostData,
+            name: hostData.name || '',
+            location: hostData.location || '',
+            description: hostData.description || '',
+            title: hostData.title || '',
+            phone: hostData.phone || '',
+            experience_years: hostData.experience_years || '',
+            experience_details: hostData.experience_details || '',
+            own_pets_description: hostData.own_pets_description || '',
+            cif: hostData.cif || '',
+            fiscal_address: hostData.fiscal_address || '',
+            licenses: hostData.licenses || '',
+            team_info: hostData.team_info || '',
+          }
+          setHost(cleanedHostData)
           
           // Cargar precios de servicios si el host existe
           if (hostData.id) {
@@ -83,29 +113,47 @@ export default function HostProfile() {
       setHost(prev => ({ ...prev, type: 'particular' }))
     }
   }, [user])
-
   useEffect(() => {
     loadGoogleMaps().then(() => {
-      if (!locationRef.current) return
+      // Configurar autocompletado para ubicación principal
+      if (locationRef.current) {
+        const autocomplete = new window.google.maps.places.Autocomplete(locationRef.current, {
+          types: ['geocode'],
+          componentRestrictions: { country: 'es' },
+        })
 
-      const autocomplete = new window.google.maps.places.Autocomplete(locationRef.current, {
-        types: ['geocode'],
-        componentRestrictions: { country: 'es' },
-      })
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace()
+          if (!place.geometry) return
 
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace()
-        if (!place.geometry) return
+          setHost(prev => ({
+            ...prev,
+            location: place.formatted_address,
+            latitude: place.geometry.location.lat(),
+            longitude: place.geometry.location.lng(),
+          }))
+        })
+      }
 
-        setHost(prev => ({
-          ...prev,
-          location: place.formatted_address,
-          latitude: place.geometry.location.lat(),
-          longitude: place.geometry.location.lng(),
-        }))
-      })
+      // Configurar autocompletado para dirección fiscal (solo para empresas)
+      if (fiscalAddressRef.current && user?.role === 'empresa') {
+        const fiscalAutocomplete = new window.google.maps.places.Autocomplete(fiscalAddressRef.current, {
+          types: ['geocode'],
+          componentRestrictions: { country: 'es' },
+        })
+
+        fiscalAutocomplete.addListener('place_changed', () => {
+          const place = fiscalAutocomplete.getPlace()
+          if (!place.geometry) return
+
+          setHost(prev => ({
+            ...prev,
+            fiscal_address: place.formatted_address,
+          }))
+        })
+      }
     }).catch(console.error)
-  }, [])
+  }, [user])
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -297,51 +345,157 @@ export default function HostProfile() {
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 outline-none text-sm font-medium"
               />
             </div>
-          </div>          {/* Experiencia */}
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
-              <span className="text-orange-600">⭐</span>
-              Años de experiencia
-            </label>
-            <input
-              type="number"
-              min="0"
-              placeholder="Número de años"
-              value={host.experience_years}
-              onChange={e => setHost({ ...host, experience_years: e.target.value })}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all duration-200 outline-none text-sm font-medium"
-            />
-          </div>
+          </div>          {/* Campos específicos según el tipo */}
+          {user?.role === 'empresa' ? (
+            // CAMPOS ESPECÍFICOS PARA EMPRESAS
+            <>
+              {/* Información de la empresa */}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
+                <h3 className="text-lg font-bold text-green-800 mb-4 flex items-center gap-2">
+                  🏢 Información de la empresa
+                </h3>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                      <span className="text-green-600">🆔</span>
+                      CIF/NIF de la empresa
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ej: B12345678"
+                      value={host.cif}
+                      onChange={e => setHost({ ...host, cif: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all duration-200 outline-none text-sm font-medium"
+                    />
+                  </div>
 
-          {/* Descripción de experiencia */}
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
-              <span className="text-purple-600">📝</span>
-              Cuéntanos tu experiencia con mascotas
-            </label>
-            <textarea
-              placeholder="Describe tu experiencia cuidando mascotas, certificaciones, cursos realizados..."
-              value={host.experience_details}
-              onChange={e => setHost({ ...host, experience_details: e.target.value })}
-              rows="4"
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 outline-none text-sm font-medium resize-none"
-            />
-          </div>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                      <span className="text-green-600">⭐</span>
+                      Años en el mercado
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="Años de actividad"
+                      value={host.experience_years}
+                      onChange={e => setHost({ ...host, experience_years: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all duration-200 outline-none text-sm font-medium"
+                    />
+                  </div>
+                </div>
 
-          {/* Descripción general */}
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
-              <span className="text-indigo-600">💬</span>
-              Descripción de tu servicio
-            </label>
-            <textarea
-              placeholder="Presenta tu servicio, horarios, metodología, qué hace especial tu cuidado..."
-              value={host.description}
-              onChange={e => setHost({ ...host, description: e.target.value })}
-              rows="4"
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all duration-200 outline-none text-sm font-medium resize-none"
-            />
-          </div>          {/* Foto de perfil */}
+                <div className="mt-4 space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                    <span className="text-green-600">🏠</span>
+                    Dirección fiscal
+                  </label>                  <input
+                    ref={fiscalAddressRef}
+                    type="text"
+                    placeholder="Dirección completa de la empresa"
+                    value={host.fiscal_address}
+                    onChange={e => setHost({ ...host, fiscal_address: e.target.value })}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all duration-200 outline-none text-sm font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Licencias y certificaciones */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                  <span className="text-blue-600">📜</span>
+                  Licencias y certificaciones
+                </label>
+                <textarea
+                  placeholder="Describe las licencias, seguros, certificaciones y acreditaciones de tu empresa..."
+                  value={host.licenses}
+                  onChange={e => setHost({ ...host, licenses: e.target.value })}
+                  rows="3"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 outline-none text-sm font-medium resize-none"
+                />
+              </div>
+
+              {/* Descripción de servicios empresariales */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                  <span className="text-indigo-600">💼</span>
+                  Servicios profesionales
+                </label>
+                <textarea
+                  placeholder="Describe los servicios profesionales de tu empresa, instalaciones, equipo, metodología..."
+                  value={host.description}
+                  onChange={e => setHost({ ...host, description: e.target.value })}
+                  rows="4"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all duration-200 outline-none text-sm font-medium resize-none"
+                />
+              </div>
+
+              {/* Equipo de trabajo */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                  <span className="text-purple-600">👥</span>
+                  Nuestro equipo
+                </label>
+                <textarea
+                  placeholder="Describe tu equipo de trabajo, profesionales, veterinarios, experiencia del personal..."
+                  value={host.team_info}
+                  onChange={e => setHost({ ...host, team_info: e.target.value })}
+                  rows="3"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 outline-none text-sm font-medium resize-none"
+                />
+              </div>
+            </>
+          ) : (
+            // CAMPOS ESPECÍFICOS PARA CUIDADORES PARTICULARES
+            <>
+              {/* Experiencia personal */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                  <span className="text-orange-600">⭐</span>
+                  Años de experiencia
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Número de años"
+                  value={host.experience_years}
+                  onChange={e => setHost({ ...host, experience_years: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all duration-200 outline-none text-sm font-medium"
+                />
+              </div>
+
+              {/* Descripción de experiencia personal */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                  <span className="text-purple-600">📝</span>
+                  Cuéntanos tu experiencia con mascotas
+                </label>
+                <textarea
+                  placeholder="Describe tu experiencia personal cuidando mascotas, certificaciones, cursos realizados..."
+                  value={host.experience_details}
+                  onChange={e => setHost({ ...host, experience_details: e.target.value })}
+                  rows="4"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 outline-none text-sm font-medium resize-none"
+                />
+              </div>
+
+              {/* Descripción personal del servicio */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                  <span className="text-indigo-600">💬</span>
+                  Descripción de tu servicio
+                </label>
+                <textarea
+                  placeholder="Presenta tu servicio personal, horarios, metodología, qué hace especial tu cuidado..."
+                  value={host.description}
+                  onChange={e => setHost({ ...host, description: e.target.value })}
+                  rows="4"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all duration-200 outline-none text-sm font-medium resize-none"
+                />
+              </div>
+            </>
+          )}{/* Foto de perfil */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
               <span className="text-pink-600">📸</span>
@@ -356,133 +510,146 @@ export default function HostProfile() {
               />
               <p className="text-sm text-gray-500 mt-2">Sube una foto que transmita confianza</p>
             </div>
-          </div>
-
-          {/* Mascotas propias */}
-          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6">
-            <label className="flex items-center gap-3 text-sm font-bold text-gray-700 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={host.has_own_pets}
-                onChange={e => setHost({ ...host, has_own_pets: e.target.checked })}
-                className="w-5 h-5 text-yellow-600 border-2 border-yellow-300 rounded focus:ring-yellow-500 focus:ring-2"
-              />
-              <span className="text-yellow-600">🐕</span>
-              Tengo mascotas en casa
-            </label>
-
-            {host.has_own_pets && (
-              <div className="mt-4 space-y-2">
-                <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
-                  <span className="text-yellow-600">🏠</span>
-                  Describe a tus mascotas
-                </label>
-                <textarea
-                  placeholder="Cuéntanos sobre tus mascotas: raza, tamaño, temperamento, cómo se llevan con otros animales..."
-                  value={host.own_pets_description}
-                  onChange={e => setHost({ ...host, own_pets_description: e.target.value })}
-                  rows="3"
-                  className="w-full px-4 py-3 border-2 border-yellow-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-100 transition-all duration-200 outline-none text-sm font-medium resize-none"
+          </div>          {/* Mascotas propias - Solo para cuidadores particulares */}
+          {user?.role !== 'empresa' && (
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6">
+              <label className="flex items-center gap-3 text-sm font-bold text-gray-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={host.has_own_pets}
+                  onChange={e => setHost({ ...host, has_own_pets: e.target.checked })}
+                  className="w-5 h-5 text-yellow-600 border-2 border-yellow-300 rounded focus:ring-yellow-500 focus:ring-2"
                 />
+                <span className="text-yellow-600">🐕</span>
+                Tengo mascotas en casa
+              </label>
+
+              {host.has_own_pets && (
+                <div className="mt-4 space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+                    <span className="text-yellow-600">🏠</span>
+                    Describe a tus mascotas
+                  </label>
+                  <textarea
+                    placeholder="Cuéntanos sobre tus mascotas: raza, tamaño, temperamento, cómo se llevan con otros animales..."
+                    value={host.own_pets_description}
+                    onChange={e => setHost({ ...host, own_pets_description: e.target.value })}
+                    rows="3"
+                    className="w-full px-4 py-3 border-2 border-yellow-200 rounded-xl focus:border-yellow-500 focus:ring-2 focus:ring-yellow-100 transition-all duration-200 outline-none text-sm font-medium resize-none"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+        {/* Tipo de mascotas - Solo para cuidadores particulares */}
+        {user?.role !== 'empresa' && (
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-100 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                🐾
               </div>
-            )}
-          </div>        <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-100 shadow-sm">
-          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              🐾
-            </div>
-            ¿Qué tipo de mascota aceptas?
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            {['perro', 'gato'].map(especie => (
-              <label key={especie} className="group cursor-pointer">
-                <div className={`flex items-center p-3 rounded-lg border-2 transition-all duration-200 ${
-                  especies.includes(especie)
-                    ? 'border-purple-500 bg-gradient-to-r from-purple-100 to-pink-100 shadow-md'
-                    : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-sm'
-                }`}>
-                  <input
-                    type="checkbox"
-                    checked={especies.includes(especie)}
-                    onChange={() =>
-                      setEspecies(prev => toggleArrayValue(prev, especie))
-                    }
-                    className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
-                  />
-                  <span className={`ml-3 font-medium ${
-                    especies.includes(especie) ? 'text-purple-700' : 'text-gray-700'
+              ¿Qué tipo de mascota aceptas?
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {['perro', 'gato'].map(especie => (
+                <label key={especie} className="group cursor-pointer">
+                  <div className={`flex items-center p-3 rounded-lg border-2 transition-all duration-200 ${
+                    especies.includes(especie)
+                      ? 'border-purple-500 bg-gradient-to-r from-purple-100 to-pink-100 shadow-md'
+                      : 'border-gray-200 bg-white hover:border-purple-300 hover:shadow-sm'
                   }`}>
-                    {especie.charAt(0).toUpperCase() + especie.slice(1)}
-                  </span>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-xl border border-blue-100 shadow-sm">
-          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-              📏
+                    <input
+                      type="checkbox"
+                      checked={especies.includes(especie)}
+                      onChange={() =>
+                        setEspecies(prev => toggleArrayValue(prev, especie))
+                      }
+                      className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                    />
+                    <span className={`ml-3 font-medium ${
+                      especies.includes(especie) ? 'text-purple-700' : 'text-gray-700'
+                    }`}>
+                      {especie.charAt(0).toUpperCase() + especie.slice(1)}
+                    </span>
+                  </div>
+                </label>
+              ))}
             </div>
-            ¿Qué tamaños aceptas?
-          </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {['pequeño', 'mediano', 'grande', 'gigante'].map(t => (
-              <label key={t} className="group cursor-pointer">
-                <div className={`flex items-center p-3 rounded-lg border-2 transition-all duration-200 ${
-                  tamanos.includes(t)
-                    ? 'border-blue-500 bg-gradient-to-r from-blue-100 to-cyan-100 shadow-md'
-                    : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
-                }`}>
-                  <input
-                    type="checkbox"
-                    checked={tamanos.includes(t)}
-                    onChange={() =>
-                      setTamanos(prev => toggleArrayValue(prev, t))
-                    }
-                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                  />
-                  <span className={`ml-3 font-medium ${
-                    tamanos.includes(t) ? 'text-blue-700' : 'text-gray-700'
-                  }`}>
-                    {t.charAt(0).toUpperCase() + t.slice(1)}
-                  </span>
-                </div>
-              </label>
-            ))}
           </div>
-        </div>        <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100 shadow-sm">
+        )}
+
+        {/* Tamaños - Solo para cuidadores particulares */}
+        {user?.role !== 'empresa' && (
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-xl border border-blue-100 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                📏
+              </div>
+              ¿Qué tamaños aceptas?
+            </h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {['pequeño', 'mediano', 'grande', 'gigante'].map(t => (
+                <label key={t} className="group cursor-pointer">
+                  <div className={`flex items-center p-3 rounded-lg border-2 transition-all duration-200 ${
+                    tamanos.includes(t)
+                      ? 'border-blue-500 bg-gradient-to-r from-blue-100 to-cyan-100 shadow-md'
+                      : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
+                  }`}>
+                    <input
+                      type="checkbox"
+                      checked={tamanos.includes(t)}
+                      onChange={() =>
+                        setTamanos(prev => toggleArrayValue(prev, t))
+                      }
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                    <span className={`ml-3 font-medium ${
+                      tamanos.includes(t) ? 'text-blue-700' : 'text-gray-700'
+                    }`}>
+                      {t.charAt(0).toUpperCase() + t.slice(1)}
+                    </span>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Servicios */}
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100 shadow-sm">
           <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-              🏥
+              {user?.role === 'empresa' ? '🏥' : '🏥'}
             </div>
-            ¿Qué servicios ofreces?
+            {user?.role === 'empresa' ? '¿Qué servicios profesionales ofreces?' : '¿Qué servicios ofreces?'}
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {['paseo', 'alojamiento', 'guarderia', 'cuidado_a_domicilio', 'visitas_a_domicilio'].map(servicio => (
-              <label key={servicio} className="group cursor-pointer">
+            {serviciosDisponibles.map(({ key, label }) => (
+              <label key={key} className="group cursor-pointer">
                 <div className={`flex items-center p-3 rounded-lg border-2 transition-all duration-200 ${
-                  servicios.includes(servicio)
+                  servicios.includes(key)
                     ? 'border-green-500 bg-gradient-to-r from-green-100 to-emerald-100 shadow-md'
                     : 'border-gray-200 bg-white hover:border-green-300 hover:shadow-sm'
                 }`}>
                   <input
                     type="checkbox"
-                    checked={servicios.includes(servicio)}
+                    checked={servicios.includes(key)}
                     onChange={() =>
-                      setServicios(prev => toggleArrayValue(prev, servicio))
+                      setServicios(prev => toggleArrayValue(prev, key))
                     }
                     className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
                   />
                   <span className={`ml-3 font-medium ${
-                    servicios.includes(servicio) ? 'text-green-700' : 'text-gray-700'
+                    servicios.includes(key) ? 'text-green-700' : 'text-gray-700'
                   }`}>
-                    {servicio.charAt(0).toUpperCase() + servicio.slice(1)}
+                    {label}
                   </span>
                 </div>
               </label>
             ))}
           </div>
-        </div>          {/* Configuración de precios */}
+        </div>{/* Configuración de precios */}
         <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-xl border border-yellow-100 shadow-sm">
           <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-lg flex items-center justify-center">

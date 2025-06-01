@@ -21,10 +21,8 @@ function App() {
       <Routes>
         {/* Rutas públicas con Layout */}
         <Route path="/" element={<Layout><Inicio /></Layout>} />
-        <Route path="/cuidadores" element={<Layout><Cuidadores /></Layout>} />
-
-        {/* Rutas de invitado (sin layout) */}
-        <Route path="/registro-empresa" element={<RegisterEmpresa />} />        {/* Rutas protegidas con Layout */}
+        <Route path="/cuidadores" element={<Layout><Cuidadores /></Layout>} />        {/* Rutas con Layout para empresas */}
+        <Route path="/registro-empresa" element={<Layout><RegisterEmpresa /></Layout>} />{/* Rutas protegidas con Layout */}
         <Route
           path="/mascotas"
           element={
