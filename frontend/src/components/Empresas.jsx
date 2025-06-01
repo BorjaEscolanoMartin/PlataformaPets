@@ -36,15 +36,16 @@ export default function Empresas() {
       case 'emergencias':
         return '🚨'
       case 'cirugia':
-        return '⚕️'
+        return '⚕️';
       case 'vacunacion':
-        return '💉'
+        return '💉';
       case 'modificacion_conducta':
         return '🧠'
       default:
         return '🔧'
     }
   }
+
   const formatServiceType = (serviceType) => {
     const serviceMap = {
       'veterinario': 'Servicios Veterinarios',
@@ -58,6 +59,66 @@ export default function Empresas() {
       'modificacion_conducta': 'Modificación de Conducta'
     }
     return serviceMap[serviceType] || serviceType?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  }
+
+  // Función para formatear número de teléfono español
+  const formatPhoneNumber = (phone) => {
+    if (!phone) return phone
+    
+    // Eliminar espacios y caracteres especiales
+    const cleaned = phone.replace(/[\s\-()]/g, '')
+    
+    // Si es un móvil español (9 dígitos empezando por 6,7,8,9)
+    if (cleaned.length === 9 && /^[6789]/.test(cleaned)) {
+      return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6)}`
+    }
+    
+    // Si tiene prefijo +34
+    if (cleaned.startsWith('34') && cleaned.length === 11) {
+      const number = cleaned.slice(2)
+      return `+34 ${number.slice(0, 3)} ${number.slice(3, 6)} ${number.slice(6)}`
+    }
+    
+    return phone // Devolver original si no coincide con formato esperado
+  }
+
+  // Función para formatear dirección
+  const formatAddress = (address) => {
+    if (!address) return address
+    
+    // Dividir por comas y limpiar espacios
+    const parts = address.split(',').map(part => part.trim())
+    
+    if (parts.length >= 3) {
+      return {
+        street: parts[0],
+        city: parts.slice(-2).join(', '), // Las últimas dos partes (ciudad, provincia)
+        full: address
+      }
+    }
+    
+    return {
+      street: address,
+      city: '',
+      full: address
+    }
+  }
+
+  // Función para truncar descripción
+  const formatDescription = (description, maxLength = 150) => {
+    if (!description) return description
+    
+    if (description.length <= maxLength) {
+      return description
+    }
+    
+    // Truncar en la palabra más cercana
+    const truncated = description.substring(0, maxLength)
+    const lastSpace = truncated.lastIndexOf(' ')
+    
+    return lastSpace > 0 
+      ? truncated.substring(0, lastSpace) + '...'
+      : truncated + '...'
   }
 
   if (loading) {
@@ -146,28 +207,34 @@ export default function Empresas() {
                       {empresa.host?.title && (
                         <p className="text-sm text-purple-600 font-medium mb-2">{empresa.host.title}</p>
                       )}
-                    </div>
-                  </div>{/* Información de contacto */}
-                  <div className="space-y-3 mb-6">
-                    {empresa.host?.location && (
-                      <div className="flex items-center gap-2">
+                    </div>                  </div>                  {/* 1. Ubicación */}
+                  {empresa.host?.location && (
+                    <div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                      <h5 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-green-600" />
-                        <span className="text-sm text-gray-700">{empresa.host.location}</span>
-                      </div>
-                    )}
-                    {empresa.host?.phone && (
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-orange-600" />
-                        <span className="text-sm text-gray-700">{empresa.host.phone}</span>
-                      </div>
-                    )}                   
-                  </div>                {/* Servicios ofrecidos con precios */}
+                        Ubicación
+                      </h5>
+                      {(() => {
+                        const addressData = formatAddress(empresa.host.location);
+                        return (
+                          <div>
+                            <p className="text-sm font-medium text-gray-800">{addressData.street}</p>
+                            {addressData.city && (
+                              <p className="text-xs text-gray-600 mt-1">{addressData.city}</p>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}                  {/* 2. Servicios y tarifas */}
                   {empresa.servicios_ofrecidos && empresa.servicios_ofrecidos.length > 0 && (
-                    <div className="mb-6">
-                      <h4 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                    <div className="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg border border-purple-200">
+                      <h5 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-purple-600" />
                         Servicios y tarifas
-                      </h4>                      <div className="space-y-2">                        {empresa.servicios_ofrecidos.map((servicio, idx) => {
+                      </h5>
+                      <div className="space-y-2">
+                        {empresa.servicios_ofrecidos.map((servicio, idx) => {
                           // Buscar el precio para este servicio en host.service_prices
                           const precioServicio = empresa.host?.service_prices?.find(
                             precio => precio.service_type === servicio || 
@@ -175,14 +242,17 @@ export default function Empresas() {
                           );
                           
                           return (
-                            <div key={`serv-${empresa.id}-${idx}`} className="flex justify-between items-center py-3 px-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
+                            <div key={`serv-${empresa.id}-${idx}`} className="flex justify-between items-center py-2 px-3 bg-white rounded-md border border-purple-100 shadow-sm">
                               <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
                                 <span>{getServiceIcon(servicio)}</span>
                                 {formatServiceType(servicio)}
                               </span>
                               {precioServicio ? (
                                 <span className="text-sm font-bold text-purple-700">
-                                  {precioServicio.price}€ {precioServicio.price_unit}
+                                  {parseFloat(precioServicio.price).toFixed(2)}€ 
+                                  <span className="text-xs text-purple-600 ml-1 font-normal">
+                                    {precioServicio.price_unit?.replace(/_/g, ' ')}
+                                  </span>
                                 </span>
                               ) : (
                                 <span className="text-xs text-gray-500 italic">
@@ -194,33 +264,30 @@ export default function Empresas() {
                         })}
                       </div>
                     </div>
-                  )}{/* Licencias y certificaciones */}
-                  {empresa.host?.licenses && (
-                    <div className="mb-6 bg-gradient-to-r from-emerald-50 to-green-50 p-4 rounded-lg border border-emerald-200">
-                      <h5 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                        <Award className="w-4 h-4 text-emerald-600" />
-                        Licencias y certificaciones
-                      </h5>
-                      <p className="text-sm text-gray-700 leading-relaxed">{empresa.host.licenses}</p>
-                    </div>
-                  )}                    {/* Descripción */}
-                  {empresa.description && (
-                    <div className="mb-6">
-                      <h4 className="text-sm font-bold text-gray-700 mb-2">📝 Descripción</h4>
-                      <p className="text-sm text-gray-700 leading-relaxed">{empresa.description}</p>
-                    </div>
                   )}
 
-                  {/* Información del equipo */}
-                  {empresa.team_info && (
-                    <div className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+                  {/* 3. Descripción */}
+                  {empresa.host?.description && (
+                    <div className="mb-6 bg-gradient-to-r from-gray-50 to-slate-50 p-4 rounded-lg border border-gray-200">
                       <h5 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                        <Users className="w-4 h-4 text-indigo-600" />
-                        Equipo profesional
+                        <span className="text-gray-600">📝</span>
+                        Descripción
                       </h5>
-                      <p className="text-sm text-gray-700 leading-relaxed">{empresa.team_info}</p>
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {formatDescription(empresa.host.description)}
+                      </p>
                     </div>
-                  )}                       
+                  )}
+                  {/* 5. Teléfono de contacto y botón de llamada */}
+                  {empresa.host?.phone && (
+                    <div className="bg-gradient-to-r from-orange-50 to-yellow-50 p-4 rounded-lg border border-orange-200">
+                      <h5 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-orange-600" />
+                        Teléfono de contacto
+                      </h5>
+                      <p className="text-sm font-medium text-gray-800 mb-3">{formatPhoneNumber(empresa.host.phone)}</p>                  
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
