@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../lib/axios'
 import { useChat } from '../context/useChat'
+import { useToast } from '../context/ToastContext'
 import ChatModal from '../components/chat/ChatModal'
 
 export default function ReservasRecibidas() {
@@ -10,6 +11,7 @@ export default function ReservasRecibidas() {
   const [loading, setLoading] = useState(true)
   const [isChatModalOpen, setIsChatModalOpen] = useState(false)
   const { createPrivateChat, setActiveChat } = useChat()
+  const { error: showError } = useToast()
   useEffect(() => {
     fetchReservas()
   }, [])
@@ -28,18 +30,18 @@ export default function ReservasRecibidas() {
         })
         setReservas(reservasOrdenadas)
         setLoading(false)
-      })
-      .catch(() => {
+      })      .catch(() => {
         setError('Error al cargar las reservas')
         setLoading(false)
       })
   }
+  
   const actualizarEstado = async (id, status) => {
     try {
       await api.put(`/reservations/${id}`, { status })
       fetchReservas()
     } catch {
-      alert('Error al actualizar el estado')
+      showError('Error al actualizar el estado')
     }
   }
   const handleContactarCliente = async (clienteUserId) => {
@@ -54,9 +56,8 @@ export default function ReservasRecibidas() {
       setTimeout(() => {
         // Abrir el modal de chat
         setIsChatModalOpen(true)
-      }, 100)
-    } catch (error) {
-      alert(`Error al abrir chat: ${error.message}`)
+      }, 100)    } catch (error) {
+      showError(`Error al abrir chat: ${error.message}`)
     }
   }
   const formatDate = (dateString) => {

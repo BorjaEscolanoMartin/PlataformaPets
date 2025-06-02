@@ -3,12 +3,16 @@ import axios from "../lib/axios"; // usa tu config de axios con withCredentials
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { useNotifications } from "../hooks/useNotifications";
+import { useConfirm } from '../hooks/useModal';
+import { useToast } from '../context/ToastContext';
 
 const Notificaciones = () => {
   const [notificaciones, setNotificaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { fetchUnreadCount, decrementUnreadCount } = useNotifications();
+  const confirm = useConfirm();
+  const { error: showError } = useToast();
   useEffect(() => {
     axios.get("/notifications")
       .then((res) => {
@@ -33,11 +37,11 @@ const Notificaciones = () => {
         setError("Error al cargar las notificaciones");
         setLoading(false);
       });
-  }, [fetchUnreadCount]);
-  const handleEliminarNotificacion = async (notificationId) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar esta notificación?')) {
+  }, [fetchUnreadCount]);  const handleEliminarNotificacion = async (notificationId) => {
+    const confirmed = await confirm('¿Estás seguro de que quieres eliminar esta notificación?');
+    if (!confirmed) {
       return;
-    }    try {
+    }try {
       await axios.delete(`/notifications/${notificationId}`);
       
       // Verificar si la notificación eliminada no estaba leída para decrementar el contador
@@ -45,11 +49,10 @@ const Notificaciones = () => {
       if (notificationToDelete && !notificationToDelete.read_at) {
         decrementUnreadCount();
       }
-      
-      // Actualizar la lista local removiendo la notificación eliminada
+        // Actualizar la lista local removiendo la notificación eliminada
       setNotificaciones(prev => prev.filter(notif => notif.id !== notificationId));
     } catch {
-      alert('Error al eliminar la notificación. Por favor intenta de nuevo.');
+      showError('Error al eliminar la notificación. Por favor intenta de nuevo.');
     }
   };
   const getNotificationIcon = (tipo) => {
