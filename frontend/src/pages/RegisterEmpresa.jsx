@@ -64,10 +64,11 @@ export default function RegisterEmpresa() {
           setHost(prev => ({
             ...prev,
             fiscal_address: place.formatted_address,
-          }))
-        })
+          }))        })
       }
-    }).catch(console.error)
+    }).catch(() => {
+      // Error loading Google Maps
+    })
   }, [])
 
   const handleSubmit = async e => {
@@ -93,9 +94,7 @@ export default function RegisterEmpresa() {
       setSuccess('Perfil de empresa creado correctamente ✅')
       setTimeout(() => {
         navigate('/')
-      }, 2000)
-    } catch (err) {
-      console.error(err)
+      }, 2000)    } catch {
       setError('Error al registrar la empresa')
     }
   }

@@ -9,14 +9,6 @@ export default function PrivateRoute({ children }) {
   const [checkingHost, setCheckingHost] = useState(false)
   const [shouldRedirect, setShouldRedirect] = useState(false)
 
-  console.log('🧪 PrivateRoute:', {
-    user,
-    pathname: location.pathname,
-    loading,
-    checkingHost,
-    shouldRedirect
-  })
-
   useEffect(() => {
     const checkHost = async () => {
       if (user?.role === 'cliente') {
@@ -34,9 +26,8 @@ export default function PrivateRoute({ children }) {
 
           if (!hasHost && necesitaPerfil) {
             setShouldRedirect(true)
-          }
-        } catch (e) {
-          console.error('Error al comprobar perfil de cuidador:', e)
+          }        } catch {
+          // Error checking host profile
         } finally {
           setCheckingHost(false)
         }

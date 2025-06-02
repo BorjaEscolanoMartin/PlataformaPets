@@ -37,11 +37,9 @@ export default function LoginModal({ onClose, onSwitchToRegister }) {
         } else {
           navigate('/')
         }
-        
-        onClose()
+          onClose()
       }
-    } catch (err) {
-      console.error(err)
+    } catch {
       setError('Credenciales incorrectas')
     } finally {
       setIsLoading(false)

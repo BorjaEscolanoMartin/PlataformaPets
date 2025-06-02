@@ -42,12 +42,12 @@ export default function ReservaForm({ hostId }) {
         if (!place.geometry) return
 
         // const lat = place.geometry.location.lat()
-        // const lng = place.geometry.location.lng()
-
-        setForm(prev => ({ ...prev, address: place.formatted_address }))
+        // const lng = place.geometry.location.lng()        setForm(prev => ({ ...prev, address: place.formatted_address }))
         // setLatLng({ lat, lng }) // Para futuras funcionalidades
       })
-    }).catch(console.error)
+    }).catch(() => {
+      // Error loading Google Maps
+    })
   }, [])
 
   const handleChange = e => {
@@ -76,7 +76,6 @@ export default function ReservaForm({ hostId }) {
       setSuccess(true)
       setForm(prev => ({ ...prev, start_date: '', end_date: '' })) // opcional: limpia fechas
     } catch (err) {
-      console.error(err)
       if (err.response?.data?.errors) {
         setError(Object.values(err.response.data.errors).flat().join(' '))
       } else {

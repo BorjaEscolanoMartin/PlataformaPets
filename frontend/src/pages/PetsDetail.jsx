@@ -7,17 +7,15 @@ export default function PetDetail() {
   const { id } = useParams()
   const [pet, setPet] = useState(null)
   const [error, setError] = useState(null)
-
   useEffect(() => {
     const fetchPet = async () => {
       try {
         const res = await api.get(`/pets/${id}`)
-        console.log('Pet recibida:', res.data)
         setPet(res.data)
-      } catch (err) {
+      } catch {
         setError('No se pudo cargar la mascota')
-        console.error(err)
-      }    }
+      }
+    }
 
     fetchPet()
   }, [id]);

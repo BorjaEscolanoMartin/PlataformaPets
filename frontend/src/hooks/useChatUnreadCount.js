@@ -15,17 +15,13 @@ export const useChatUnreadCount = () => {
     try {
       setLoading(true)
       const response = await api.get('/messages/unread-count')
-      setUnreadCount(response.data.count)
-    } catch (error) {
-      console.error('Error fetching unread messages count:', error)
+      setUnreadCount(response.data.count)    } catch {
       setUnreadCount(0)
     } finally {
       setLoading(false)
     }
   }, [user])
-
   const resetUnreadCount = () => {
-    console.log('resetUnreadCount hook called, setting count to 0')
     setUnreadCount(0)
   }
 

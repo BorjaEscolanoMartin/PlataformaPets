@@ -16,9 +16,7 @@ export const useNotifications = () => {
     try {
       setLoading(true)
       const response = await api.get('/notifications/unread-count')
-      setUnreadCount(response.data.count)
-    } catch (error) {
-      console.error('Error fetching unread notifications count:', error)
+      setUnreadCount(response.data.count)    } catch {
       setUnreadCount(0)
     } finally {
       setLoading(false)

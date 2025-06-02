@@ -59,10 +59,8 @@ export default function Cuidadores() {
           })
 
           const res = await api.get(`/cuidadores${query.length ? `?${query.join('&')}` : ''}`)
-          setCuidadores(res.data)
-        } catch (err) {
-          console.error(err)
-          setError('No se pudieron cargar los cuidadores.')        }
+          setCuidadores(res.data)        } catch {
+          setError('No se pudieron cargar los cuidadores.')}
       }
 
       fetchCuidadores()
@@ -261,10 +259,7 @@ export default function Cuidadores() {
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">No se encontraron cuidadores</h3>
                 <p className="text-gray-600">Prueba ajustando los filtros de búsqueda</p>
               </div>
-            )}
-
-            {cuidadores.map(cuidador => {
-              console.log(cuidador); 
+            )}            {cuidadores.map(cuidador => {
 
               return (
                 <div

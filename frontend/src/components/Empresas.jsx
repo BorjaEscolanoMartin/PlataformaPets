@@ -15,9 +15,7 @@ export default function Empresas() {
       setLoading(true)
       const res = await api.get('/empresas')
       setEmpresas(res.data)
-      setLoading(false)
-    } catch (err) {
-      console.error('Error al cargar empresas:', err)
+      setLoading(false)    } catch {
       setError('Error al cargar las empresas registradas')
         setLoading(false)
       }

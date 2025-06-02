@@ -68,9 +68,8 @@ export default function MapaGoogle({ cuidadores, searchLocation }) {
       // Ajustar límites
       if (!bounds.isEmpty()) {
         map.fitBounds(bounds)
-      }
-    }).catch((err) => {
-      console.error('Error al cargar Google Maps:', err)
+      }    }).catch(() => {
+      // Error loading Google Maps
     })
   }, [cuidadores, searchLocation])
 

@@ -62,12 +62,9 @@ export default function Pets() {
       setEditingId(null)
       setSuccess(true)
     } catch (err) {
-      console.error(err)
-  
       if (err.response?.data?.errors) {
-        console.log('Errores de validación:', err.response.data.errors)
+        // Validation errors available but not logged
       }
-  
       setError('Error al guardar la mascota')
     }
   }
@@ -86,13 +83,11 @@ export default function Pets() {
     setEditingId(pet.id)
     setSuccess(false)
   }
-
   const handleDelete = async (id) => {
     try {
       await api.delete(`/pets/${id}`)
       await fetchPets()
-    } catch (err) {
-      console.error(err)
+    } catch {
       setError('Error al eliminar mascota')
     }
   }

@@ -44,10 +44,8 @@ export default function Header() {
     navigate('/')
     setIsMenuOpen(false)
   }
-    const handleOpenChat = () => {
-    console.log('handleOpenChat called, current chatUnreadCount:', chatUnreadCount)
+  const handleOpenChat = () => {
     resetUnreadCount() // Reset unread count immediately when opening chat
-    console.log('resetUnreadCount called')
     setIsChatModalOpen(true)
     setIsMenuOpen(false)
   }
