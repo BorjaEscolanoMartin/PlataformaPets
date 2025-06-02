@@ -39,8 +39,7 @@ export default function FormularioBusqueda() {
         componentRestrictions: { country: 'es' },
       })
 
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace()
+      autocomplete.addListener('place_changed', () => {        const place = autocomplete.getPlace()
         if (!place.geometry) return
 
         const lat = place.geometry.location.lat()
@@ -49,7 +48,9 @@ export default function FormularioBusqueda() {
         setDireccion(place.formatted_address)
         setLatLng({ lat, lng })
       })
-    }).catch(console.error)
+    }).catch(() => {
+      // Error loading Google Maps
+    })
   }, [])
 
   const handleSubmit = e => {

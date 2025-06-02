@@ -10,15 +10,14 @@ export default function ReservasRecibidas() {
   const [loading, setLoading] = useState(true)
   const [isChatModalOpen, setIsChatModalOpen] = useState(false)
   const { createPrivateChat, setActiveChat } = useChat()
-
   useEffect(() => {
     fetchReservas()
   }, [])
+
   const fetchReservas = () => {
     setLoading(true)
     api.get('/reservations/host')
       .then(res => {
-        console.log('📋 Reservas recibidas cargadas:', res.data)
         // Ordenar reservas de la más reciente a la más antigua (basado en created_at o id)
         const reservasOrdenadas = res.data.sort((a, b) => {
           // Intentar ordenar por created_at si está disponible, sino por id (descendente)
@@ -43,28 +42,20 @@ export default function ReservasRecibidas() {
       alert('Error al actualizar el estado')
     }
   }
-
   const handleContactarCliente = async (clienteUserId) => {
     try {
-      console.log('🚀 Iniciando chat con cliente User ID:', clienteUserId)
-      
       // Crear o obtener el chat privado con el cliente
       const chat = await createPrivateChat(clienteUserId)
-      console.log('✅ Chat creado/obtenido:', chat)
-      console.log('👥 Participantes del chat:', chat.participants)
-      console.log('👤 Otro participante:', chat.other_participant)
       
       // Establecer como chat activo
       setActiveChat(chat)
-      console.log('✅ Chat establecido como activo')
       
       // Esperar un momento para que se establezca el estado
       setTimeout(() => {
         // Abrir el modal de chat
         setIsChatModalOpen(true)
-        console.log('✅ Modal de chat abierto')
-      }, 100)    } catch (error) {
-      console.error('❌ Error al abrir chat con cliente:', error)
+      }, 100)
+    } catch (error) {
       alert(`Error al abrir chat: ${error.message}`)
     }
   }
@@ -230,18 +221,11 @@ export default function ReservasRecibidas() {
                     Rechazar Reserva
                   </button>
                 </div>
-              )}
-
-              {/* Botón de contacto para reservas aceptadas */}
+              )}              {/* Botón de contacto para reservas aceptadas */}
               {res.status === 'aceptada' && res.user && (
                 <div className="flex justify-center pt-6 border-t border-gray-200">
                   <button 
-                    onClick={() => {
-                      console.log('🎯 Botón contactar clickeado para reserva:', res.id)
-                      console.log('👤 Datos del cliente:', res.user)
-                      console.log('🆔 User ID del cliente:', res.user?.id)
-                      handleContactarCliente(res.user?.id)
-                    }}
+                    onClick={() => handleContactarCliente(res.user?.id)}
                     className="bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium py-3 px-6 rounded-xl transition-all duration-200 text-sm flex items-center gap-2"
                   >
                     <span className="text-lg">📞</span>

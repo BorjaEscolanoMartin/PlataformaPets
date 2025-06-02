@@ -21,21 +21,20 @@ export default function PerfilCuidador() {
 
   useEffect(() => {
     api.get(`/cuidadores/${id}`)
-      .then(res => {
-        setCuidador(res.data)
+      .then(res => {        setCuidador(res.data)
       })
-      .catch(err => {
-        console.error('Error cargando cuidador:', err)
+      .catch(() => {
         setCuidador(null)
       })
       .finally(() => setLoading(false))
   }, [id])
   // ✅ Cargar reseñas solo cuando cuidador y host están disponibles
   useEffect(() => {
-    if (cuidador?.host?.id) {
-      api.get(`/cuidadores/${cuidador.host.id}/reviews`)
+    if (cuidador?.host?.id) {      api.get(`/cuidadores/${cuidador.host.id}/reviews`)
         .then(res => setReviews(res.data))
-        .catch(err => console.error('Error cargando reseñas:', err))
+        .catch(() => {
+          // Error loading reviews - fail silently
+        })
     }
   }, [cuidador]);
   if (loading) {

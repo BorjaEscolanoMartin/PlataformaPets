@@ -89,9 +89,10 @@ export default function HostProfile() {
                     description: precio.description
                   }
                 })
-                setPrecios(preciosObj)
+                setPrecios(preciosObj)              })
+              .catch(() => {
+                // No hay precios configurados aún
               })
-              .catch(() => console.log('No hay precios configurados aún'))
           }
         }
       })
@@ -149,10 +150,11 @@ export default function HostProfile() {
           setHost(prev => ({
             ...prev,
             fiscal_address: place.formatted_address,
-          }))
-        })
+          }))        })
       }
-    }).catch(console.error)
+    }).catch(() => {
+      // Error loading Google Maps
+    })
   }, [user])
 
   const handleSubmit = async e => {
@@ -173,9 +175,7 @@ export default function HostProfile() {
         formData.append('profile_photo', profilePhotoFile)
       }
 
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value)
-      }      let hostResponse;
+      let hostResponse;
       if (host?.id) {
         hostResponse = await api.post(`/hosts/${host.id}?_method=PUT`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
@@ -214,12 +214,11 @@ export default function HostProfile() {
         })
       }
 
-      setSuccess('Perfil actualizado correctamente ✅')
-    } catch (err) {
+      setSuccess('Perfil actualizado correctamente ✅')    } catch (err) {
       if (err.response && err.response.data && err.response.data.errors) {
-        console.error('Errores de validación:', err.response.data.errors)
+        // Validation errors
       } else {
-        console.error(err)
+        // General error
       }
 
       setError('Error al guardar los datos')

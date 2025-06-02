@@ -27,9 +27,8 @@ export function AuthProvider({ children }) {
         setToken(storedToken)
         
         const res = await api.get('/user')
-        setUser(res.data)
-      } catch {
-        console.warn('Token inválido o expirado')
+        setUser(res.data)      } catch {
+        // Token inválido o expirado
         localStorage.removeItem('auth-token')
         localStorage.removeItem('user')
         delete api.defaults.headers.common['Authorization']
@@ -47,9 +46,8 @@ export function AuthProvider({ children }) {
       const storedToken = localStorage.getItem('auth-token')
       if (storedToken) {
         await api.post('/logout')
-      }
-    } catch (err) {
-      console.error('Error al cerrar sesión', err)
+      }    } catch {
+      // Error al cerrar sesión
     } finally {
       // Limpiar siempre, incluso si falla la petición      localStorage.removeItem('auth-token')
       localStorage.removeItem('user')

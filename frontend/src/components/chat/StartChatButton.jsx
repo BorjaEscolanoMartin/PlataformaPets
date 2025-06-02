@@ -13,9 +13,7 @@ const StartChatButton = ({ userId, className = '' }) => {
             setIsCreatingChat(true);
             const chat = await createPrivateChat(userId);
             setActiveChat(chat);
-            setIsModalOpen(true);
-        } catch (error) {
-            console.error('Error starting chat:', error);
+            setIsModalOpen(true);        } catch (error) {
             alert(`Error al crear chat: ${error.message}`);
         } finally {
             setIsCreatingChat(false);

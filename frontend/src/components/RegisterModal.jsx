@@ -42,8 +42,7 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
         navigate('/')
         onClose()
       }
-    } catch (err) {
-      console.error(err)
+    } catch {
       setError('Error al registrar usuario')
     } finally {
       setIsLoading(false)

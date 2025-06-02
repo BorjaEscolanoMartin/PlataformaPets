@@ -10,29 +10,21 @@ export default function MisReservas() {
   const [loading, setLoading] = useState(true)
   const [isChatModalOpen, setIsChatModalOpen] = useState(false)
   const { createPrivateChat, setActiveChat } = useChat()
-  
-  const handleContactarCuidador = async (cuidadorUserId) => {
+    const handleContactarCuidador = async (cuidadorUserId) => {
     try {
-      console.log('🚀 Iniciando chat con cuidador User ID:', cuidadorUserId)
       
       // Crear o obtener el chat privado con el cuidador
       const chat = await createPrivateChat(cuidadorUserId)
-      console.log('✅ Chat creado/obtenido:', chat)
-      console.log('👥 Participantes del chat:', chat.participants)
-      console.log('👤 Otro participante:', chat.other_participant)
       
       // Establecer como chat activo
       setActiveChat(chat)
-      console.log('✅ Chat establecido como activo')
       
       // Esperar un momento para que se establezca el estado
       setTimeout(() => {
         // Abrir el modal de chat
         setIsChatModalOpen(true)
-        console.log('✅ Modal de chat abierto')
       }, 100)
     } catch (error) {
-      console.error('❌ Error al abrir chat con cuidador:', error)
       alert(`Error al abrir chat: ${error.message}`)
     }
   }
@@ -40,13 +32,9 @@ export default function MisReservas() {
   const handleCancelarReserva = async (reservaId) => {
     if (!confirm('¿Estás seguro de que quieres cancelar esta reserva? Esta acción no se puede deshacer.')) {
       return
-    }
-
-    try {
-      console.log('🚫 Cancelando reserva ID:', reservaId)
+    }    try {
       
       await api.patch(`/reservations/${reservaId}/cancel`)
-      console.log('✅ Reserva cancelada exitosamente')
         // Recargar la lista de reservas
       const res = await api.get('/reservations')
       // Ordenar reservas de la más reciente a la más antigua
@@ -57,25 +45,23 @@ export default function MisReservas() {
         return b.id - a.id
       })
       setReservas(reservasOrdenadas)
-      console.log('📋 Lista de reservas actualizada')
       
       alert('Reserva cancelada exitosamente. El cuidador ha sido notificado.')
     } catch (error) {
-      console.error('❌ Error al cancelar reserva:', error)
       
       if (error.response?.status === 400) {
         alert('No se puede cancelar esta reserva en su estado actual.')
       } else if (error.response?.status === 403) {
         alert('No tienes permisos para cancelar esta reserva.')
-      } else {
+          } else {
         alert(`Error al cancelar reserva: ${error.response?.data?.error || error.message}`)
       }
     }
   }
+
   useEffect(() => {
     api.get('/reservations')
       .then(res => {
-        console.log('📋 Reservas cargadas:', res.data)
         // Ordenar reservas de la más reciente a la más antigua (basado en created_at o id)
         const reservasOrdenadas = res.data.sort((a, b) => {
           // Intentar ordenar por created_at si está disponible, sino por id (descendente)
@@ -86,10 +72,10 @@ export default function MisReservas() {
         })
         setReservas(reservasOrdenadas)
         setLoading(false)
-      })
-      .catch(() => {
+      })      .catch(() => {
         setError('Error al cargar tus reservas')
-        setLoading(false)      })
+        setLoading(false)
+      })
   }, [])
   
   const getStatusColor = (status) => {
@@ -314,13 +300,8 @@ export default function MisReservas() {
                       <span>{getStatusIcon(reserva.status)}</span>
                       <span className="capitalize">{reserva.status || 'Desconocido'}</span>
                     </div>                    {reserva.status?.toLowerCase() === 'aceptada' && reserva.host && (
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <button 
+                      <div className="flex flex-col sm:flex-row gap-2">                        <button 
                           onClick={() => {
-                            console.log('🎯 Botón contactar clickeado para reserva:', reserva.id)
-                            console.log('👤 Datos del host:', reserva.host)
-                            console.log('👤 Usuario del cuidador:', reserva.host.user)
-                            console.log('🆔 User ID del cuidador:', reserva.host.user?.id)
                             handleContactarCuidador(reserva.host.user?.id)
                           }}
                           className="bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium py-2 px-4 rounded-xl transition-all duration-200 text-sm"

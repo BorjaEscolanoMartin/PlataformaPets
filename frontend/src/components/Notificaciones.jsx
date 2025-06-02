@@ -17,22 +17,19 @@ const Notificaciones = () => {
         
         // Marcar todas las notificaciones no leídas como leídas y actualizar el contador
         const unreadNotifications = res.data.filter(notif => !notif.read_at);
-        if (unreadNotifications.length > 0) {
-          // Marcar como leídas en el servidor
-          unreadNotifications.forEach(async (notif) => {
-            try {
-              await axios.post(`/notifications/${notif.id}/read`);
-            } catch (error) {
-              console.error('Error marking notification as read:', error);
-            }
-          });
+        if (unreadNotifications.length > 0) {        // Marcar como leídas en el servidor
+        unreadNotifications.forEach(async (notif) => {
+          try {
+            await axios.post(`/notifications/${notif.id}/read`);
+          } catch {
+            // Error marking notification as read
+          }
+        });
           
           // Actualizar el contador local
           fetchUnreadCount();
-        }
-      })
-      .catch((err) => {
-        console.error("Error al obtener notificaciones", err);
+        }      })
+      .catch(() => {
         setError("Error al cargar las notificaciones");
         setLoading(false);
       });
@@ -40,11 +37,8 @@ const Notificaciones = () => {
   const handleEliminarNotificacion = async (notificationId) => {
     if (!confirm('¿Estás seguro de que quieres eliminar esta notificación?')) {
       return;
-    }
-
-    try {
+    }    try {
       await axios.delete(`/notifications/${notificationId}`);
-      console.log('✅ Notificación eliminada exitosamente');
       
       // Verificar si la notificación eliminada no estaba leída para decrementar el contador
       const notificationToDelete = notificaciones.find(notif => notif.id === notificationId);
@@ -54,8 +48,7 @@ const Notificaciones = () => {
       
       // Actualizar la lista local removiendo la notificación eliminada
       setNotificaciones(prev => prev.filter(notif => notif.id !== notificationId));
-    } catch (error) {
-      console.error('❌ Error al eliminar notificación:', error);
+    } catch {
       alert('Error al eliminar la notificación. Por favor intenta de nuevo.');
     }
   };

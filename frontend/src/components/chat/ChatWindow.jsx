@@ -31,9 +31,7 @@ const ChatWindow = ({
         try {
             setSending(true);
             await sendMessage(activeChat.id, newMessage.trim());
-            setNewMessage('');
-        } catch (error) {
-            console.error('Error sending message:', error);
+            setNewMessage('');        } catch {
             // Aquí podrías mostrar una notificación de error
         } finally {
             setSending(false);

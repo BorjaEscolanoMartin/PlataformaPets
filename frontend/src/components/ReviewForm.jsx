@@ -19,11 +19,10 @@ export default function ReviewForm({ hostId, onSubmit, existingReview }) {
     try {
       await api.post(`/cuidadores/${hostId}/reviews`, {
         rating,
-        comment,
-      })
+        comment,      })
       onSubmit()
-    } catch (err) {
-      console.error('Error al enviar reseña', err)
+    } catch {
+      // Error sending review
     } finally {
       setLoading(false)
     }
@@ -37,8 +36,8 @@ export default function ReviewForm({ hostId, onSubmit, existingReview }) {
     try {
       await api.delete(`/reviews/${existingReview.id}`)
       onSubmit()
-    } catch (err) {
-      console.error('Error al eliminar reseña', err)
+    } catch {
+      // Error deleting review
     } finally {
       setLoading(false)
     }
