@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import api from '../lib/axios'
 import { Link } from 'react-router-dom'
 import { useChat } from '../context/useChat'
+import { useToast } from '../context/ToastContext'
+import { useConfirm } from '../hooks/useModal'
 import ChatModal from '../components/chat/ChatModal'
 
 export default function MisReservas() {
@@ -10,6 +12,8 @@ export default function MisReservas() {
   const [loading, setLoading] = useState(true)
   const [isChatModalOpen, setIsChatModalOpen] = useState(false)
   const { createPrivateChat, setActiveChat } = useChat()
+  const { error: showError, success: showSuccess } = useToast()
+  const confirm = useConfirm()
     const handleContactarCuidador = async (cuidadorUserId) => {
     try {
       
@@ -23,16 +27,15 @@ export default function MisReservas() {
       setTimeout(() => {
         // Abrir el modal de chat
         setIsChatModalOpen(true)
-      }, 100)
-    } catch (error) {
-      alert(`Error al abrir chat: ${error.message}`)
+      }, 100)    } catch (error) {
+      showError(`Error al abrir chat: ${error.message}`)
     }
   }
-
   const handleCancelarReserva = async (reservaId) => {
-    if (!confirm('¿Estás seguro de que quieres cancelar esta reserva? Esta acción no se puede deshacer.')) {
+    const confirmed = await confirm('¿Estás seguro de que quieres cancelar esta reserva? Esta acción no se puede deshacer.')
+    if (!confirmed) {
       return
-    }    try {
+    }try {
       
       await api.patch(`/reservations/${reservaId}/cancel`)
         // Recargar la lista de reservas
@@ -41,20 +44,19 @@ export default function MisReservas() {
       const reservasOrdenadas = res.data.sort((a, b) => {
         if (a.created_at && b.created_at) {
           return new Date(b.created_at) - new Date(a.created_at)
-        }
-        return b.id - a.id
+        }        return b.id - a.id
       })
       setReservas(reservasOrdenadas)
       
-      alert('Reserva cancelada exitosamente. El cuidador ha sido notificado.')
+      showSuccess('Reserva cancelada exitosamente. El cuidador ha sido notificado.')
     } catch (error) {
       
       if (error.response?.status === 400) {
-        alert('No se puede cancelar esta reserva en su estado actual.')
+        showError('No se puede cancelar esta reserva en su estado actual.')
       } else if (error.response?.status === 403) {
-        alert('No tienes permisos para cancelar esta reserva.')
+        showError('No tienes permisos para cancelar esta reserva.')
           } else {
-        alert(`Error al cancelar reserva: ${error.response?.data?.error || error.message}`)
+        showError(`Error al cancelar reserva: ${error.response?.data?.error || error.message}`)
       }
     }
   }

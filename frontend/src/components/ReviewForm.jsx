@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import api from '../lib/axios'
+import { useConfirm } from '../hooks/useModal'
 
 export default function ReviewForm({ hostId, onSubmit, existingReview }) {
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
+  const confirm = useConfirm()
 
   useEffect(() => {
     if (existingReview) {
@@ -27,10 +29,10 @@ export default function ReviewForm({ hostId, onSubmit, existingReview }) {
       setLoading(false)
     }
   }
-
   const handleDelete = async () => {
     if (!existingReview) return
-    if (!confirm('¿Estás seguro de que quieres eliminar tu reseña?')) return
+    const confirmed = await confirm('¿Estás seguro de que quieres eliminar tu reseña?')
+    if (!confirmed) return
 
     setLoading(true)
     try {

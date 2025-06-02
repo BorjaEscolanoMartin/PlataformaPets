@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../lib/axios'
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
+import { useConfirm } from '../hooks/useModal'
 
 // ...
 export default function Pets() {
@@ -11,12 +12,12 @@ export default function Pets() {
     breed: '',
     age: '',
     size: '',
-    description: '',
-    photo: null, 
+    description: '',    photo: null, 
   })
   const [editingId, setEditingId] = useState(null)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
+  const confirm = useConfirm()
 
   const fetchPets = async () => {
     const res = await api.get('/pets')
@@ -359,13 +360,13 @@ export default function Pets() {
                         >
                           <span className="text-sm">✏️</span>
                           Editar
-                        </button>
-                        <button 
-                          onClick={() => {
-                            if (window.confirm(`¿Estás seguro de que quieres eliminar a ${pet.name}?`)) {
+                        </button>                        <button 
+                          onClick={async () => {
+                            const confirmed = await confirm(`¿Estás seguro de que quieres eliminar a ${pet.name}?`)
+                            if (confirmed) {
                               handleDelete(pet.id)
                             }
-                          }} 
+                          }}
                           className="flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 font-medium py-2 px-4 rounded-xl transition-all duration-200"
                         >
                           <span className="text-sm">🗑️</span>

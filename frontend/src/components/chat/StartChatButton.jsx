@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useChat } from '../../context/useChat';
+import { useToast } from '../../context/ToastContext';
 import { Button } from '../ui/button';
 import { MessageCircle } from 'lucide-react';
 import ChatModal from './ChatModal';
 
 const StartChatButton = ({ userId, className = '' }) => {
     const { createPrivateChat, setActiveChat } = useChat();
+    const { error: showError } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isCreatingChat, setIsCreatingChat] = useState(false);    const handleStartChat = async () => {
+    const [isCreatingChat, setIsCreatingChat] = useState(false);const handleStartChat = async () => {
         try {
             setIsCreatingChat(true);
             const chat = await createPrivateChat(userId);
             setActiveChat(chat);
             setIsModalOpen(true);        } catch (error) {
-            alert(`Error al crear chat: ${error.message}`);
+            showError(`Error al crear chat: ${error.message}`);
         } finally {
             setIsCreatingChat(false);
         }
