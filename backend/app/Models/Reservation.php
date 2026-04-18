@@ -2,10 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Reservation extends Model
-{    protected $fillable = [
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
         'user_id',
         'pet_id',
         'host_id',

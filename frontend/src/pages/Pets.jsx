@@ -1,32 +1,29 @@
-import { useEffect, useState } from 'react'
-import api from '../lib/axios'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useConfirm } from '../hooks/useModal'
+import { usePets, useCreatePet, useUpdatePet, useDeletePet } from '../hooks/usePets'
 
-// ...
+const EMPTY_FORM = {
+  name: '',
+  species: '',
+  breed: '',
+  age: '',
+  size: '',
+  description: '',
+  photo: null,
+}
+
 export default function Pets() {
-  const [pets, setPets] = useState([])
-  const [form, setForm] = useState({
-    name: '',
-    species: '',
-    breed: '',
-    age: '',
-    size: '',
-    description: '',    photo: null, 
-  })
+  const [form, setForm] = useState(EMPTY_FORM)
   const [editingId, setEditingId] = useState(null)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
   const confirm = useConfirm()
 
-  const fetchPets = async () => {
-    const res = await api.get('/pets')
-    setPets(res.data)
-  }
-
-  useEffect(() => {
-    fetchPets()
-  }, [])
+  const { data: pets = [] } = usePets()
+  const createPet = useCreatePet()
+  const updatePet = useUpdatePet()
+  const deletePet = useDeletePet()
 
   const handleChange = (e) => {
     const { name, value, files } = e.target
@@ -36,40 +33,25 @@ export default function Pets() {
       setForm({ ...form, [name]: value })
     }
   }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     setError(null)
     setSuccess(false)
-  
+
     try {
-      const data = new FormData()
-      Object.keys(form).forEach((key) => {
-        if (form[key]) data.append(key, form[key])
-      })
-  
       if (editingId) {
-        await api.post(`/pets/${editingId}?_method=PUT`, data, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        })
+        await updatePet.mutateAsync({ id: editingId, data: form })
       } else {
-        await api.post('/pets', data, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        })
+        await createPet.mutateAsync(form)
       }
-  
-      await fetchPets()
-      setForm({ name: '', species: '', breed: '', age: '', size: '', description: '', photo: null })
+      setForm(EMPTY_FORM)
       setEditingId(null)
       setSuccess(true)
-    } catch (err) {
-      if (err.response?.data?.errors) {
-        // Validation errors available but not logged
-      }
+    } catch {
       setError('Error al guardar la mascota')
     }
   }
-  
 
   const handleEdit = (pet) => {
     setForm({
@@ -84,10 +66,10 @@ export default function Pets() {
     setEditingId(pet.id)
     setSuccess(false)
   }
+
   const handleDelete = async (id) => {
     try {
-      await api.delete(`/pets/${id}`)
-      await fetchPets()
+      await deletePet.mutateAsync(id)
     } catch {
       setError('Error al eliminar mascota')
     }
@@ -281,7 +263,7 @@ export default function Pets() {
                     type="button"
                     onClick={() => {
                       setEditingId(null)
-                      setForm({ name: '', species: '', breed: '', age: '', size: '', description: '', photo: null })
+                      setForm(EMPTY_FORM)
                       setSuccess(false)
                     }}
                     className="w-full mt-2 bg-gray-100 text-gray-700 font-medium py-3 px-6 rounded-xl hover:bg-gray-200 transition-all duration-200"

@@ -21,7 +21,7 @@ class ReservaSolicitada extends Notification implements ShouldQueue
 
     public function via($notifiable)
     {
-        return ['database']; // Luego agregaremos 'broadcast' aquí también si quieres tiempo real
+        return ['database', 'broadcast'];
     }
 
     public function toArray($notifiable)
@@ -34,6 +34,11 @@ class ReservaSolicitada extends Notification implements ShouldQueue
             'fecha_inicio' => $this->reserva->start_date,
             'fecha_fin' => $this->reserva->end_date,
         ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'notification.created';
     }
 }
 

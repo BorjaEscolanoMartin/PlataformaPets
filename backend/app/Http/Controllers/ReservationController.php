@@ -2,56 +2,56 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ReservationStoreRequest;
+use App\Http\Requests\ReservationUpdateRequest;
+use App\Http\Resources\ReservationResource;
 use App\Models\Reservation;
-use Illuminate\Http\Request;
-use App\Notifications\ReservaSolicitada;
-use Illuminate\Support\Facades\Log;
 use App\Notifications\ReservaActualizada;
 use App\Notifications\ReservaCancelada;
+use App\Notifications\ReservaSolicitada;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ReservationController extends Controller
 {
+    public function store(ReservationStoreRequest $request)
+    {
+        $reservation = $request->user()->reservations()->create($request->validated());
 
-public function store(Request $request)
-    {        $validated = $request->validate([
-            'pet_id' => 'required|exists:pets,id',
-            'host_id' => 'required|exists:hosts,id',
-            'service_type' => 'required|in:alojamiento,domicilio,visitas,guarderia,paseo',
-            'address' => 'nullable|string|max:255',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'size' => 'nullable|in:pequeño,mediano,grande,gigante',
+        Log::info('reservation.created', [
+            'reservation_id' => $reservation->id,
+            'user_id'        => $request->user()->id,
         ]);
-
-        $reservation = $request->user()->reservations()->create($validated);
-
-        Log::info('Reserva creada con ID: ' . $reservation->id);
 
         $host = $reservation->host;
         if (!$host) {
-            Log::warning('Reserva sin host asociado');
+            Log::warning('reservation.no_host', ['reservation_id' => $reservation->id]);
             return response()->json(['error' => 'Reserva creada pero sin host'], 500);
         }
 
         $cuidador = $host->user;
         if (!$cuidador) {
-            Log::warning('Host sin user asociado');
+            Log::warning('reservation.host_without_user', [
+                'reservation_id' => $reservation->id,
+                'host_id'        => $host->id,
+            ]);
             return response()->json(['error' => 'Reserva creada pero host sin user'], 500);
         }
 
-        Log::info('Enviando notificación al cuidador ID: ' . $cuidador->id);
-        $cuidador->notifyNow(new ReservaSolicitada($reservation));
+        $cuidador->notify(new ReservaSolicitada($reservation));
 
-        return response()->json($reservation, 201);
+        return ReservationResource::make($reservation->load('pet', 'host'))
+            ->response()
+            ->setStatusCode(201);
     }
 
-    // Cliente: ver sus reservas
     public function index(Request $request)
     {
-        return $request->user()->reservations()->with('pet', 'host.user')->get();
+        return ReservationResource::collection(
+            $request->user()->reservations()->with('pet', 'host.user', 'host.servicePrices')->get()
+        );
     }
 
-    // Cuidador: ver reservas que recibió
     public function forHost(Request $request)
     {
         $host = $request->user()->host;
@@ -60,66 +60,45 @@ public function store(Request $request)
             return response()->json(['error' => 'Este usuario no tiene perfil de cuidador'], 404);
         }
 
-        return Reservation::where('host_id', $host->id)
-            ->with('pet', 'user')
-            ->get();
+        return ReservationResource::collection(
+            Reservation::where('host_id', $host->id)
+                ->with('pet', 'user', 'host.servicePrices')
+                ->get()
+        );
     }
 
-    // Cuidador: actualizar estado
-    public function update(Request $request, $id)
+    public function update(ReservationUpdateRequest $request, $id)
     {
-        $validated = $request->validate([
-            'status' => 'required|in:pendiente,aceptada,rechazada,cancelada',
-        ]);
-
         $reservation = Reservation::findOrFail($id);
+        $this->authorize('update', $reservation);
 
-        // Solo permitir que el cuidador correspondiente actualice su reserva
-        if ($reservation->host->user_id !== $request->user()->id) {
-            return response()->json(['error' => 'No autorizado'], 403);
-        }
+        $reservation->update($request->validated());
+        $reservation->load('host', 'user', 'pet');
 
-        $reservation->update($validated);
+        $reservation->user->notify(new ReservaActualizada($reservation));
 
-        // Cargar relaciones para la notificación
-        $reservation->load('host', 'user');
-
-        // Notificar al cliente
-        $reservation->user->notifyNow(new ReservaActualizada($reservation));
-
-        return response()->json($reservation);
+        return ReservationResource::make($reservation);
     }
 
-    // Cliente: cancelar reserva
     public function cancel(Request $request, $id)
     {
         $reservation = Reservation::findOrFail($id);
+        $this->authorize('cancel', $reservation);
 
-        // Solo permitir que el cliente propietario de la reserva la cancele
-        if ($reservation->user_id !== $request->user()->id) {
-            return response()->json(['error' => 'No autorizado'], 403);
-        }
-
-        // Solo permitir cancelar reservas pendientes o aceptadas
         if (!in_array($reservation->status, ['pendiente', 'aceptada'])) {
             return response()->json(['error' => 'No se puede cancelar esta reserva'], 400);
         }
 
-        // Actualizar estado a cancelada
         $reservation->update(['status' => 'cancelada']);
-
-        // Cargar relaciones para la notificación
         $reservation->load('host.user', 'user', 'pet');
 
-        // Notificar al cuidador
         if ($reservation->host && $reservation->host->user) {
-            $reservation->host->user->notifyNow(new ReservaCancelada($reservation));
+            $reservation->host->user->notify(new ReservaCancelada($reservation));
         }
 
         return response()->json([
-            'message' => 'Reserva cancelada exitosamente',
-            'reservation' => $reservation
+            'message'     => 'Reserva cancelada exitosamente',
+            'reservation' => ReservationResource::make($reservation),
         ]);
     }
 }
-

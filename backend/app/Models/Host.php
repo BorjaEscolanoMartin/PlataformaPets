@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Host extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -57,19 +58,20 @@ class Host extends Model
         return $this->hasMany(ServicePrice::class);
     }
 
-    public function averageRating()
+    protected $appends = ['profile_photo_url'];
+
+    public function getAverageRatingAttribute(): ?float
     {
-        return round($this->reviews()->avg('rating'), 1);
+        if (array_key_exists('average_rating', $this->attributes)) {
+            $value = $this->attributes['average_rating'];
+            return $value !== null ? round((float) $value, 1) : null;
+        }
+
+        $avg = $this->reviews()->avg('rating');
+        return $avg !== null ? round((float) $avg, 1) : null;
     }
 
-    protected $appends = ['average_rating', 'profile_photo_url'];
-
-    public function getAverageRatingAttribute()
-    {
-        return round($this->reviews()->avg('rating'), 1);
-    }
-
-    public function getProfilePhotoUrlAttribute()
+    public function getProfilePhotoUrlAttribute(): ?string
     {
         return $this->profile_photo
             ? asset('storage/' . $this->profile_photo)

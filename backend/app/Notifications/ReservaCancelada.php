@@ -20,7 +20,7 @@ class ReservaCancelada extends Notification implements ShouldQueue
 
     public function via($notifiable)
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     public function toArray($notifiable)
@@ -34,5 +34,10 @@ class ReservaCancelada extends Notification implements ShouldQueue
             'fecha_fin' => $this->reserva->end_date,
             'service_type' => $this->reserva->service_type,
         ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'notification.created';
     }
 }

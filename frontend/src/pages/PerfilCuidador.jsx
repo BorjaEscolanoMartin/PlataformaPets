@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import api from '../lib/axios'
 import ReservaForm from '../components/ReservaForm'
 import { useAuth } from '../context/useAuth'
 import { useModal } from '../hooks/useModal'
+import { useCuidador } from '../hooks/useCuidadores'
+import { useHostReviews } from '../hooks/useReviews'
 import StartChatButton from '../components/chat/StartChatButton'
 
 import ReviewList from '../components/ReviewList'
@@ -14,30 +15,12 @@ export default function PerfilCuidador() {
   const { user } = useAuth()
   const { openLogin } = useModal()
 
-  const [cuidador, setCuidador] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
-  const [reviews, setReviews] = useState([])
 
-  useEffect(() => {
-    api.get(`/cuidadores/${id}`)
-      .then(res => {        setCuidador(res.data)
-      })
-      .catch(() => {
-        setCuidador(null)
-      })
-      .finally(() => setLoading(false))
-  }, [id])
-  // ✅ Cargar reseñas solo cuando cuidador y host están disponibles
-  useEffect(() => {
-    if (cuidador?.host?.id) {      api.get(`/cuidadores/${cuidador.host.id}/reviews`)
-        .then(res => setReviews(res.data))
-        .catch(() => {
-          // Error loading reviews - fail silently
-        })
-    }
-  }, [cuidador]);
-  if (loading) {
+  const { data: cuidador, isLoading, isError } = useCuidador(id)
+  const { data: reviews = [] } = useHostReviews(cuidador?.host?.id)
+
+  if (isLoading) {
     return (
       <div className="min-h-screen py-8 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-xl border border-blue-100 p-12 text-center max-w-md mx-auto">
@@ -49,7 +32,9 @@ export default function PerfilCuidador() {
         </div>
       </div>
     )
-  }    if (!cuidador) {
+  }
+
+  if (isError || !cuidador) {
     return (
       <div className="min-h-screen py-8 flex items-center justify-center">
         <div className="bg-white rounded-2xl shadow-xl border border-red-100 p-12 text-center max-w-md mx-auto">
@@ -312,10 +297,6 @@ export default function PerfilCuidador() {
                     <ReviewForm
                       hostId={host.id}
                       existingReview={userReview}
-                      onSubmit={() => {
-                        api.get(`/cuidadores/${host.id}/reviews`)
-                          .then(res => setReviews(res.data))
-                      }}
                     />
                   </div>
                 )}
@@ -352,7 +333,7 @@ export default function PerfilCuidador() {
                     </button>
                   ) : (
                     <div className="space-y-4">
-                      <ReservaForm hostId={host.id} />
+                      <ReservaForm hostId={host.id} servicePrices={host.service_prices || []} />
                       <button
                         onClick={() => setMostrarFormulario(false)}
                         className="text-sm text-red-600 hover:underline w-full text-center"

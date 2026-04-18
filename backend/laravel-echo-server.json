@@ -1,5 +1,5 @@
 {
-  "authHost": "http://laravel-app:9000",
+  "authHost": "http://nginx",
   "authEndpoint": "/broadcasting/auth",
   "clients": [
     {
@@ -19,7 +19,10 @@
   "host": null,
   "port": "6001",
   "protocol": "http",
-  "socketio": {},
+  "socketio": {
+    "pingInterval": 25000,
+    "pingTimeout": 120000
+  },
   "apiOriginAllow": {
     "allowCors": true,
     "allowOrigin": "http://localhost:5173",

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
-import { getEcho } from '../lib/echo';
+import { getEcho, resetEcho } from '../lib/echo';
 import axios from '../lib/axios';
 import { ChatContext } from './chatContext';
 
@@ -77,40 +77,28 @@ export const ChatProvider = ({ children }) => {
     }, []);    // Configurar Echo cuando el usuario se autentique
     useEffect(() => {
         if (token && user) {
-            // Configurar axios
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            
-            // Crear instancia de Echo con token
+
             try {
-                const echoInstance = getEcho(token);
-                
-                // Solo setear Echo si se creó exitosamente
-                if (echoInstance !== false && echoInstance !== null) {
-                    setEcho(echoInstance);
-                } else {
-                    setEcho(null);
-                }
+                setEcho(getEcho());
             } catch (error) {
                 console.error('Error al crear Echo:', error);
                 setEcho(null);
             }
-            
-            // Cargar chats cuando se configura Echo (o falla)
+
             loadChats();
         } else {
-            // Limpiar cuando no hay usuario autenticado
+            // Limpiar al cerrar sesión
+            resetEcho();
             setChats([]);
             setActiveChat(null);
             setMessages({});
             setEcho(null);
             delete axios.defaults.headers.common['Authorization'];
         }
-    }, [user, token, loadChats]);// Cargar chats inmediatamente cuando el usuario está autenticado
-    useEffect(() => {
-        if (user && token) {
-            loadChats();
-        }
-    }, [user, token, loadChats]);// Enviar mensaje
+    }, [user, token, loadChats]);
+
+    // Enviar mensaje
     const sendMessage = async (chatId, content, type = 'text') => {
         try {
             const response = await axios.post(`/chats/${chatId}/messages`, {
@@ -120,10 +108,11 @@ export const ChatProvider = ({ children }) => {
             
             // Actualizar mensajes inmediatamente (optimistic update)
             const newMessage = response.data.data;
-            setMessages(prev => ({
-                ...prev,
-                [chatId]: [...(prev[chatId] || []), newMessage]
-            }));
+            setMessages(prev => {
+                const existing = prev[chatId] || [];
+                if (existing.some(m => m.id === newMessage.id)) return prev;
+                return { ...prev, [chatId]: [...existing, newMessage] };
+            });
             
             // Actualizar último mensaje en la lista de chats
             setChats(prev => prev.map(chat => 
@@ -184,14 +173,15 @@ export const ChatProvider = ({ children }) => {
             // Escuchar nuevos mensajes
             chatChannel.listen('.message.sent', (e) => {
                 const newMessage = e.message;
-                setMessages(prev => ({
-                    ...prev,
-                    [activeChat.id]: [...(prev[activeChat.id] || []), newMessage]
-                }));
+                setMessages(prev => {
+                    const existing = prev[activeChat.id] || [];
+                    if (existing.some(m => m.id === newMessage.id)) return prev;
+                    return { ...prev, [activeChat.id]: [...existing, newMessage] };
+                });
 
                 // Actualizar último mensaje en la lista de chats
-                setChats(prev => prev.map(chat => 
-                    chat.id === activeChat.id 
+                setChats(prev => prev.map(chat =>
+                    chat.id === activeChat.id
                         ? { ...chat, latest_message: newMessage }
                         : chat
                 ));
@@ -231,18 +221,15 @@ export const ChatProvider = ({ children }) => {
         } catch (error) {
             console.error('Error general al configurar eventos de chat:', error);
         }
-    }, [user, activeChat, echo]);// Cargar mensajes cuando se selecciona un chat
+    }, [user, activeChat, echo]);
+
+    // Cargar mensajes cuando se selecciona un chat. La recepción en tiempo
+    // real corre por el canal privado de Echo (ver efecto anterior); si Echo
+    // no se inicializó, el usuario verá sólo el fetch inicial.
     useEffect(() => {
         if (activeChat) {
             loadMessages(activeChat.id);
             markMessagesAsRead(activeChat.id);
-            
-            // Agregar polling como fallback si WebSockets fallan
-            const pollInterval = setInterval(() => {
-                loadMessages(activeChat.id);
-            }, 2000); // Polling cada 2 segundos
-            
-            return () => clearInterval(pollInterval);
         }
     }, [activeChat, loadMessages, markMessagesAsRead]);
 

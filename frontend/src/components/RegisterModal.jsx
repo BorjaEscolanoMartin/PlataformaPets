@@ -2,8 +2,10 @@ import { useState } from 'react'
 import api from '../lib/axios'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
+import { useEscapeKey } from '../hooks/useEscapeKey'
 
 export default function RegisterModal({ onClose, onSwitchToLogin }) {
+  useEscapeKey(onClose)
   const navigate = useNavigate()
   const { setUser, setToken } = useAuth()
 
@@ -42,21 +44,36 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
         navigate('/')
         onClose()
       }
-    } catch {
-      setError('Error al registrar usuario')
+    } catch (err) {
+      const data = err?.response?.data
+      if (err?.response?.status === 429) {
+        setError('Demasiados intentos. Espera un minuto y vuelve a probar.')
+      } else if (data?.errors) {
+        const first = Object.values(data.errors)[0]?.[0]
+        setError(first || data.message || 'Error al registrar usuario')
+      } else {
+        setError(data?.message || 'Error al registrar usuario')
+      }
     } finally {
       setIsLoading(false)
     }
   }
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-purple-900/30 to-blue-900/30 backdrop-blur-sm flex items-center justify-center z-50">
+    <div
+      className="fixed inset-0 bg-gradient-to-br from-black/60 via-purple-900/30 to-blue-900/30 backdrop-blur-sm flex items-center justify-center z-50"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="register-modal-title"
+    >
       <div className="bg-white rounded-3xl p-8 w-full max-w-md space-y-6 shadow-2xl border border-blue-100 relative transform transition-all duration-300 scale-100 hover:scale-[1.02]">
         {/* Botón de cierre con animación */}
-        <button 
-          onClick={onClose} 
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Cerrar ventana de registro"
           className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-500 transition-all duration-200 flex items-center justify-center group"
         >
-          <span className="transform group-hover:rotate-90 transition-transform duration-200">✕</span>
+          <span aria-hidden="true" className="transform group-hover:rotate-90 transition-transform duration-200">✕</span>
         </button>        {/* Header con icono y gradiente */}
         <div className="text-center space-y-3">
           <div className="w-24 h-24 mx-auto flex items-center justify-center">
@@ -74,7 +91,7 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
               <span className="text-2xl">🏠</span>
             </div>
           </div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h2 id="register-modal-title" className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Únete a nosotros
           </h2>
           <p className="text-sm text-gray-500 font-medium">
@@ -86,14 +103,17 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Input de nombre con icono */}
           <div className="relative">
+            <label htmlFor="register-name" className="sr-only">Nombre completo</label>
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <div className="w-5 h-5 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-xs">👤</span>
+                <span aria-hidden="true" className="text-white text-xs">👤</span>
               </div>
             </div>
             <input
+              id="register-name"
               type="text"
               name="name"
+              autoComplete="name"
               placeholder="Nombre completo"
               className="w-full pl-14 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 outline-none"
               value={form.name}
@@ -104,14 +124,17 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
 
           {/* Input de email con icono */}
           <div className="relative">
+            <label htmlFor="register-email" className="sr-only">Correo electrónico</label>
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <div className="w-5 h-5 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-xs">📧</span>
+                <span aria-hidden="true" className="text-white text-xs">📧</span>
               </div>
             </div>
             <input
+              id="register-email"
               type="email"
               name="email"
+              autoComplete="email"
               placeholder="Correo electrónico"
               className="w-full pl-14 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 outline-none"
               value={form.email}
@@ -122,14 +145,17 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
 
           {/* Input de contraseña con icono */}
           <div className="relative">
+            <label htmlFor="register-password" className="sr-only">Contraseña segura</label>
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <div className="w-5 h-5 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-xs">🔒</span>
+                <span aria-hidden="true" className="text-white text-xs">🔒</span>
               </div>
             </div>
             <input
+              id="register-password"
               type="password"
               name="password"
+              autoComplete="new-password"
               placeholder="Contraseña segura"
               className="w-full pl-14 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 outline-none"
               value={form.password}
@@ -140,14 +166,19 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
 
           {/* Input de código postal con icono */}
           <div className="relative">
+            <label htmlFor="register-postal-code" className="sr-only">Código postal</label>
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <div className="w-5 h-5 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-xs">📍</span>
+                <span aria-hidden="true" className="text-white text-xs">📍</span>
               </div>
             </div>
             <input
+              id="register-postal-code"
               type="text"
               name="postal_code"
+              autoComplete="postal-code"
+              inputMode="numeric"
+              pattern="[0-9]{5}"
               placeholder="Código postal"
               className="w-full pl-14 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 outline-none"
               value={form.postal_code}
@@ -188,12 +219,13 @@ export default function RegisterModal({ onClose, onSwitchToLogin }) {
         <div className="text-center">
           <p className="text-sm text-gray-500">
             ¿Ya tienes cuenta?{' '}
-            <span
-              className="text-blue-600 cursor-pointer hover:text-purple-600 font-semibold hover:underline transition-colors duration-200"
+            <button
+              type="button"
+              className="text-blue-600 hover:text-purple-600 font-semibold hover:underline transition-colors duration-200"
               onClick={onSwitchToLogin}
             >
               Inicia sesión aquí
-            </span>
+            </button>
           </p>
         </div>
       </div>
