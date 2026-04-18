@@ -1,45 +1,49 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import api from '../lib/axios'
 import { useChat } from '../context/useChat'
 import { useToast } from '../context/ToastContext'
+import { useHostReservations, useUpdateReservationStatus } from '../hooks/useReservations'
 import ChatModal from '../components/chat/ChatModal'
+import { computeEstimatedPrice } from '../utils/pricing'
+
+function PrecioEstimado({ reserva }) {
+  const info = computeEstimatedPrice({
+    serviceType:   reserva.service_type,
+    startDate:     reserva.start_date,
+    endDate:       reserva.end_date,
+    servicePrices: reserva.host?.service_prices || [],
+  })
+  if (!info.match) return null
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-8 h-8 bg-gradient-to-r from-amber-100 to-amber-200 rounded-lg flex items-center justify-center">
+        <span className="text-amber-600">💶</span>
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-gray-500">Precio estimado <span className="text-xs font-normal">(informativo)</span></p>
+        <p className="font-bold text-gray-800">
+          {info.total !== null
+            ? `${info.total.toFixed(2)}€ (${info.unitPrice.toFixed(2)}€ ${info.unitLabel} × ${info.days})`
+            : `${info.unitPrice.toFixed(2)}€ ${info.unitLabel}`}
+        </p>
+      </div>
+    </div>
+  )
+}
 
 export default function ReservasRecibidas() {
-  const [reservas, setReservas] = useState([])
-  const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [isChatModalOpen, setIsChatModalOpen] = useState(false)
   const { createPrivateChat, setActiveChat } = useChat()
   const { error: showError } = useToast()
-  useEffect(() => {
-    fetchReservas()
-  }, [])
 
-  const fetchReservas = () => {
-    setLoading(true)
-    api.get('/reservations/host')
-      .then(res => {
-        // Ordenar reservas de la más reciente a la más antigua (basado en created_at o id)
-        const reservasOrdenadas = res.data.sort((a, b) => {
-          // Intentar ordenar por created_at si está disponible, sino por id (descendente)
-          if (a.created_at && b.created_at) {
-            return new Date(b.created_at) - new Date(a.created_at)
-          }
-          return b.id - a.id
-        })
-        setReservas(reservasOrdenadas)
-        setLoading(false)
-      })      .catch(() => {
-        setError('Error al cargar las reservas')
-        setLoading(false)
-      })
-  }
-  
+  const { data: reservas = [], isLoading, isError } = useHostReservations()
+  const updateStatus = useUpdateReservationStatus()
+
+  const error = isError ? 'Error al cargar las reservas' : null
+
   const actualizarEstado = async (id, status) => {
     try {
-      await api.put(`/reservations/${id}`, { status })
-      fetchReservas()
+      await updateStatus.mutateAsync({ id, status })
     } catch {
       showError('Error al actualizar el estado')
     }
@@ -71,7 +75,7 @@ export default function ReservasRecibidas() {
     })
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center py-8">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center border border-blue-100">
@@ -203,6 +207,8 @@ export default function ReservasRecibidas() {
                       <p className="font-bold text-gray-800">{res.address || 'No especificada'}</p>
                     </div>
                   </div>
+
+                  <PrecioEstimado reserva={res} />
                 </div>
               </div>              {/* Botones de acción */}
               {res.status === 'pendiente' && (

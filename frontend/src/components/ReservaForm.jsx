@@ -1,10 +1,11 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import api from '../lib/axios'
 import { useAuth } from '../context/useAuth'
 import { loadGoogleMaps } from '../utils/loadGoogleMaps'
+import { computeEstimatedPrice } from '../utils/pricing'
 
-export default function ReservaForm({ hostId }) {
+export default function ReservaForm({ hostId, servicePrices = [] }) {
   const { user, loading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -54,6 +55,16 @@ export default function ReservaForm({ hostId }) {
     const { name, value } = e.target
     setForm(prev => ({ ...prev, [name]: value }))
   }
+
+  const priceInfo = useMemo(
+    () => computeEstimatedPrice({
+      serviceType: form.service_type,
+      startDate:   form.start_date,
+      endDate:     form.end_date,
+      servicePrices,
+    }),
+    [form.service_type, form.start_date, form.end_date, servicePrices]
+  )
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -257,6 +268,34 @@ export default function ReservaForm({ hostId }) {
             <option value="gigante">🦮 Gigante (45+ kg)</option>
           </select>
         </div>
+
+        {/* Precio estimado (informativo) */}
+        {priceInfo.match ? (
+          <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">💶</span>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-amber-900">
+                  Precio estimado: {priceInfo.unitPrice.toFixed(2)}€ {priceInfo.unitLabel}
+                  {priceInfo.total !== null && priceInfo.days > 0 && (
+                    <>
+                      {' '}×{' '}{priceInfo.days}
+                      {' '}={' '}
+                      <span className="text-lg">{priceInfo.total.toFixed(2)}€</span>
+                    </>
+                  )}
+                </p>
+                <p className="text-xs text-amber-800 mt-1">
+                  Informativo. Confirma el precio final con el cuidador por chat.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : form.service_type && servicePrices.length > 0 ? (
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-700">
+            El cuidador no tiene tarifa publicada para este servicio. Consulta el precio por chat.
+          </div>
+        ) : null}
 
         {/* Botón de envío */}
         <div className="pt-4 border-t border-gray-200">

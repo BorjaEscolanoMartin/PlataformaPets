@@ -1,58 +1,71 @@
-import { useState, useEffect } from 'react'
-import api from '../lib/axios'
-import { useConfirm } from '../hooks/useModal'
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useConfirm } from '../hooks/useModal';
+import { useUpsertReview, useDeleteReview } from '../hooks/useReviews';
+
+const reviewSchema = z.object({
+  rating: z.coerce.number().int().min(1).max(5),
+  comment: z
+    .string()
+    .trim()
+    .min(1, 'Escribe un comentario')
+    .max(1000, 'Máximo 1000 caracteres'),
+});
+
+const DEFAULTS = { rating: 5, comment: '' };
 
 export default function ReviewForm({ hostId, onSubmit, existingReview }) {
-  const [rating, setRating] = useState(5)
-  const [comment, setComment] = useState('')
-  const [loading, setLoading] = useState(false)
-  const confirm = useConfirm()
+  const confirm = useConfirm();
+  const upsertReview = useUpsertReview(hostId);
+  const deleteReview = useDeleteReview(hostId);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(reviewSchema),
+    defaultValues: DEFAULTS,
+  });
 
   useEffect(() => {
     if (existingReview) {
-      setRating(existingReview.rating)
-      setComment(existingReview.comment)
+      reset({
+        rating: existingReview.rating,
+        comment: existingReview.comment,
+      });
     }
-  }, [existingReview])
+  }, [existingReview, reset]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      await api.post(`/cuidadores/${hostId}/reviews`, {
-        rating,
-        comment,      })
-      onSubmit()
-    } catch {
-      // Error sending review
-    } finally {
-      setLoading(false)
-    }
-  }
+  const submitReview = async (values) => {
+    await upsertReview.mutateAsync(values);
+    onSubmit?.();
+  };
+
   const handleDelete = async () => {
-    if (!existingReview) return
-    const confirmed = await confirm('¿Estás seguro de que quieres eliminar tu reseña?')
-    if (!confirmed) return
+    if (!existingReview) return;
+    const confirmed = await confirm('¿Estás seguro de que quieres eliminar tu reseña?');
+    if (!confirmed) return;
 
-    setLoading(true)
-    try {
-      await api.delete(`/reviews/${existingReview.id}`)
-      onSubmit()
-    } catch {
-      // Error deleting review
-    } finally {
-      setLoading(false)
-    }
-  }
+    await deleteReview.mutateAsync(existingReview.id);
+    onSubmit?.();
+  };
+
+  const busy = isSubmitting || upsertReview.isPending || deleteReview.isPending;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 mb-8">
+    <form onSubmit={handleSubmit(submitReview)} className="space-y-4 mb-8" noValidate>
       <div>
-        <label className="block mb-1 font-semibold">Puntuación:</label>
+        <label htmlFor="review-rating" className="block mb-1 font-semibold">
+          Puntuación:
+        </label>
         <select
-          value={rating}
-          onChange={(e) => setRating(parseInt(e.target.value))}
+          id="review-rating"
           className="border p-2 rounded"
+          {...register('rating')}
         >
           {[5, 4, 3, 2, 1].map((n) => (
             <option key={n} value={n}>
@@ -60,23 +73,31 @@ export default function ReviewForm({ hostId, onSubmit, existingReview }) {
             </option>
           ))}
         </select>
+        {errors.rating && (
+          <p className="text-red-600 text-sm mt-1">{errors.rating.message}</p>
+        )}
       </div>
+
       <div>
-        <label className="block mb-1 font-semibold">Comentario:</label>
+        <label htmlFor="review-comment" className="block mb-1 font-semibold">
+          Comentario:
+        </label>
         <textarea
+          id="review-comment"
           className="w-full border p-2 rounded"
           rows="4"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          required
+          {...register('comment')}
         />
+        {errors.comment && (
+          <p className="text-red-600 text-sm mt-1">{errors.comment.message}</p>
+        )}
       </div>
 
       <div className="flex items-center space-x-4">
         <button
           type="submit"
-          disabled={loading}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          disabled={busy}
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
         >
           {existingReview ? 'Actualizar reseña' : 'Enviar reseña'}
         </button>
@@ -85,14 +106,13 @@ export default function ReviewForm({ hostId, onSubmit, existingReview }) {
           <button
             type="button"
             onClick={handleDelete}
-            disabled={loading}
-            className="text-red-600 hover:underline text-sm"
+            disabled={busy}
+            className="text-red-600 hover:underline text-sm disabled:opacity-50"
           >
             Eliminar reseña
           </button>
         )}
       </div>
     </form>
-  )
+  );
 }
-

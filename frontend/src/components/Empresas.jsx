@@ -1,28 +1,24 @@
-import { useEffect, useState } from 'react'
-import api from '../lib/axios'
-import { Building2, MapPin, Phone, Users, Award, Briefcase } from 'lucide-react'
+import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { Building2, MapPin, Phone, Briefcase, MessageCircle } from 'lucide-react'
+import { useEmpresas } from '../hooks/useEmpresas'
+import { useAuth } from '../context/useAuth'
+import StartChatButton from './chat/StartChatButton'
 
 export default function Empresas() {
-  const [empresas, setEmpresas] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
   const [expandedDescriptions, setExpandedDescriptions] = useState({})
   const [expandedLicenses, setExpandedLicenses] = useState({})
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
 
-  useEffect(() => {
-  const fetchEmpresas = async () => {
-    try {
-      setLoading(true)
-      const res = await api.get('/empresas')
-      setEmpresas(res.data)
-      setLoading(false)    } catch {
-      setError('Error al cargar las empresas registradas')
-        setLoading(false)
-      }
-    }
+  const { data: empresas = [], isLoading, isError } = useEmpresas()
+  const error = isError ? 'Error al cargar las empresas registradas' : ''
 
-    fetchEmpresas()
-  }, [])
+  const handleLoginRedirect = () => {
+    localStorage.setItem('redirectAfterLogin', location.pathname)
+    navigate('/login')
+  }
 
   const getServiceIcon = (serviceType) => {
     switch(serviceType?.toLowerCase()) {
@@ -164,7 +160,7 @@ export default function Empresas() {
     }))
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center py-8">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center border border-blue-100">
@@ -381,6 +377,23 @@ export default function Empresas() {
                         )}
                       </div>
                     </div>                  )}
+
+                  {/* 5. Contactar */}
+                  <div className="pt-4 border-t border-gray-200">
+                    {user ? (
+                      user.id !== empresa.id && (
+                        <StartChatButton userId={empresa.id} className="w-full" />
+                      )
+                    ) : (
+                      <button
+                        onClick={handleLoginRedirect}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2"
+                      >
+                        <MessageCircle className="h-5 w-5" />
+                        Inicia sesión para contactar
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

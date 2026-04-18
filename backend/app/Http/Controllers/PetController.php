@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PetStoreRequest;
+use App\Http\Requests\PetUpdateRequest;
+use App\Http\Resources\PetResource;
 use Illuminate\Http\Request;
 use App\Models\Pet;
 use Illuminate\Support\Facades\Storage;
@@ -11,67 +14,40 @@ class PetController extends Controller
 {
     public function index(Request $request)
     {
-        return $request->user()->pets()->get();
+        return PetResource::collection($request->user()->pets()->get());
     }
 
-    public function store(Request $request)
+    public function store(PetStoreRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'species' => 'required|string|max:100',
-            'breed' => 'nullable|string|max:100',
-            'age' => 'nullable|integer',
-            'size' => 'nullable|string|max:50',
-            'description' => 'nullable|string',
-            'photo' => 'nullable|image|max:2048',
-        ]);
+        $data = $request->safe()->except('photo');
 
-        $data = $request->except('photo');
-
-        // ⬇️ Manejamos el archivo de forma separada
         if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('pets', 'public');
-            $data['photo'] = $path;
+            $data['photo'] = $request->file('photo')->store('pets', 'public');
         }
 
         $pet = $request->user()->pets()->create($data);
 
-        return response()->json([
-            ...$pet->toArray(),
-            'photo_url' => $pet->photo ? asset("storage/{$pet->photo}") : null,
-        ], 201);
-        
+        return PetResource::make($pet)
+            ->response()
+            ->setStatusCode(201);
     }
 
-    public function update(Request $request, $id)
+    public function update(PetUpdateRequest $request, $id)
     {
         $pet = $request->user()->pets()->findOrFail($id);
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'species' => 'required|string|max:100',
-            'breed' => 'nullable|string|max:100',
-            'age' => 'nullable|integer',
-            'size' => 'nullable|string|max:50',
-            'description' => 'nullable|string',
-            'photo' => 'nullable|image|max:5120',
-        ]);
+        $data = $request->safe()->except('photo');
 
-        $data = $request->except('photo');
-
-        // Si se ha enviado una nueva foto
         if ($request->hasFile('photo')) {
-            // Borra la anterior si existía
             if ($pet->photo && Storage::disk('public')->exists($pet->photo)) {
                 Storage::disk('public')->delete($pet->photo);
             }
-
-            // Guarda la nueva y actualiza el path
             $data['photo'] = $request->file('photo')->store('pets', 'public');
         }
+
         $pet->update($data);
 
-        return response()->json($pet);
+        return PetResource::make($pet);
     }
 
     public function destroy(Request $request, $id)
@@ -82,12 +58,12 @@ class PetController extends Controller
         return response()->json(['message' => 'Mascota eliminada']);
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $pet = Pet::where('user_id', request()->user()->id)
+        $pet = Pet::where('user_id', $request->user()->id)
                 ->where('id', $id)
                 ->firstOrFail();
 
-        return response()->json($pet);
+        return PetResource::make($pet);
     }
 }

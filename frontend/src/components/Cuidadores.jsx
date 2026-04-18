@@ -1,15 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import api from '../lib/axios'
 import { useAuth } from '../context/useAuth'
 import { useModal } from '../hooks/useModal'
+import { useCuidadores } from '../hooks/useCuidadores'
 import MapaGoogle from './MapaGoogle'
 import { loadGoogleMaps } from '../utils/loadGoogleMaps'
 
 export default function Cuidadores() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [cuidadores, setCuidadores] = useState([])
-  const [error, setError] = useState(null)
   const [direccion, setDireccion] = useState('')
   const { user } = useAuth()
   const { openLogin } = useModal()
@@ -20,7 +18,10 @@ export default function Cuidadores() {
 
   const especie = searchParams.get('especie') || ''
   const tamaño = searchParams.get('tamano') || ''
-  const serviciosSeleccionados = searchParams.getAll('servicio')
+  const serviciosSeleccionados = useMemo(
+    () => searchParams.getAll('servicio'),
+    [searchParams]
+  )
   const fechaEntrada = searchParams.get('fecha_entrada') || ''
   const fechaSalida = searchParams.get('fecha_salida') || ''
   const lat = searchParams.get('lat')
@@ -41,33 +42,22 @@ export default function Cuidadores() {
       setErrorFecha('')
     }
   }, [fechaEntrada, fechaSalida])
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      const fetchCuidadores = async () => {
-        try {
-          const query = []
-          if (especie) query.push(`especie=${especie}`)
-          if (tamaño) query.push(`tamano=${tamaño}`)
-          if (lat && lon) {
-            query.push(`lat=${lat}`)
-            query.push(`lon=${lon}`)
-          }
-          if (fechaEntrada) query.push(`fecha_entrada=${fechaEntrada}`)
-          if (fechaSalida) query.push(`fecha_salida=${fechaSalida}`)
-          serviciosSeleccionados.forEach(s => {
-            query.push(`servicio=${encodeURIComponent(s)}`)
-          })
 
-          const res = await api.get(`/cuidadores${query.length ? `?${query.join('&')}` : ''}`)
-          setCuidadores(res.data)        } catch {
-          setError('No se pudieron cargar los cuidadores.')}
-      }
+  const queryParams = useMemo(
+    () => ({
+      especie: especie || undefined,
+      tamano: tamaño || undefined,
+      lat: lat || undefined,
+      lon: lon || undefined,
+      fecha_entrada: fechaEntrada || undefined,
+      fecha_salida: fechaSalida || undefined,
+      servicio: serviciosSeleccionados,
+    }),
+    [especie, tamaño, lat, lon, fechaEntrada, fechaSalida, serviciosSeleccionados]
+  )
 
-      fetchCuidadores()
-    }, 500)
-
-    return () => clearTimeout(timeout)
-  }, [especie, tamaño, lat, lon, fechaEntrada, fechaSalida, serviciosSeleccionados.join(',')])
+  const { data: cuidadores = [], isError } = useCuidadores(queryParams)
+  const error = isError ? 'No se pudieron cargar los cuidadores.' : null
 
   const actualizarFiltro = (clave, valor) => {
     const nuevosParams = new URLSearchParams(searchParams)
@@ -139,8 +129,9 @@ export default function Cuidadores() {
         <div className="bg-white rounded-2xl shadow-lg p-4 mb-6">          <h2 className="text-lg font-semibold text-gray-800 mb-3">Filtros de búsqueda</h2>          {/* Primera fila: 4 filtros principales */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Tipo de mascota</label>
+              <label htmlFor="filtro-especie" className="block text-xs font-medium text-gray-700 mb-1">Tipo de mascota</label>
               <select
+                id="filtro-especie"
                 value={especie}
                 onChange={e => actualizarFiltro('especie', e.target.value)}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -150,8 +141,9 @@ export default function Cuidadores() {
                 <option value="gato">Gato</option>
               </select>
             </div>            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Tamaño</label>
+              <label htmlFor="filtro-tamano" className="block text-xs font-medium text-gray-700 mb-1">Tamaño</label>
               <select
+                id="filtro-tamano"
                 value={tamaño}
                 onChange={e => actualizarFiltro('tamano', e.target.value)}
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -163,8 +155,9 @@ export default function Cuidadores() {
                 <option value="gigante">Gigante</option>
               </select>
             </div>            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Fecha entrada</label>
+              <label htmlFor="filtro-fecha-entrada" className="block text-xs font-medium text-gray-700 mb-1">Fecha entrada</label>
               <input
+                id="filtro-fecha-entrada"
                 type="date"
                 value={fechaEntrada}
                 onChange={(e) => actualizarFiltro('fecha_entrada', e.target.value)}
@@ -173,8 +166,9 @@ export default function Cuidadores() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Fecha salida</label>
+              <label htmlFor="filtro-fecha-salida" className="block text-xs font-medium text-gray-700 mb-1">Fecha salida</label>
               <input
+                id="filtro-fecha-salida"
                 type="date"
                 value={fechaSalida}
                 onChange={(e) => actualizarFiltro('fecha_salida', e.target.value)}
@@ -212,11 +206,13 @@ export default function Cuidadores() {
 
             {/* Ubicación */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-2">📍 Ubicación</label>
+              <label htmlFor="filtro-ubicacion" className="block text-xs font-medium text-gray-700 mb-2"><span aria-hidden="true">📍 </span>Ubicación</label>
               <input
+                id="filtro-ubicacion"
                 ref={autocompleteRef}
                 type="text"
-                placeholder="Código postal"
+                autoComplete="postal-code"
+                placeholder="Código postal o dirección"
                 className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 value={direccion}
                 onChange={(e) => {

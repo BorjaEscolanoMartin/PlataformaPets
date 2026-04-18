@@ -3,42 +3,25 @@
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use App\Http\Controllers\AuthController;
-use App\Events\MessageSent;
-use Illuminate\Support\Facades\Auth;
-
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 |
-| Estas rutas manejan las solicitudes "web" y están protegidas por
-| los middlewares de sesión y autenticación de Sanctum.
+| Rutas "web" protegidas por los middlewares de sesión. La autenticación de
+| la SPA se hace vía Sanctum/API — no duplicar aquí endpoints de /api.
 |
 */
 
-// Ruta principal básica para verificar que el backend responde
-Route::get('/', function () {
-    return response()->json(['message' => 'Laravel funcionando']);
-});
+Route::get('/', fn () => response()->json(['message' => 'Laravel funcionando']));
 
-// Ruta para autorizar canales privados de Laravel Echo
-Route::post('/broadcasting/auth', function (Request $request) {
-    return Broadcast::auth($request);
-})->middleware(['web', 'auth:sanctum']);
+// Autorización de canales privados de Laravel Echo
+Route::post('/broadcasting/auth', fn (Request $request) => Broadcast::auth($request))
+    ->middleware(['web', 'auth:sanctum']);
 
-// Fallback para login: útil cuando intentas acceder sin estar autenticado
-Route::get('/login', function () {
-    return response()->json(['message' => 'Login fallback'], 401);
-})->name('login');
+// Fallback nombrado 'login' requerido por el middleware auth cuando falla
+Route::get('/login', fn () => response()->json(['message' => 'No autenticado'], 401))
+    ->name('login');
 
-// Carga el archivo donde defines los canales privados
 require base_path('routes/channels.php');
-
-// Rutas de autenticación y usuario
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/user', [AuthController::class, 'user'])->middleware(['auth:sanctum']);
-
-// Ruta de prueba para emitir un evento
-

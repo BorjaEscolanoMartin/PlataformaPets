@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -18,7 +19,7 @@ use App\Models\Message;
  */
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -94,6 +95,15 @@ class User extends Authenticatable
     /**
      * Crear o obtener un chat privado con otro usuario
      */
+    /**
+     * Canal donde el usuario recibe sus notificaciones broadcast.
+     * Alineado con `Broadcast::channel('user.{userId}', ...)` en channels.php.
+     */
+    public function receivesBroadcastNotificationsOn(): string
+    {
+        return 'user.' . $this->id;
+    }
+
     public function getPrivateChatWith($otherUserId)
     {
         // Buscar chat existente entre estos dos usuarios

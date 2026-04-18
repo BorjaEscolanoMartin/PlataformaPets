@@ -1,84 +1,73 @@
-import { useEffect, useState } from 'react'
-import api from '../lib/axios'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useChat } from '../context/useChat'
 import { useToast } from '../context/ToastContext'
 import { useConfirm } from '../hooks/useModal'
+import { useMyReservations, useCancelReservation } from '../hooks/useReservations'
 import ChatModal from '../components/chat/ChatModal'
+import { computeEstimatedPrice } from '../utils/pricing'
+
+function PrecioEstimado({ reserva }) {
+  const info = computeEstimatedPrice({
+    serviceType:   reserva.service_type,
+    startDate:     reserva.start_date,
+    endDate:       reserva.end_date,
+    servicePrices: reserva.host?.service_prices || [],
+  })
+  if (!info.match) return null
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-lg">💶</span>
+      <div>
+        <p className="text-sm text-gray-500">Precio estimado <span className="text-xs">(informativo)</span></p>
+        <p className="font-medium text-gray-800">
+          {info.total !== null
+            ? `${info.total.toFixed(2)}€ (${info.unitPrice.toFixed(2)}€ ${info.unitLabel} × ${info.days})`
+            : `${info.unitPrice.toFixed(2)}€ ${info.unitLabel}`}
+        </p>
+      </div>
+    </div>
+  )
+}
 
 export default function MisReservas() {
-  const [reservas, setReservas] = useState([])
-  const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [isChatModalOpen, setIsChatModalOpen] = useState(false)
   const { createPrivateChat, setActiveChat } = useChat()
   const { error: showError, success: showSuccess } = useToast()
   const confirm = useConfirm()
-    const handleContactarCuidador = async (cuidadorUserId) => {
+
+  const { data: reservas = [], isLoading, isError } = useMyReservations()
+  const cancelReservation = useCancelReservation()
+
+  const error = isError ? 'Error al cargar tus reservas' : null
+
+  const handleContactarCuidador = async (cuidadorUserId) => {
     try {
-      
-      // Crear o obtener el chat privado con el cuidador
       const chat = await createPrivateChat(cuidadorUserId)
-      
-      // Establecer como chat activo
       setActiveChat(chat)
-      
-      // Esperar un momento para que se establezca el estado
-      setTimeout(() => {
-        // Abrir el modal de chat
-        setIsChatModalOpen(true)
-      }, 100)    } catch (error) {
+      setTimeout(() => setIsChatModalOpen(true), 100)
+    } catch (error) {
       showError(`Error al abrir chat: ${error.message}`)
     }
   }
+
   const handleCancelarReserva = async (reservaId) => {
     const confirmed = await confirm('¿Estás seguro de que quieres cancelar esta reserva? Esta acción no se puede deshacer.')
-    if (!confirmed) {
-      return
-    }try {
-      
-      await api.patch(`/reservations/${reservaId}/cancel`)
-        // Recargar la lista de reservas
-      const res = await api.get('/reservations')
-      // Ordenar reservas de la más reciente a la más antigua
-      const reservasOrdenadas = res.data.sort((a, b) => {
-        if (a.created_at && b.created_at) {
-          return new Date(b.created_at) - new Date(a.created_at)
-        }        return b.id - a.id
-      })
-      setReservas(reservasOrdenadas)
-      
+    if (!confirmed) return
+
+    try {
+      await cancelReservation.mutateAsync(reservaId)
       showSuccess('Reserva cancelada exitosamente. El cuidador ha sido notificado.')
     } catch (error) {
-      
       if (error.response?.status === 400) {
         showError('No se puede cancelar esta reserva en su estado actual.')
       } else if (error.response?.status === 403) {
         showError('No tienes permisos para cancelar esta reserva.')
-          } else {
+      } else {
         showError(`Error al cancelar reserva: ${error.response?.data?.error || error.message}`)
       }
     }
   }
-
-  useEffect(() => {
-    api.get('/reservations')
-      .then(res => {
-        // Ordenar reservas de la más reciente a la más antigua (basado en created_at o id)
-        const reservasOrdenadas = res.data.sort((a, b) => {
-          // Intentar ordenar por created_at si está disponible, sino por id (descendente)
-          if (a.created_at && b.created_at) {
-            return new Date(b.created_at) - new Date(a.created_at)
-          }
-          return b.id - a.id
-        })
-        setReservas(reservasOrdenadas)
-        setLoading(false)
-      })      .catch(() => {
-        setError('Error al cargar tus reservas')
-        setLoading(false)
-      })
-  }, [])
   
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
@@ -130,7 +119,7 @@ export default function MisReservas() {
     })
   }
   
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center py-8">
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4 text-center border border-blue-100">
@@ -294,6 +283,8 @@ export default function MisReservas() {
                         </div>
                       </div>
                     )}
+
+                    <PrecioEstimado reserva={reserva} />
                   </div>
 
                   {/* Estado y acciones */}

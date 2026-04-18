@@ -32,9 +32,19 @@ class MessageSent implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        return [
-            new PrivateChannel('chat.' . $this->message->chat_id),
-        ];
+        $channels = [new PrivateChannel('chat.' . $this->message->chat_id)];
+
+        // Emitir también al canal personal de cada destinatario (distinto del emisor)
+        // para que los badges de mensajes no leídos se actualicen en tiempo real
+        // aunque el destinatario no tenga el chat abierto.
+        $participants = $this->message->chat->participants ?? [];
+        foreach ($participants as $userId) {
+            if ((int) $userId !== (int) $this->message->user_id) {
+                $channels[] = new PrivateChannel('user.' . $userId);
+            }
+        }
+
+        return $channels;
     }
 
     /**
