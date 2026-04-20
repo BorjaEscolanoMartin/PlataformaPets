@@ -154,25 +154,15 @@ export const ChatProvider = ({ children }) => {
         }
     };// Suscribirse a eventos de chat
     useEffect(() => {
-        console.log('[Echo] subs effect', { user: !!user, activeChat: activeChat?.id, echo: !!echo });
         if (!user || !activeChat || !echo) {
             return;
         }
 
         try {
             const chatChannel = echo.private(`chat.${activeChat.id}`);
-            console.log('[Echo] canal creado:', chatChannel);
-
-            // Listener directo en el socket para ver qué eventos llegan en bruto
-            const rawSocket = echo.connector?.socket;
-            if (rawSocket) {
-                rawSocket.on('message.sent', (data) => console.log('[Socket raw] message.sent:', data));
-                rawSocket.on('App\\Events\\MessageSent', (data) => console.log('[Socket raw] MessageSent:', data));
-            }
 
             // Agregar listeners para eventos del canal
             chatChannel.subscribed(() => {
-                console.log('[Echo] suscrito a canal private-chat.' + activeChat.id);
             });
 
             chatChannel.error((error) => {
@@ -187,7 +177,6 @@ export const ChatProvider = ({ children }) => {
 
             // Escuchar nuevos mensajes
             chatChannel.listen('.message.sent', (e) => {
-                console.log('[Echo] message.sent recibido:', e);
                 const newMessage = e.message;
                 setMessages(prev => {
                     const existing = prev[activeChat.id] || [];
