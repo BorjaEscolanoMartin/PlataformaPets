@@ -154,6 +154,7 @@ export const ChatProvider = ({ children }) => {
         }
     };// Suscribirse a eventos de chat
     useEffect(() => {
+        console.log('[Echo] subs effect', { user: !!user, activeChat: activeChat?.id, echo: !!echo });
         if (!user || !activeChat || !echo) {
             return;
         }
