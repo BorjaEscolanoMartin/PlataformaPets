@@ -20,7 +20,7 @@ export function getEcho() {
             broadcaster: 'socket.io',
             host,
             client: io,
-            transports: ['websocket'],
+            transports: ['websocket', 'polling'],
             auth: {
                 headers: {
                     Authorization: `Bearer ${token}`,
