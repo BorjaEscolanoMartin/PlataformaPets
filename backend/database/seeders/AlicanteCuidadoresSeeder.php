@@ -208,7 +208,7 @@ class AlicanteCuidadoresSeeder extends Seeder
                     'experience_years'   => 15,
                     'experience_details' => 'Equipo de 8 veterinarios colegiados y 5 auxiliares. Instalaciones modernas con quirófano, laboratorio y UCI.',
                     'has_own_pets'       => false,
-                    'profile_photo'      => 'https://loremflickr.com/300/300/veterinary,clinic?lock=66',
+                    'profile_photo'      => 'https://loremflickr.com/300/300/veterinary,animal?lock=88',
                     'cif'                => 'B03112233',
                     'fiscal_address'     => 'Calle Mayor 45, 03002 Alicante',
                     'licenses'           => 'Autorización sanitaria nº ALI-VET-2008-045. Colegio Oficial de Veterinarios de Alicante.',
