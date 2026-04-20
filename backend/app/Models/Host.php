@@ -73,9 +73,9 @@ class Host extends Model
 
     public function getProfilePhotoUrlAttribute(): ?string
     {
-        return $this->profile_photo
-            ? asset('storage/' . $this->profile_photo)
-            : null;
+        if (!$this->profile_photo) return null;
+        if (str_starts_with($this->profile_photo, 'http')) return $this->profile_photo;
+        return asset('storage/' . $this->profile_photo);
     }
 
 
