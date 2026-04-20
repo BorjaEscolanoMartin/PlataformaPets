@@ -170,6 +170,12 @@ export const ChatProvider = ({ children }) => {
                 console.error('Error al suscribirse al canal:', error);
             });
             
+            // Refetch al reconectar para no perder mensajes durante desconexiones
+            const socket = echo.connector?.socket;
+            if (socket) {
+                socket.on('reconnect', () => loadMessages(activeChat.id));
+            }
+
             // Escuchar nuevos mensajes
             chatChannel.listen('.message.sent', (e) => {
                 const newMessage = e.message;
