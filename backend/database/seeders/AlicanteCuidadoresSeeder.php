@@ -37,7 +37,7 @@ class AlicanteCuidadoresSeeder extends Seeder
                     'experience_years'   => 5,
                     'experience_details' => 'He cuidado más de 80 mascotas distintas. Formación en primeros auxilios para animales.',
                     'has_own_pets'       => false,
-                    'profile_photo'      => 'https://i.pravatar.cc/300?img=47',
+                    'profile_photo'      => 'https://loremflickr.com/300/300/woman,dog?lock=11',
                 ],
                 'precios' => [
                     ['service_type' => 'paseo',         'price' => 12.00, 'price_unit' => 'por_hora'],
@@ -71,7 +71,7 @@ class AlicanteCuidadoresSeeder extends Seeder
                     'experience_details' => 'Ex-trabajador de protectora de animales. Especializado en razas como Pastor Alemán, Labrador y Golden Retriever.',
                     'has_own_pets'       => true,
                     'own_pets_description' => 'Tengo un Golden Retriever de 3 años, muy sociable.',
-                    'profile_photo'      => 'https://i.pravatar.cc/300?img=12',
+                    'profile_photo'      => 'https://loremflickr.com/300/300/man,dog?lock=22',
                 ],
                 'precios' => [
                     ['service_type' => 'paseo',               'price' => 14.00, 'price_unit' => 'por_hora'],
@@ -105,7 +105,7 @@ class AlicanteCuidadoresSeeder extends Seeder
                     'experience_details' => 'Veterinaria en formación. Experiencia con animales de diversas especies.',
                     'has_own_pets'       => true,
                     'own_pets_description' => 'Tengo dos gatos y un conejo enano.',
-                    'profile_photo'      => 'https://i.pravatar.cc/300?img=32',
+                    'profile_photo'      => 'https://loremflickr.com/300/300/woman,cat?lock=33',
                 ],
                 'precios' => [
                     ['service_type' => 'guarderia',           'price' => 18.00, 'price_unit' => 'por_dia'],
@@ -138,7 +138,7 @@ class AlicanteCuidadoresSeeder extends Seeder
                     'experience_years'   => 6,
                     'experience_details' => 'Certificado en bienestar animal por la Universidad de Alicante. He alojado más de 120 perros.',
                     'has_own_pets'       => false,
-                    'profile_photo'      => 'https://i.pravatar.cc/300?img=15',
+                    'profile_photo'      => 'https://loremflickr.com/300/300/man,dog,garden?lock=44',
                 ],
                 'precios' => [
                     ['service_type' => 'alojamiento', 'price' => 28.00, 'price_unit' => 'por_noche'],
@@ -172,7 +172,7 @@ class AlicanteCuidadoresSeeder extends Seeder
                     'experience_details' => 'Trabajé 2 años en una clínica veterinaria y llevo 4 años como cuidadora independiente.',
                     'has_own_pets'       => true,
                     'own_pets_description' => 'Tengo una gata persa muy tranquila.',
-                    'profile_photo'      => 'https://i.pravatar.cc/300?img=44',
+                    'profile_photo'      => 'https://loremflickr.com/300/300/woman,pet?lock=55',
                 ],
                 'precios' => [
                     ['service_type' => 'visitas_a_domicilio', 'price' => 11.00, 'price_unit' => 'por_visita'],
@@ -208,7 +208,7 @@ class AlicanteCuidadoresSeeder extends Seeder
                     'experience_years'   => 15,
                     'experience_details' => 'Equipo de 8 veterinarios colegiados y 5 auxiliares. Instalaciones modernas con quirófano, laboratorio y UCI.',
                     'has_own_pets'       => false,
-                    'profile_photo'      => 'https://i.pravatar.cc/300?img=68',
+                    'profile_photo'      => 'https://loremflickr.com/300/300/veterinary,clinic?lock=66',
                     'cif'                => 'B03112233',
                     'fiscal_address'     => 'Calle Mayor 45, 03002 Alicante',
                     'licenses'           => 'Autorización sanitaria nº ALI-VET-2008-045. Colegio Oficial de Veterinarios de Alicante.',
@@ -244,7 +244,7 @@ class AlicanteCuidadoresSeeder extends Seeder
                     'experience_years'   => 10,
                     'experience_details' => 'Centro afiliado a la Asociación Nacional de Educadores Caninos. Más de 500 perros adiestrados.',
                     'has_own_pets'       => false,
-                    'profile_photo'      => 'https://i.pravatar.cc/300?img=52',
+                    'profile_photo'      => 'https://loremflickr.com/300/300/dog,training?lock=77',
                     'cif'                => 'B03998877',
                     'fiscal_address'     => 'Avenida de la Costa 120, 03003 Alicante',
                     'licenses'           => 'Centro homologado por la Conselleria de Agricultura. Educadores certificados ICAN nivel 3.',
