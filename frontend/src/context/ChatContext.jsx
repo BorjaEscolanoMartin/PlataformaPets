@@ -178,6 +178,7 @@ export const ChatProvider = ({ children }) => {
 
             // Escuchar nuevos mensajes
             chatChannel.listen('.message.sent', (e) => {
+                console.log('[Echo] message.sent recibido:', e);
                 const newMessage = e.message;
                 setMessages(prev => {
                     const existing = prev[activeChat.id] || [];
