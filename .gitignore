@@ -32,6 +32,9 @@ yarn-error.log
 .DS_Store
 Thumbs.db
 
+# Despliegue
+DEPLOY.md
+
 # Auth
 auth.json
 Homestead.json
