@@ -106,7 +106,7 @@ export default function PetDetail() {
               {pet.photo_url ? (
                 <div className="relative group">
                   <img
-                    src={`http://localhost:8000${pet.photo_url}`}
+                    src={`${import.meta.env.VITE_API_URL}${pet.photo_url}`}
                     alt={`Foto de ${pet.name}`}
                     className="w-full h-80 object-cover rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300"
                   />

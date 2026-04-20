@@ -65,7 +65,7 @@ export default function PerfilCuidador() {
             <div className="flex flex-col md:flex-row md:items-center gap-6">
               {host?.profile_photo && (
                 <img
-                  src={`http://localhost:8000/storage/${host.profile_photo}`}
+                  src={host.profile_photo_url ?? `${import.meta.env.VITE_API_URL}/storage/${host.profile_photo}`}
                   alt="Foto de perfil"
                   className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
                 />
