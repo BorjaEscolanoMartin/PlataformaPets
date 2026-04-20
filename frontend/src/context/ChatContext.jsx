@@ -161,10 +161,18 @@ export const ChatProvider = ({ children }) => {
 
         try {
             const chatChannel = echo.private(`chat.${activeChat.id}`);
-            
+            console.log('[Echo] canal creado:', chatChannel);
+
+            // Listener directo en el socket para ver qué eventos llegan en bruto
+            const rawSocket = echo.connector?.socket;
+            if (rawSocket) {
+                rawSocket.on('message.sent', (data) => console.log('[Socket raw] message.sent:', data));
+                rawSocket.on('App\\Events\\MessageSent', (data) => console.log('[Socket raw] MessageSent:', data));
+            }
+
             // Agregar listeners para eventos del canal
             chatChannel.subscribed(() => {
-                // Canal suscrito exitosamente
+                console.log('[Echo] suscrito a canal private-chat.' + activeChat.id);
             });
 
             chatChannel.error((error) => {
