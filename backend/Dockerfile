@@ -21,6 +21,9 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
     && npm install -g laravel-echo-server
 
+# Configuración PHP para uploads
+COPY php.ini /usr/local/etc/php/conf.d/uploads.ini
+
 # Establecer el directorio de trabajo
 WORKDIR /var/www
 
