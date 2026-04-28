@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Chat;
 use App\Models\User;
+use Illuminate\Support\Collection;
 
 class ChatService
 {
@@ -43,7 +44,7 @@ class ChatService
         return $existing?->load(['latestMessage.user', 'creator']);
     }
 
-    public function attachOtherParticipant(Chat $chat, int $currentUserId): Chat
+    public function attachOtherParticipant(Chat $chat, int $currentUserId, ?Collection $loadedUsers = null): Chat
     {
         if ($chat->type !== 'private') {
             return $chat;
@@ -52,7 +53,14 @@ class ChatService
         $otherUserId = collect($chat->participants)
             ->first(fn ($id) => (int) $id !== $currentUserId);
 
-        $otherUser = $otherUserId ? User::find($otherUserId) : null;
+        if ($otherUserId === null) {
+            $chat->other_participant = null;
+            return $chat;
+        }
+
+        $otherUser = $loadedUsers
+            ? $loadedUsers->get($otherUserId)
+            : User::find($otherUserId);
 
         $chat->other_participant = $otherUser ? [
             'id'   => $otherUser->id,

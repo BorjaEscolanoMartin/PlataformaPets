@@ -9,7 +9,7 @@ class HostPolicy
 {
     public function view(User $user, Host $host): bool
     {
-        return $host->user_id === $user->id;
+        return true;
     }
 
     public function update(User $user, Host $host): bool

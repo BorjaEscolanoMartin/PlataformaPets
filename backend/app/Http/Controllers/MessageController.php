@@ -11,6 +11,7 @@ use App\Events\MessageSent;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class MessageController extends Controller
 {
@@ -54,15 +55,19 @@ class MessageController extends Controller
 
         $validated = $request->validated();
 
-        $message = Message::create([
-            'chat_id'  => $chat->id,
-            'user_id'  => Auth::id(),
-            'content'  => $validated['content'],
-            'type'     => $validated['type'] ?? 'text',
-            'metadata' => $validated['metadata'] ?? [],
-        ]);
+        $message = DB::transaction(function () use ($chat, $validated) {
+            $msg = Message::create([
+                'chat_id'  => $chat->id,
+                'user_id'  => Auth::id(),
+                'content'  => $validated['content'],
+                'type'     => $validated['type'] ?? 'text',
+                'metadata' => $validated['metadata'] ?? [],
+            ]);
 
-        $chat->updateLastActivity();
+            $chat->updateLastActivity();
+
+            return $msg;
+        });
 
         $message->load('user');
 

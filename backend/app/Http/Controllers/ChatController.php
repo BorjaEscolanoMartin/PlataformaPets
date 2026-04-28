@@ -24,8 +24,17 @@ class ChatController extends Controller
         $chats = Chat::whereJsonContains('participants', $user->id)
             ->with(['latestMessage.user', 'creator'])
             ->orderBy('last_activity', 'desc')
-            ->get()
-            ->map(fn ($chat) => $this->chats->attachOtherParticipant($chat, $user->id));
+            ->get();
+
+        $otherIds = $chats
+            ->where('type', 'private')
+            ->flatMap(fn ($chat) => collect($chat->participants)->filter(fn ($id) => (int) $id !== $user->id))
+            ->unique()
+            ->values();
+
+        $loadedUsers = \App\Models\User::whereIn('id', $otherIds)->get()->keyBy('id');
+
+        $chats = $chats->map(fn ($chat) => $this->chats->attachOtherParticipant($chat, $user->id, $loadedUsers));
 
         return response()->json([
             'success' => true,

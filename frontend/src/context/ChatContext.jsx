@@ -100,29 +100,48 @@ export const ChatProvider = ({ children }) => {
 
     // Enviar mensaje
     const sendMessage = async (chatId, content, type = 'text') => {
+        const tempId = `temp-${Date.now()}`;
+        const optimisticMessage = {
+            id: null,
+            _tempId: tempId,
+            chat_id: chatId,
+            user_id: user?.id,
+            content,
+            type,
+            created_at: new Date().toISOString(),
+            user: { id: user?.id, name: user?.name },
+        };
+
+        const previousMessages = messages;
+
+        setMessages(prev => ({
+            ...prev,
+            [chatId]: [...(prev[chatId] || []), optimisticMessage],
+        }));
+
         try {
             const response = await axios.post(`/chats/${chatId}/messages`, {
                 content,
                 type
             });
-            
-            // Actualizar mensajes inmediatamente (optimistic update)
+
             const newMessage = response.data.data;
+
             setMessages(prev => {
-                const existing = prev[chatId] || [];
-                if (existing.some(m => m.id === newMessage.id)) return prev;
+                const existing = (prev[chatId] || []).filter(m => m._tempId !== tempId);
+                if (existing.some(m => m.id === newMessage.id)) return { ...prev, [chatId]: existing };
                 return { ...prev, [chatId]: [...existing, newMessage] };
             });
-            
-            // Actualizar último mensaje en la lista de chats
-            setChats(prev => prev.map(chat => 
-                chat.id === parseInt(chatId) 
+
+            setChats(prev => prev.map(chat =>
+                chat.id === Number(chatId)
                     ? { ...chat, latest_message: newMessage }
                     : chat
             ));
-            
+
             return newMessage;
         } catch (error) {
+            setMessages(previousMessages);
             console.error('Error sending message:', error);
             throw error;
         }
