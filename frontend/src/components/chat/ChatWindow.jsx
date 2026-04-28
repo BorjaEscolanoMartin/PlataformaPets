@@ -16,6 +16,7 @@ const ChatWindow = ({
     const { user } = useAuth();
     const [newMessage, setNewMessage] = useState('');
     const [sending, setSending] = useState(false);
+    const [sendError, setSendError] = useState(null);
     const messagesEndRef = useRef(null);
 
     // Auto-scroll al final cuando llegan nuevos mensajes
@@ -30,9 +31,11 @@ const ChatWindow = ({
 
         try {
             setSending(true);
+            setSendError(null);
             await sendMessage(activeChat.id, newMessage.trim());
-            setNewMessage('');        } catch {
-            // Aquí podrías mostrar una notificación de error
+            setNewMessage('');
+        } catch {
+            setSendError('No se pudo enviar el mensaje. Inténtalo de nuevo.');
         } finally {
             setSending(false);
         }
@@ -168,11 +171,14 @@ const ChatWindow = ({
 
             {/* Área de entrada de mensaje */}
             <div className="p-4 border-t border-gray-200 bg-white">
+                {sendError && (
+                    <p className="text-sm text-red-500 mb-2">{sendError}</p>
+                )}
                 <form onSubmit={handleSendMessage} className="flex space-x-2">
                     <input
                         type="text"
                         value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
+                        onChange={(e) => { setNewMessage(e.target.value); setSendError(null); }}
                         placeholder="Escribe un mensaje..."
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         disabled={sending}

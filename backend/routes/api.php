@@ -8,6 +8,7 @@ use Illuminate\Validation\Rules\Password;
 
 use App\Models\User;
 use App\Http\Controllers\PetController;
+use App\Http\Resources\UserResource;
 use App\Http\Controllers\HostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReservationController;
@@ -126,7 +127,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Usuarios
     Route::get('/users', function (Request $request) {
         $role = $request->query('role');
-        return $role ? User::where('role', $role)->get() : User::all();
+        $query = $role ? User::where('role', $role) : User::query();
+        return UserResource::collection($query->paginate(20));
     });
     Route::get('/users/{id}', [UserController::class, 'show']);
 

@@ -10,39 +10,42 @@ use App\Notifications\ReservaActualizada;
 use App\Notifications\ReservaCancelada;
 use App\Notifications\ReservaSolicitada;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ReservationController extends Controller
 {
     public function store(ReservationStoreRequest $request)
     {
-        $reservation = $request->user()->reservations()->create($request->validated());
+        return DB::transaction(function () use ($request) {
+            $reservation = $request->user()->reservations()->create($request->validated());
 
-        Log::info('reservation.created', [
-            'reservation_id' => $reservation->id,
-            'user_id'        => $request->user()->id,
-        ]);
-
-        $host = $reservation->host;
-        if (!$host) {
-            Log::warning('reservation.no_host', ['reservation_id' => $reservation->id]);
-            return response()->json(['error' => 'Reserva creada pero sin host'], 500);
-        }
-
-        $cuidador = $host->user;
-        if (!$cuidador) {
-            Log::warning('reservation.host_without_user', [
+            Log::info('reservation.created', [
                 'reservation_id' => $reservation->id,
-                'host_id'        => $host->id,
+                'user_id'        => $request->user()->id,
             ]);
-            return response()->json(['error' => 'Reserva creada pero host sin user'], 500);
-        }
 
-        $cuidador->notify(new ReservaSolicitada($reservation));
+            $host = $reservation->host;
+            if (!$host) {
+                Log::warning('reservation.no_host', ['reservation_id' => $reservation->id]);
+                abort(500, 'No se pudo procesar la reserva.');
+            }
 
-        return ReservationResource::make($reservation->load('pet', 'host'))
-            ->response()
-            ->setStatusCode(201);
+            $cuidador = $host->user;
+            if (!$cuidador) {
+                Log::warning('reservation.host_without_user', [
+                    'reservation_id' => $reservation->id,
+                    'host_id'        => $host->id,
+                ]);
+                abort(500, 'No se pudo procesar la reserva.');
+            }
+
+            $cuidador->notify(new ReservaSolicitada($reservation));
+
+            return ReservationResource::make($reservation->load('pet', 'host'))
+                ->response()
+                ->setStatusCode(201);
+        });
     }
 
     public function index(Request $request)

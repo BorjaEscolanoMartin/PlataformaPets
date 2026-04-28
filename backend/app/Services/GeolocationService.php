@@ -38,15 +38,13 @@ class GeolocationService
         return DB::table('hosts')
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
-            ->select('user_id', DB::raw("
-                6371 * acos(
+            ->selectRaw('user_id, 6371 * acos(
                     least(1, greatest(-1,
-                        cos(radians({$lat})) * cos(radians(latitude)) *
-                        cos(radians(longitude) - radians({$lon})) +
-                        sin(radians({$lat})) * sin(radians(latitude))
+                        cos(radians(?)) * cos(radians(latitude)) *
+                        cos(radians(longitude) - radians(?)) +
+                        sin(radians(?)) * sin(radians(latitude))
                     ))
-                ) AS distance
-            "))
+                ) AS distance', [$lat, $lon, $lat])
             ->get()
             ->filter(fn ($h) => $h->distance <= $radiusKm)
             ->keyBy('user_id');
