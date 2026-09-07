@@ -39,3 +39,10 @@ DEPLOY.md
 auth.json
 Homestead.json
 Homestead.yaml
+
+# Herramientas locales / hygiene
+.atl/
+cookies.txt
+*:Zone.Identifier
+.env.*
+!.env.example
