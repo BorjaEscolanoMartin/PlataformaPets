@@ -1,6 +1,19 @@
 # PlataformaPets
 
+## TL;DR (English)
+
+Full-stack pet-sitting marketplace: pet owners search and book independent
+sitters or boarding companies by geolocation, with real-time chat and
+reviews. Final-degree project (Proyecto final de DAW, 2025). Laravel 12 +
+Sanctum + PostgreSQL + Redis on the backend, React 19 + Vite + TailwindCSS
+on the frontend, Docker Compose for local orchestration. It is a graded MVP,
+not a production-hardened app — see "Estado y seguridad" below.
+
 Plataforma web para conectar dueños de mascotas con cuidadores particulares y empresas de alojamiento animal. Permite buscar, reservar y valorar servicios de cuidado de mascotas con chat en tiempo real integrado.
+
+Proyecto final de DAW (2025).
+
+![Captura de PlataformaPets](docs/img/pets.webp)
 
 ---
 
@@ -114,13 +127,13 @@ SESSION_DOMAIN=localhost
 ### 3. Configurar variables de entorno del frontend
 
 ```bash
-cp frontend/.env.example frontend/.env   # si existe, o créalo manualmente
+cp frontend/.env.example frontend/.env
 ```
 
 ```env
 VITE_API_URL=http://localhost:8000
-VITE_ECHO_HOST=localhost
-VITE_ECHO_PORT=6001
+VITE_ECHO_HOST=http://localhost:6001
+VITE_GOOGLE_MAPS_KEY=       # API key de Google Maps (Maps JS + Places), restringida por referer/API en Google Cloud Console
 ```
 
 ### 4. Levantar los contenedores
@@ -214,6 +227,17 @@ PlataformaPets/
 
 ---
 
+## Estado y seguridad
+
+Este es un MVP académico (proyecto final de DAW) con funcionalidad end-to-end
+(auth, mascotas, búsqueda geolocalizada, reservas, chat en tiempo real,
+reseñas, notificaciones), pero **no está listo para producción tal cual**.
+Se ha realizado una auditoría interna de arquitectura y seguridad; el backlog
+de saneamiento (autenticación, límites de peticiones, CORS, validaciones,
+cobertura de tests, etc.) se está trasladando a issues de este repositorio
+para abordarlo de forma incremental. Si vas a desplegarlo o reutilizar
+código de aquí, revisa los issues abiertos antes.
+
 ## Licencia
 
-MIT
+MIT — ver [LICENSE](LICENSE)
